@@ -23,8 +23,10 @@ jobs:
         run: |
           for stack in react vue svelte; do
             composer validate "$stack/composer.json" --no-check-publish
-            php -l "$stack/app/Lavertia/Pages/DashboardPage.php"
-            php -l "$stack/tests/Feature/LavertiaDashboardTest.php"
+
+            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
+              php -l "$file"
+            done
           done
       - name: Ensure generated files and public env examples are present
         run: |
@@ -108,7 +110,7 @@ jobs:
           php artisan key:generate --force
           php artisan optimize:clear
       - name: Test authenticated component protocol
-        run: php artisan test tests/Feature/LavertiaDashboardTest.php --compact
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
