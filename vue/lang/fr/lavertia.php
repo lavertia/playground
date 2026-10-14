@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title' => 'Vue d\'ensemble',
+    'description' => 'Explorez les mêmes composants PHP avec React, Vue et Svelte.',
+    'members' => 'Membres',
+    'sample' => 'Données de démonstration',
+    'active' => 'Actifs',
+    'invitations' => 'Invitations',
+    'stacks' => 'Frameworks frontend',
+    'directory' => 'Annuaire',
+    'search_hint' => 'Filtrer, masquer et réorganiser les colonnes par tableau.',
+    'status' => 'Statut',
+    'pending' => 'En attente',
+    'invited' => 'Invité',
+    'role' => 'Rôle',
+    'name' => 'Nom complet',
+    'form_demo' => 'Aperçu du formulaire',
+    'form_hint' => 'Champs interactifs uniquement côté client. Aucune sauvegarde n\'est activée.',
+    'notes' => 'Notes',
+    'notify' => 'Envoyer des notifications',
+    'workspace' => 'Espace de travail',
+    'model_demo' => 'Exemple Eloquent',
+    'model_hint' => 'Seul votre propre compte est visible, avec pagination côté serveur.',
+];

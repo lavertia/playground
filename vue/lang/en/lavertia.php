@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title' => 'Overview',
+    'description' => 'Explore the same PHP components with React, Vue, and Svelte.',
+    'members' => 'Team members',
+    'sample' => 'Illustrative data only',
+    'active' => 'Active',
+    'invitations' => 'Invitations',
+    'stacks' => 'Frontend stacks',
+    'directory' => 'Team directory',
+    'search_hint' => 'Filter, toggle and reorder columns; pagination stays isolated to each table.',
+    'status' => 'Status',
+    'pending' => 'Pending',
+    'invited' => 'Invited',
+    'role' => 'Role',
+    'name' => 'Full name',
+    'form_demo' => 'Form preview',
+    'form_hint' => 'Inputs are interactive locally. Persistence and validation are not enabled yet.',
+    'notes' => 'Notes',
+    'notify' => 'Send notifications',
+    'workspace' => 'Workspace details',
+    'model_demo' => 'Eloquent model example',
+    'model_hint' => 'This Eloquent table shows only your authenticated user record. Queries are authorized and server paginated.',
+];
