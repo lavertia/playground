@@ -1,0 +1,115 @@
+name: Playground CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Source validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+      - name: Validate Composer manifests and PHP
+        run: |
+          for stack in react vue svelte; do
+            composer validate "$stack/composer.json" --no-check-publish
+            php -l "$stack/app/Lavertia/Pages/DashboardPage.php"
+            php -l "$stack/tests/Feature/LavertiaDashboardTest.php"
+          done
+      - name: Ensure generated files and public env examples are present
+        run: |
+          test -f react/resources/js/pages/lavertia/page.tsx
+          test -f vue/resources/js/pages/lavertia/page.vue
+          test -f svelte/resources/js/pages/lavertia/page.svelte
+          for stack in react vue svelte; do
+            test -f "$stack/.env.example"
+            test ! -f "$stack/.env"
+          done
+
+  integration-gate:
+    name: Private package access
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.inspect.outputs.available }}
+    steps:
+      - name: Check for cross-repository token
+        id: inspect
+        env:
+          LAVERTIA_READ_TOKEN: ${{ secrets.LAVERTIA_READ_TOKEN }}
+        run: |
+          if [ -n "$LAVERTIA_READ_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Laravel integration tests are skipped until LAVERTIA_READ_TOKEN can read lavertia/support and lavertia/panels."
+          fi
+
+  integration:
+    name: Laravel + ${{ matrix.stack }}
+    needs: [static, integration-gate]
+    if: needs.integration-gate.outputs.available == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [react, vue, svelte]
+    defaults:
+      run:
+        working-directory: playground/${{ matrix.stack }}
+    steps:
+      - name: Checkout playground
+        uses: actions/checkout@v4
+        with:
+          path: playground
+      - name: Checkout support
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/support
+          ref: ${{ vars.LAVERTIA_SUPPORT_REF || 'feat/component-protocol-v1' }}
+          token: ${{ secrets.LAVERTIA_READ_TOKEN }}
+          path: support
+      - name: Checkout panels
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/panels
+          ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/filament-inspired-composable-ui' }}
+          token: ${{ secrets.LAVERTIA_READ_TOKEN }}
+          path: panels
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: playground/${{ matrix.stack }}/package-lock.json
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci --no-audit --no-fund
+      - name: Setup Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan optimize:clear
+      - name: Test authenticated component protocol
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php --compact
+      - name: Type-check frontend
+        run: npm run types:check
+      - name: Build frontend
+        run: npm run build

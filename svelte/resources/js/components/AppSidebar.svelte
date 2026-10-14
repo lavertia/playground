@@ -21,34 +21,35 @@
     import { dashboard } from '@/routes';
     import type { NavItem, Team } from '@/types';
 
-    let {
-        children,
-    }: {
-        children?: Snippet;
-    } = $props();
+    let { children }: { children?: Snippet } = $props();
 
     const currentTeam = $derived(page.props.currentTeam as Team | null);
-    const dashboardUrl = $derived(
+    const starterDashboard = $derived(
         currentTeam ? dashboard(currentTeam.slug) : '/',
     );
 
     const mainNavItems = $derived<NavItem[]>([
         {
-            title: 'Dashboard',
-            href: dashboardUrl,
+            title: 'Lavertia overview',
+            href: '/admin/dashboard',
             icon: LayoutGrid,
+        },
+        {
+            title: 'Starter dashboard',
+            href: starterDashboard,
+            icon: BookOpen,
         },
     ]);
 
     const footerNavItems: NavItem[] = [
         {
-            title: 'Repository',
-            href: 'https://github.com/laravel/svelte-starter-kit',
+            title: 'Source repository',
+            href: 'https://github.com/lavertia/playground',
             icon: FolderGit2,
         },
         {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#svelte',
+            title: 'Lavertia project',
+            href: 'https://github.com/lavertia/lavertia',
             icon: BookOpen,
         },
     ];
@@ -60,11 +61,7 @@
             <SidebarMenuItem>
                 <SidebarMenuButton size="lg" asChild>
                     {#snippet children(props)}
-                        <Link
-                            {...props}
-                            href={dashboardUrl}
-                            class={props.class}
-                        >
+                        <Link {...props} href="/admin/dashboard" class={props.class}>
                             <AppLogo />
                         </Link>
                     {/snippet}

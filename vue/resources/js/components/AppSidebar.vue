@@ -21,27 +21,32 @@ import type { NavItem } from '@/types';
 
 const page = usePage();
 
-const dashboardUrl = computed(() =>
+const starterDashboard = computed(() =>
     page.props.currentTeam ? dashboard(page.props.currentTeam.slug).url : '/',
 );
 
 const mainNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Dashboard',
-        href: dashboardUrl.value,
+        title: 'Lavertia overview',
+        href: '/admin/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Starter dashboard',
+        href: starterDashboard.value,
+        icon: BookOpen,
     },
 ]);
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
+        title: 'Source repository',
+        href: 'https://github.com/lavertia/playground',
         icon: FolderGit2,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: 'Lavertia project',
+        href: 'https://github.com/lavertia/lavertia',
         icon: BookOpen,
     },
 ];
@@ -53,7 +58,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboardUrl">
+                        <Link href="/admin/dashboard">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
