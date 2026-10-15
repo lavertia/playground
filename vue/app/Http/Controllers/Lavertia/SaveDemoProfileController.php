@@ -5,24 +5,25 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Lavertia;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Lavertia\SaveDemoProfileRequest;
+use App\Models\LavertiaDemoProfile;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 
 final class SaveDemoProfileController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(SaveDemoProfileRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'display_name' => ['required', 'string', 'max:100'],
-            'role' => ['required', Rule::in(['owner', 'editor'])],
-            'bio' => ['nullable', 'string', 'max:1000'],
-            'notify' => ['required', 'boolean'],
-        ]);
+        $user = $request->user();
+        $profile = $user->lavertiaDemoProfile;
 
-        // Scope the mutation through the authenticated user's relationship.
-        // Never trust a user_id or arbitrary model attributes from the payload.
-        $request->user()->lavertiaDemoProfile()->updateOrCreate([], [
+        Gate::authorize($profile === null ? 'create' : 'update', $profile ?? LavertiaDemoProfile::class);
+
+        $validated = $request->safe()->only(['display_name', 'role', 'bio', 'notify']);
+
+        // updateOrCreate is constrained by the authenticated user's HasOne
+        // relationship. The unique user_id database key handles racing inserts.
+        $user->lavertiaDemoProfile()->updateOrCreate([], [
             'display_name' => $validated['display_name'],
             'role' => $validated['role'],
             'bio' => $validated['bio'] ?? null,

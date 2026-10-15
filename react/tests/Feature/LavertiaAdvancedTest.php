@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Models\LavertiaDemoProfile;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('requires authentication for the model-backed page', function (): void {
@@ -132,4 +134,45 @@ it('serializes only the signed-in users saved profile into the form', function (
             ->where('lavertia.tree.components.3.components.0.components.2.props.value', 'A private biography')
             ->missing('lavertia.tree.components.3.components.0.components.0.props.user_id')
             ->etc());
+});
+
+it('refuses updates to a demo profile owned by another user', function (): void {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    $profile = $other->lavertiaDemoProfile()->create([
+        'display_name' => 'Protected data',
+        'role' => 'owner',
+        'notify' => true,
+    ]);
+
+    $this->actingAs($user);
+
+    expect(Gate::allows('update', $profile))->toBeFalse();
+    expect(Gate::allows('create', LavertiaDemoProfile::class))->toBeTrue();
+
+    $this->post('/admin/demo-profile', [
+        'user_id' => $other->getKey(),
+        'display_name' => 'My own profile',
+        'role' => 'editor',
+        'notify' => '0',
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('lavertia_demo_profiles', [
+        'id' => $profile->getKey(),
+        'display_name' => 'Protected data',
+        'role' => 'owner',
+    ]);
+});
+
+it('requires verified email for demo profile changes', function (): void {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)->post('/admin/demo-profile', [
+        'display_name' => 'Attempt',
+        'role' => 'editor',
+        'notify' => '0',
+    ])->assertRedirect(route('verification.notice'));
+
+    $this->assertDatabaseCount('lavertia_demo_profiles', 0);
 });

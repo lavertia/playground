@@ -21,7 +21,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::post('admin/demo-profile', SaveDemoProfileController::class)
-    ->middleware('auth')
+    ->middleware(['auth', 'verified'])
     ->name('lavertia.demo-profile.store');
 
 require __DIR__.'/settings.php';
