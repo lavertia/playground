@@ -105,3 +105,31 @@ it('updates the same user-scoped record instead of creating duplicates', functio
         'notify' => 1,
     ]);
 });
+
+it('serializes only the signed-in users saved profile into the form', function (): void {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    $user->lavertiaDemoProfile()->create([
+        'display_name' => 'Visible profile',
+        'role' => 'editor',
+        'bio' => 'A private biography',
+        'notify' => false,
+    ]);
+    $other->lavertiaDemoProfile()->create([
+        'display_name' => 'Hidden profile',
+        'role' => 'owner',
+        'bio' => 'Do not leak this',
+        'notify' => true,
+    ]);
+
+    $this->actingAs($user)->get('/admin/dashboard')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.3.components.0.type', 'form')
+            ->where('lavertia.tree.components.3.components.0.props.action', '/admin/demo-profile')
+            ->where('lavertia.tree.components.3.components.0.components.0.props.value', 'Visible profile')
+            ->where('lavertia.tree.components.3.components.0.components.2.props.value', 'A private biography')
+            ->missing('lavertia.tree.components.3.components.0.components.0.props.user_id')
+            ->etc());
+});
