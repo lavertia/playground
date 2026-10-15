@@ -51,9 +51,14 @@ jobs:
         run: |
           if [ -n "$LAVERTIA_READ_TOKEN" ]; then
             echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Using configured private package read token."
+          elif curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/support \
+            && curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/panels; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Repositories are public; using checkout's default token."
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Laravel integration tests are skipped until LAVERTIA_READ_TOKEN can read lavertia/support and lavertia/panels."
+            echo "::warning::Laravel integration was NOT executed. Configure LAVERTIA_READ_TOKEN while packages are private."
           fi
 
   integration:
@@ -77,15 +82,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/support
-          ref: ${{ vars.LAVERTIA_SUPPORT_REF || 'feat/component-protocol-v1' }}
-          token: ${{ secrets.LAVERTIA_READ_TOKEN }}
+          ref: ${{ vars.LAVERTIA_SUPPORT_REF || 'main' }}
+          token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
           path: support
       - name: Checkout panels
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
           ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/tables-forms-i18n-v02' }}
-          token: ${{ secrets.LAVERTIA_READ_TOKEN }}
+          token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
           path: panels
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
