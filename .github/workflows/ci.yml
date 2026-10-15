@@ -24,7 +24,7 @@ jobs:
           for stack in react vue svelte; do
             composer validate "$stack/composer.json" --no-check-publish
 
-            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
+            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
               php -l "$file"
             done
           done
@@ -84,7 +84,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/filament-inspired-composable-ui' }}
+          ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/tables-forms-i18n-v02' }}
           token: ${{ secrets.LAVERTIA_READ_TOKEN }}
           path: panels
       - name: Setup PHP

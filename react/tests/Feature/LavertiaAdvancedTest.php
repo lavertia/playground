@@ -36,3 +36,72 @@ it('supports Arabic locale and RTL direction on Lavertia pages', function (): vo
             ->where('lavertia.tree.components.0.props.title', 'نظرة عامة')
             ->etc());
 });
+
+it('requires auth before accepting a demo profile submission', function (): void {
+    $this->post('/admin/demo-profile', [
+        'display_name' => 'Guest',
+        'role' => 'editor',
+        'notify' => '0',
+    ])->assertRedirect(route('login'));
+});
+
+it('validates form input and never mass assigns untrusted user identifiers', function (): void {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    $this->actingAs($user)->post('/admin/demo-profile', [
+        'display_name' => 'Sara',
+        'role' => 'owner',
+        'bio' => 'Working on Lavertia',
+        'notify' => '1',
+        'user_id' => $other->id,
+        'is_admin' => true,
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('lavertia_demo_profiles', [
+        'user_id' => $user->id,
+        'display_name' => 'Sara',
+        'role' => 'owner',
+        'notify' => 1,
+    ]);
+    $this->assertDatabaseMissing('lavertia_demo_profiles', ['user_id' => $other->id]);
+});
+
+it('rejects invalid form values and does not write a demo profile', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post('/admin/demo-profile', [
+        'display_name' => '',
+        'role' => 'super-admin',
+        'bio' => str_repeat('x', 1001),
+        'notify' => 'unexpected',
+    ])->assertSessionHasErrors(['display_name', 'role', 'bio', 'notify']);
+
+    $this->assertDatabaseCount('lavertia_demo_profiles', 0);
+});
+
+it('updates the same user-scoped record instead of creating duplicates', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post('/admin/demo-profile', [
+        'display_name' => 'First',
+        'role' => 'editor',
+        'bio' => '',
+        'notify' => '0',
+    ])->assertRedirect();
+
+    $this->actingAs($user)->post('/admin/demo-profile', [
+        'display_name' => 'Updated',
+        'role' => 'owner',
+        'bio' => 'New value',
+        'notify' => '1',
+    ])->assertRedirect();
+
+    $this->assertDatabaseCount('lavertia_demo_profiles', 1);
+    $this->assertDatabaseHas('lavertia_demo_profiles', [
+        'user_id' => $user->id,
+        'display_name' => 'Updated',
+        'role' => 'owner',
+        'notify' => 1,
+    ]);
+});

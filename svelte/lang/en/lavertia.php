@@ -15,6 +15,7 @@ return [
     'invited' => 'Invited',
     'role' => 'Role',
     'name' => 'Full name',
+    'save_demo' => 'Save demo profile',
     'form_demo' => 'Form preview',
     'form_hint' => 'Inputs are interactive locally. Persistence and validation are not enabled yet.',
     'notes' => 'Notes',

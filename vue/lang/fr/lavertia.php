@@ -15,6 +15,7 @@ return [
     'invited' => 'Invité',
     'role' => 'Rôle',
     'name' => 'Nom complet',
+    'save_demo' => 'Enregistrer le profil de démonstration',
     'form_demo' => 'Aperçu du formulaire',
     'form_hint' => 'Champs interactifs uniquement côté client. Aucune sauvegarde n\'est activée.',
     'notes' => 'Notes',

@@ -38,6 +38,8 @@ final class DashboardPage extends Page
     /** @return list<Component> */
     protected function components(): array
     {
+        $profile = auth()->user()->lavertiaDemoProfile;
+
         return [
             PageHeader::make(__('lavertia.title'))
                 ->eyebrow('Lavertia / Playground')
@@ -109,11 +111,25 @@ final class DashboardPage extends Page
                 ->components([
                     Form::make('profile-preview')
                         ->label(__('lavertia.form_demo'))
+                        ->action('/admin/demo-profile')
+                        ->submitLabel(__('lavertia.save_demo'))
                         ->components([
-                            TextInput::make('display_name')->label(__('lavertia.name'))->placeholder('Demo name'),
-                            Select::make('role')->label(__('lavertia.role'))->options(['owner' => 'Owner', 'editor' => 'Editor']),
-                            Textarea::make('bio')->label(__('lavertia.notes'))->rows(3),
-                            Checkbox::make('notify')->label(__('lavertia.notify'))->checked(),
+                            TextInput::make('display_name')
+                                ->label(__('lavertia.name'))
+                                ->value($profile?->display_name ?? auth()->user()->name)
+                                ->required(),
+                            Select::make('role')
+                                ->label(__('lavertia.role'))
+                                ->options(['owner' => 'Owner', 'editor' => 'Editor'])
+                                ->value($profile?->role ?? 'editor')
+                                ->required(),
+                            Textarea::make('bio')
+                                ->label(__('lavertia.notes'))
+                                ->value($profile?->bio ?? '')
+                                ->rows(3),
+                            Checkbox::make('notify')
+                                ->label(__('lavertia.notify'))
+                                ->checked($profile?->notify ?? false),
                         ]),
                 ]),
 
