@@ -20,7 +20,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::post('admin/demo-profile', SaveDemoProfileController::class)
+Route::match(['post', 'put', 'patch'], 'admin/demo-profile', SaveDemoProfileController::class)
     ->middleware(['auth', 'verified'])
     ->name('lavertia.demo-profile.store');
 

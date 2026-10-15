@@ -176,3 +176,33 @@ it('requires verified email for demo profile changes', function (): void {
 
     $this->assertDatabaseCount('lavertia_demo_profiles', 0);
 });
+
+it('supports explicit patch and put submissions with Laravel validation', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->patch('/admin/demo-profile', [
+        'display_name' => 'Patched',
+        'role' => 'editor',
+        'notify' => '0',
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('lavertia_demo_profiles', [
+        'user_id' => $user->getKey(),
+        'display_name' => 'Patched',
+        'role' => 'editor',
+    ]);
+
+    $this->actingAs($user)->put('/admin/demo-profile', [
+        'display_name' => 'Replaced',
+        'role' => 'owner',
+        'notify' => '1',
+    ])->assertRedirect();
+
+    $this->assertDatabaseCount('lavertia_demo_profiles', 1);
+    $this->assertDatabaseHas('lavertia_demo_profiles', [
+        'user_id' => $user->getKey(),
+        'display_name' => 'Replaced',
+        'role' => 'owner',
+        'notify' => 1,
+    ]);
+});
