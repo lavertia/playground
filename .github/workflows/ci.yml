@@ -24,7 +24,7 @@ jobs:
           for stack in react vue svelte; do
             composer validate "$stack/composer.json" --no-check-publish
 
-            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
+            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Http/Requests/Lavertia/*.php "$stack"/app/Policies/Lavertia*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
               php -l "$file"
             done
           done
@@ -59,6 +59,8 @@ jobs:
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
             echo "::warning::Laravel integration was NOT executed. Configure LAVERTIA_READ_TOKEN while packages are private."
+            echo "## Laravel integration status: BLOCKED" >> "$GITHUB_STEP_SUMMARY"
+            echo "Private dependency access is unavailable. Source validation may pass, but Laravel/Pest/SSR integration was **not executed**." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   integration:
