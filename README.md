@@ -12,7 +12,7 @@ Each Starter Kit owns its normal Laravel authentication, Teams support, session 
 
 ## Local setup
 
-Clone three separate private repositories as **siblings**. The Composer path repositories in the applications rely on this layout:
+Clone the public Lavertia repositories as **siblings**. The Composer path repositories in the applications rely on this layout:
 
 ```text
 24- Lavertia/
@@ -24,12 +24,7 @@ Clone three separate private repositories as **siblings**. The Composer path rep
 └── support/
 ```
 
-Use matching feature branches while PRs are still open:
-
-```bash
-git -C support switch feat/component-protocol-v1
-git -C panels switch feat/filament-inspired-composable-ui
-```
+Use `support` on `main` and the tested Panels `main` branch, or a matching unmerged feature branch during development. Version tags and Packagist publishing are separate release gates.
 
 Each Laravel app resolves `lavertia/panels` and `lavertia/support` from `../../panels` and `../../support`. Install and configure separately:
 
@@ -75,18 +70,22 @@ For stronger cookie and CSRF isolation, use distinct local domains through Herd 
 
 ## CI
 
-The workflow is located at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) in this repository's root. Nested Starter Kit workflow files in `react/.github`, `vue/.github` and `svelte/.github` are examples only; GitHub does not automatically run them as workflows of the parent repository.
+The workflow is located at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) in this repository's root. Nested Starter Kit workflow files in `react/.github`, `vue/.github` and `svelte/.github` are examples only.
 
-- **Static job** runs without extra private-repository permissions.
-- **Integration job** clones the sibling private `lavertia/support` and `lavertia/panels` repositories and executes Laravel/Pest, frontend typecheck and production build for each stack.
-- **Required organization/repository secret:** `LAVERTIA_READ_TOKEN`, a **read-only fine-grained GitHub token** with Contents: Read permissions on `lavertia/support` and `lavertia/panels`. Configure it in `lavertia/playground` repository Actions secrets (or expose an organization secret to this repo).
-- Until the secret exists, the integration matrix is deliberately **skipped** with a notice rather than falsely claimed to be tested. Check the GitHub Actions job list.
-- Optional repository variables `LAVERTIA_SUPPORT_REF` and `LAVERTIA_PANELS_REF` override branch references. Point both to stable tags or `main` when the packages are merged/released.
+- **Static validation** checks the three source applications.
+- **Laravel integration** checks out public Support and Panels packages, runs Laravel/Pest tests, TypeScript checks, and production builds for React, Vue and Svelte.
+- **Release verification** refuses to treat skipped integration suites as successes. The complete source suite is regularly verified on GitHub Actions.
+- No private repository read token is required now that all source repositories are public. Use default read-only `GITHUB_TOKEN` checkout credentials.
+- `LAVERTIA_SUPPORT_REF` and `LAVERTIA_PANELS_REF` variables may select paired branches for in-progress integration work.
 
-Never commit `.env`, session cookies, databases or private keys. Local Composer path versions are intentionally experimental; replace them with tagged Composer dependencies before public package releases.
+Never commit `.env`, session cookies, databases or private keys. Local Composer path versions are intentionally experimental; replace them with versioned Composer releases only after the project's release gate approves tags.
 
 ## Reusing the panels design in a Starter Kit
 
 The versioned source of the frontend adapters is [lavertia/panels](https://github.com/lavertia/panels). When a renderer changes, the installed copies inside the Playground must be synchronized; after reviewing local changes, rerun `php artisan lavertia:install --stack=<react|vue|svelte> --force` inside the target app and rebuild assets.
 
 The design is inspired by admin UI layout conventions, but uses Lavertia's own PHP components and styling. It is not a Filament fork or drop-in replacement.
+
+## Open-source alpha security and license
+
+Report security vulnerabilities privately using [SECURITY.md](SECURITY.md). Lavertia-owned integration/example code is MIT licensed ([LICENSE.md](LICENSE.md)); upstream Laravel Starter Kits and dependencies retain their own licenses. Refer to the [release checklist](https://github.com/lavertia/lavertia/issues/3).
