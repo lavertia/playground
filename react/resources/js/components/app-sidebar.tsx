@@ -19,27 +19,32 @@ import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const page = usePage();
-    const dashboardUrl = page.props.currentTeam
+    const starterDashboard = page.props.currentTeam
         ? dashboard(page.props.currentTeam.slug)
         : '/';
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Dashboard',
-            href: dashboardUrl,
+            title: 'Lavertia overview',
+            href: '/admin/dashboard',
             icon: LayoutGrid,
+        },
+        {
+            title: 'Starter dashboard',
+            href: starterDashboard,
+            icon: BookOpen,
         },
     ];
 
     const footerNavItems: NavItem[] = [
         {
-            title: 'Repository',
-            href: 'https://github.com/laravel/react-starter-kit',
+            title: 'Source repository',
+            href: 'https://github.com/lavertia/playground',
             icon: FolderGit2,
         },
         {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#react',
+            title: 'Lavertia project',
+            href: 'https://github.com/lavertia/lavertia',
             icon: BookOpen,
         },
     ];
@@ -50,7 +55,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboardUrl} prefetch>
+                            <Link href="/admin/dashboard" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

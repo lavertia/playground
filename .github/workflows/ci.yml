@@ -1,0 +1,109 @@
+name: Playground CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Source validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+      - name: Validate Composer manifests and PHP
+        run: |
+          for stack in react vue svelte; do
+            composer validate "$stack/composer.json" --no-check-publish
+            php -l "$stack/app/Lavertia/Pages/DashboardPage.php"
+            php -l "$stack/tests/Feature/LavertiaDashboardTest.php"
+          done
+      - name: Ensure generated files and public env examples are present
+        run: |
+          test -f react/resources/js/pages/lavertia/page.tsx
+          test -f vue/resources/js/pages/lavertia/page.vue
+          test -f svelte/resources/js/pages/lavertia/page.svelte
+          for stack in react vue svelte; do
+            test -f "$stack/.env.example"
+            test ! -f "$stack/.env"
+          done
+
+  integration:
+    name: Laravel + ${{ matrix.stack }}
+    needs: static
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [react, vue, svelte]
+    defaults:
+      run:
+        working-directory: playground/${{ matrix.stack }}
+    steps:
+      - name: Checkout playground
+        uses: actions/checkout@v4
+        with:
+          path: playground
+      - name: Checkout support
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/support
+          ref: ${{ vars.LAVERTIA_SUPPORT_REF || 'main' }}
+          path: support
+      - name: Checkout panels
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/panels
+          ref: ${{ vars.LAVERTIA_PANELS_REF || 'main' }}
+          path: panels
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: playground/${{ matrix.stack }}/package-lock.json
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci --no-audit --no-fund
+      - name: Setup Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          test -f database/database.sqlite || touch database/database.sqlite
+          php artisan migrate --force
+          mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions
+          php artisan optimize:clear
+          php artisan wayfinder:generate --with-form
+      - name: Test authenticated component protocol
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php --compact
+      - name: Type-check frontend
+        run: npm run types:check
+      - name: Build frontend
+        run: npm run build
+
+  required:
+    name: Three-stack runtime verification
+    needs: [static, integration]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all Laravel runtime jobs to succeed
+        run: |
+          test "${{ needs.static.result }}" = "success"
+          test "${{ needs.integration.result }}" = "success"

@@ -1,42 +1,91 @@
 # Lavertia Playground
 
-Three independent Laravel 13 + Inertia Starter Kit applications for validating the [Lavertia](https://github.com/lavertia/lavertia) PHP-first component protocol on **React**, **Vue**, and **Svelte**.
+Three official Laravel 13 / Inertia 3 Starter Kit applications test the **same PHP-defined Lavertia component tree** using React, Vue and Svelte.
 
-| Stack | Directory |
-| --- | --- |
-| React 19 | [react](react/) |
-| Vue 3 | [vue](vue/) |
-| Svelte 5 | [svelte](svelte/) |
+| Stack | Directory | Local URL |
+| --- | --- | --- |
+| React 19 | [react](react/) | http://127.0.0.1:8002/admin/dashboard |
+| Vue 3 | [vue](vue/) | http://127.0.0.1:8001/admin/dashboard |
+| Svelte 5 | [svelte](svelte/) | http://127.0.0.1:8003/admin/dashboard |
 
-> **Alpha development fixture, not a production app or stable distribution.** The default branch contains the Starter Kit snapshots. Lavertia-specific work remains in draft pull requests.
+Each Starter Kit owns its normal Laravel authentication, Teams support, session and UI shell. Lavertia provides a PHP-first component protocol and adapters, with an amber-accent, Filament-inspired dashboard showcase.
 
-## Work in progress
+## Local setup
 
-- [PR #1 — UI renderer showcase](https://github.com/lavertia/playground/pull/1)
-- [PR #2 — authenticated forms, tables and integration scenarios](https://github.com/lavertia/playground/pull/2)
-- [PR #4 — canonical Forms/Tables package compatibility](https://github.com/lavertia/playground/pull/4)
+Clone the public Lavertia repositories as **siblings**. The Composer path repositories in the applications rely on this layout:
 
-The same PHP component tree must render consistently across all three stacks. End-to-end Laravel/Pest tests require `lavertia/support`, `lavertia/panels`, `lavertia/forms` and `lavertia/tables` checked out as sibling repositories on compatible feature refs while these PRs are unmerged. The CI integration matrix is **not verified** while the dependency access gate is skipped.
-
-Each app is a separate Laravel installation and must generate its own local `.env` and `APP_KEY`. Never publish `.env`, database files, access tokens, cookies or real customer data.
-
-## Development and verification
-
-From the chosen `react/`, `vue/` or `svelte/` directory, after the matching repositories are available:
-
-```bash
-composer install
-npm ci
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan test
-npm run types:check
-npm run build
+```text
+24- Lavertia/
+├── playground/
+│   ├── react/
+│   ├── vue/
+│   └── svelte/
+├── panels/
+└── support/
 ```
 
-If any of those commands fail, do not claim that stack is compatible. `composer install` may require a lockfile refresh and matching sibling package versions during pre-release development.
+Use `support` on `main` and the tested Panels `main` branch, or a matching unmerged feature branch during development. Version tags and Packagist publishing are separate release gates.
 
-## Security and licensing
+Each Laravel app resolves `lavertia/panels` and `lavertia/support` from `../../panels` and `../../support`. Install and configure separately:
 
-Report vulnerabilities privately via [SECURITY.md](SECURITY.md). The Lavertia integration/example code is MIT licensed; see [LICENSE.md](LICENSE.md). The Laravel Starter Kit, framework, and JavaScript dependencies retain their own copyright notices and licenses. This repository does not claim ownership of those upstream components.
+```bash
+for stack in vue react svelte; do
+  (
+    cd "$stack" || exit 1
+    composer install
+    npm ci
+    test -f .env || cp .env.example .env
+    php artisan key:generate
+    php artisan migrate
+    npm run build
+  ) || break
+done
+```
+
+Run in separate terminal windows from the repository root:
+
+```bash
+(cd vue && php artisan serve --port=8001)
+(cd react && php artisan serve --port=8002)
+(cd svelte && php artisan serve --port=8003)
+```
+
+These are three **independent** applications. Use unique session cookies in each `.env` because cookies are shared across ports on the same host:
+
+```text
+vue:    SESSION_COOKIE=lavertia_vue_session
+react:  SESSION_COOKIE=lavertia_react_session
+svelte: SESSION_COOKIE=lavertia_svelte_session
+```
+
+For stronger cookie and CSRF isolation, use distinct local domains through Herd or Valet. Configure each app's `APP_URL` to its actual host/port. Register or sign in to each Starter Kit before opening `/admin/dashboard`.
+
+## Current dashboard
+
+- PHP `PageHeader`, `StatsGrid`, `Stat`, `Section`, `Card`, `Table`, `TextColumn`, `Infolist`, `TextEntry`, `TextInput` and `Action` compose freely.
+- Matching React/Vue/Svelte renderers use Tailwind 4, semantic HTML, light/dark mode and keyboard focus styles.
+- Search and sorting work **locally** on the example table's 100-row maximum snapshot, with badge statuses and no server round trips.
+- The form field has local state **only**: no submit endpoint, persistence or Eloquent CRUD exists yet.
+- Dataset and KPI cards contain sample values **for layout testing**, not application analytics.
+
+## CI
+
+The workflow is located at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) in this repository's root. Nested Starter Kit workflow files in `react/.github`, `vue/.github` and `svelte/.github` are examples only.
+
+- **Static validation** checks the three source applications.
+- **Laravel integration** checks out public Support and Panels packages, runs Laravel/Pest tests, TypeScript checks, and production builds for React, Vue and Svelte.
+- **Release verification** refuses to treat skipped integration suites as successes. The complete source suite is regularly verified on GitHub Actions.
+- No private repository read token is required now that all source repositories are public. Use default read-only `GITHUB_TOKEN` checkout credentials.
+- `LAVERTIA_SUPPORT_REF` and `LAVERTIA_PANELS_REF` variables may select paired branches for in-progress integration work.
+
+Never commit `.env`, session cookies, databases or private keys. Local Composer path versions are intentionally experimental; replace them with versioned Composer releases only after the project's release gate approves tags.
+
+## Reusing the panels design in a Starter Kit
+
+The versioned source of the frontend adapters is [lavertia/panels](https://github.com/lavertia/panels). When a renderer changes, the installed copies inside the Playground must be synchronized; after reviewing local changes, rerun `php artisan lavertia:install --stack=<react|vue|svelte> --force` inside the target app and rebuild assets.
+
+The design is inspired by admin UI layout conventions, but uses Lavertia's own PHP components and styling. It is not a Filament fork or drop-in replacement.
+
+## Open-source alpha security and license
+
+Report security vulnerabilities privately using [SECURITY.md](SECURITY.md). Lavertia-owned integration/example code is MIT licensed ([LICENSE.md](LICENSE.md)); upstream Laravel Starter Kits and dependencies retain their own licenses. Refer to the [release checklist](https://github.com/lavertia/lavertia/issues/3).
