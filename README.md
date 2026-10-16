@@ -28,7 +28,7 @@ Clone the public Lavertia repositories as **siblings**. The Composer path reposi
 
 Use `support`, `panels`, `forms`, and `tables` on their tested public `main` branches. All four are experimental until approved version tags are published. Version tags and Packagist publishing are separate release gates.
 
-Each Laravel app resolves the four canonical Lavertia packages through sibling Composer path repositories. The v0.2 integration currently runs a targeted `composer update 'lavertia/*' --with-all-dependencies` before installing in CI; **committed Composer lockfiles still require refresh before release**. Configure each app separately:
+Each Laravel app resolves the four canonical Lavertia packages through sibling Composer path repositories. The v0.2 integration uses generated and committed Composer lockfiles for React, Vue and Svelte. CI now requires strict Composer manifest/lock validation and `composer install` against the four public canonical packages. Configure each app separately:
 
 ```bash
 for stack in vue react svelte; do
@@ -78,7 +78,7 @@ The workflow is located at [`.github/workflows/ci.yml`](.github/workflows/ci.yml
 - **Laravel integration** checks out public Support, Panels, Forms and Tables packages, runs Laravel/Pest tests, TypeScript checks, and production builds for React, Vue and Svelte.
 - **Release verification** refuses to treat skipped integration suites as successes. The complete source suite is regularly verified on GitHub Actions.
 - No private repository read token is required now that all source repositories are public. Use default read-only `GITHUB_TOKEN` checkout credentials.
-- Public-package integration tracks `main` in the CI workflow. Before tagging, regenerate/commit `composer.lock` per stack and change CI to require strict lockfile validation and `composer install` without implicit updates.
+- Public-package integration tracks `main` in the CI workflow. Composer lockfiles are committed and strict validation plus `composer install` now run in CI. Do not tag until manual QA and the version policy are approved.
 
 Never commit `.env`, session cookies, databases or private keys. Local Composer path versions are intentionally experimental; replace them with versioned Composer releases only after the project's release gate approves tags.
 
