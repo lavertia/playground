@@ -23,7 +23,7 @@ jobs:
       - name: Validate Composer manifests and PHP
         run: |
           for stack in react vue svelte; do
-            composer validate "$stack/composer.json" --no-check-publish
+            composer validate "$stack/composer.json" --no-check-publish --no-check-lock
 
             for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Http/Requests/Lavertia/*.php "$stack"/app/Policies/Lavertia*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
               php -l "$file"
@@ -54,7 +54,9 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Using configured private package read token."
           elif curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/support \
-            && curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/panels; then
+            && curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/panels \
+            && curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/forms \
+            && curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/tables; then
             echo "available=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Repositories are public; using checkout's default token."
           else
@@ -92,9 +94,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/tables-forms-i18n-v02' }}
+          ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/v02-package-integration' }}
           token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
           path: panels
+      - name: Checkout forms
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/forms
+          ref: feat/v02-canonical-descriptors
+          token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
+          path: forms
+      - name: Checkout tables
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/tables
+          ref: feat/v02-canonical-table-engine
+          token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
+          path: tables
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -110,7 +126,10 @@ jobs:
           cache-dependency-path: playground/${{ matrix.stack }}/package-lock.json
       - name: Install dependencies
         run: |
-          composer install --no-interaction --prefer-dist --no-progress
+          composer update 'lavertia/*' --with-all-dependencies --no-interaction --prefer-dist --no-progress
+          composer validate --no-check-publish
+          composer show lavertia/forms
+          composer show lavertia/tables
           npm ci --no-audit --no-fund
       - name: Setup Laravel
         run: |
@@ -118,7 +137,7 @@ jobs:
           php artisan key:generate --force
           php artisan optimize:clear
       - name: Test authenticated component protocol
-        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php --compact
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend

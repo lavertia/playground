@@ -116,25 +116,50 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "repositories": [{
-        "name": "lavertia-panels",
-        "type": "path",
-        "url": "../../panels",
-        "options": {
-            "symlink": true,
-            "versions": {
-                "lavertia/panels": "0.1.0"
+    "repositories": [
+        {
+            "name": "lavertia-panels",
+            "type": "path",
+            "url": "../../panels",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "lavertia/panels": "0.1.0"
+                }
+            }
+        },
+        {
+            "name": "lavertia-support",
+            "type": "path",
+            "url": "../../support",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "lavertia/support": "0.1.0"
+                }
+            }
+        },
+        {
+            "name": "lavertia-forms",
+            "type": "path",
+            "url": "../../forms",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "lavertia/forms": "0.2.0"
+                }
+            }
+        },
+        {
+            "name": "lavertia-tables",
+            "type": "path",
+            "url": "../../tables",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "lavertia/tables": "0.2.0"
+                }
             }
         }
-    },{
-        "name": "lavertia-support",
-        "type": "path",
-        "url": "../../support",
-        "options": {
-            "symlink": true,
-            "versions": {
-                "lavertia/support": "0.1.0"
-            }
-        }
-    }]
+    ]
 }
