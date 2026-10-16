@@ -39,35 +39,9 @@ jobs:
             test ! -f "$stack/.env"
           done
 
-  integration-gate:
-    name: Private package access
-    runs-on: ubuntu-latest
-    outputs:
-      available: ${{ steps.inspect.outputs.available }}
-    steps:
-      - name: Check for cross-repository token
-        id: inspect
-        env:
-          LAVERTIA_READ_TOKEN: ${{ secrets.LAVERTIA_READ_TOKEN }}
-        run: |
-          if [ -n "$LAVERTIA_READ_TOKEN" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::Using configured private package read token."
-          elif curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/support \
-            && curl -fsS --max-time 10 -o /dev/null https://api.github.com/repos/lavertia/panels; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::Repositories are public; using checkout's default token."
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Laravel integration was NOT executed. Configure LAVERTIA_READ_TOKEN while packages are private."
-            echo "## Laravel integration status: BLOCKED" >> "$GITHUB_STEP_SUMMARY"
-            echo "Private dependency access is unavailable. Source validation may pass, but Laravel/Pest/SSR integration was **not executed**." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
   integration:
     name: Laravel + ${{ matrix.stack }}
-    needs: [static, integration-gate]
-    if: needs.integration-gate.outputs.available == 'true'
+    needs: static
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -86,14 +60,12 @@ jobs:
         with:
           repository: lavertia/support
           ref: ${{ vars.LAVERTIA_SUPPORT_REF || 'main' }}
-          token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
           path: support
       - name: Checkout panels
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
           ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/tables-forms-i18n-v02' }}
-          token: ${{ secrets.LAVERTIA_READ_TOKEN || github.token }}
           path: panels
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -126,14 +98,13 @@ jobs:
 
   release-gate:
     name: v0 release verification
-    needs: [static, integration-gate, integration]
+    needs: [static, integration]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Reject skipped Laravel compatibility tests
         run: |
           if [ "${{ needs.static.result }}" != "success" ] \
-            || [ "${{ needs.integration-gate.outputs.available }}" != "true" ] \
             || [ "${{ needs.integration.result }}" != "success" ]; then
             echo "::error::v0 release blocked: React/Vue/Svelte Laravel integration must all succeed."
             exit 1
