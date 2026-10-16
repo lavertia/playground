@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ vars.LAVERTIA_PANELS_REF || 'feat/v02-package-integration' }}
+          ref: main
           path: panels
       - name: Checkout forms
         uses: actions/checkout@v4
