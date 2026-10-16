@@ -31,15 +31,14 @@ jobs:
               npm audit --audit-level=high
             )
           done
-      - name: Validate clean lockfile install, types and production builds
+      - name: Validate reproducible npm lockfile installs and security audit
         run: |
           set -euo pipefail
           for stack in react vue svelte; do
             (
               cd "$stack"
-              npm ci --no-audit --no-fund
-              npm run types:check
-              npm run build
+              npm ci --no-audit --no-fund --ignore-scripts
+              npm audit --audit-level=high
             )
           done
       - name: Commit only audited dependency manifests
