@@ -23,7 +23,7 @@ jobs:
       - name: Validate Composer manifests and PHP
         run: |
           for stack in react vue svelte; do
-            composer validate "$stack/composer.json" --no-check-publish --no-check-lock
+            composer validate "$stack/composer.json" --strict --no-check-publish
 
             for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Http/Requests/Lavertia/*.php "$stack"/app/Policies/Lavertia*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
               php -l "$file"
@@ -94,9 +94,8 @@ jobs:
           cache-dependency-path: playground/${{ matrix.stack }}/package-lock.json
       - name: Install dependencies
         run: |
-          composer update 'lavertia/*' --with-all-dependencies --no-scripts --no-interaction --prefer-dist --no-progress
-          php artisan package:discover --ansi
-          composer validate --no-check-publish
+          composer validate --strict --no-check-publish
+          composer install --no-interaction --prefer-dist --no-progress
           composer show lavertia/forms
           composer show lavertia/tables
           npm ci --no-audit --no-fund
