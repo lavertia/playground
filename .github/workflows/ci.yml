@@ -149,6 +149,19 @@ jobs:
     if: always() && startsWith(github.ref, 'refs/tags/v0.')
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout release source
+        uses: actions/checkout@v4
+      - name: Setup Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - name: Verify all three committed Composer lockfiles are current
+        run: |
+          for stack in react vue svelte; do
+            composer validate "$stack/composer.json" --strict --no-check-publish
+          done
       - name: Reject skipped Laravel compatibility tests
         run: |
           if [ "${{ needs.static.result }}" != "success" ] \
