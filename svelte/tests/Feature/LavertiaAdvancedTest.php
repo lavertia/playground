@@ -7,6 +7,10 @@ use App\Models\LavertiaDemoProfile;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia as Assert;
 
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
 it('requires authentication for the model-backed page', function (): void {
     $this->get('/admin/model-demo')->assertRedirect(route('login'));
 });

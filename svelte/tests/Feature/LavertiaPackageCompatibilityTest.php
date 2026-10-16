@@ -9,6 +9,10 @@ use Lavertia\Panels\Components\TextInput;
 use Lavertia\Panels\Components\TextColumn;
 use Lavertia\Tables\Components\Table as CanonicalTable;
 
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
 it('renders canonical standalone components from legacy Panels imports', function (): void {
     $form = LegacyForm::make('profile')
         ->components([TextInput::make('display_name')->required()]);
