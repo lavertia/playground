@@ -5,6 +5,10 @@ declare(strict_types=1);
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
 it('redirects guests away from the Lavertia dashboard', function (): void {
     $this->get('/admin/dashboard')->assertRedirect(route('login'));
 });
