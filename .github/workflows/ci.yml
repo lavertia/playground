@@ -83,9 +83,15 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, pdo_sqlite, sqlite3
+          extensions: mbstring, pdo_sqlite, sqlite3, pdo_pgsql
           coverage: none
           tools: composer:v2
+      - name: Start PostgreSQL for database portability checks
+        if: matrix.stack == 'react'
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+          sudo -u postgres createdb lavertia_test
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -110,6 +116,21 @@ jobs:
           php artisan wayfinder:generate --with-form
       - name: Test authenticated component protocol
         run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
+      - name: PostgreSQL authenticated feature tests
+        if: matrix.stack == 'react'
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '5432'
+          DB_DATABASE: lavertia_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+        run: |
+          php artisan config:clear
+          php artisan migrate:fresh --force
+          php artisan test tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
