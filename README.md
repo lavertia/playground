@@ -21,12 +21,14 @@ Clone the public Lavertia repositories as **siblings**. The Composer path reposi
 │   ├── vue/
 │   └── svelte/
 ├── panels/
-└── support/
+├── support/
+├── forms/
+└── tables/
 ```
 
-Use `support` on `main` and the tested Panels `main` branch, or a matching unmerged feature branch during development. Version tags and Packagist publishing are separate release gates.
+Use `support`, `panels`, `forms`, and `tables` on their tested public `main` branches. All four are experimental until approved version tags are published. Version tags and Packagist publishing are separate release gates.
 
-Each Laravel app resolves `lavertia/panels` and `lavertia/support` from `../../panels` and `../../support`. Install and configure separately:
+Each Laravel app resolves the four canonical Lavertia packages through sibling Composer path repositories. The v0.2 integration uses generated and committed Composer lockfiles for React, Vue and Svelte. CI now requires strict Composer manifest/lock validation and `composer install` against the four public canonical packages. Configure each app separately:
 
 ```bash
 for stack in vue react svelte; do
@@ -65,7 +67,7 @@ For stronger cookie and CSRF isolation, use distinct local domains through Herd 
 - PHP `PageHeader`, `StatsGrid`, `Stat`, `Section`, `Card`, `Table`, `TextColumn`, `Infolist`, `TextEntry`, `TextInput` and `Action` compose freely.
 - Matching React/Vue/Svelte renderers use Tailwind 4, semantic HTML, light/dark mode and keyboard focus styles.
 - Search and sorting work **locally** on the example table's 100-row maximum snapshot, with badge statuses and no server round trips.
-- The form field has local state **only**: no submit endpoint, persistence or Eloquent CRUD exists yet.
+- The v0.2 demo includes a guarded form endpoint with validation, a user-owned Eloquent model and a Policy. Forms without explicit actions remain local previews.
 - Dataset and KPI cards contain sample values **for layout testing**, not application analytics.
 
 ## CI
@@ -73,10 +75,10 @@ For stronger cookie and CSRF isolation, use distinct local domains through Herd 
 The workflow is located at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) in this repository's root. Nested Starter Kit workflow files in `react/.github`, `vue/.github` and `svelte/.github` are examples only.
 
 - **Static validation** checks the three source applications.
-- **Laravel integration** checks out public Support and Panels packages, runs Laravel/Pest tests, TypeScript checks, and production builds for React, Vue and Svelte.
+- **Laravel integration** checks out public Support, Panels, Forms and Tables packages, runs Laravel/Pest tests, TypeScript checks, and production builds for React, Vue and Svelte.
 - **Release verification** refuses to treat skipped integration suites as successes. The complete source suite is regularly verified on GitHub Actions.
 - No private repository read token is required now that all source repositories are public. Use default read-only `GITHUB_TOKEN` checkout credentials.
-- `LAVERTIA_SUPPORT_REF` and `LAVERTIA_PANELS_REF` variables may select paired branches for in-progress integration work.
+- Public-package integration tracks `main` in the CI workflow. Composer lockfiles are committed and strict validation plus `composer install` now run in CI. Do not tag until manual QA and the version policy are approved.
 
 Never commit `.env`, session cookies, databases or private keys. Local Composer path versions are intentionally experimental; replace them with versioned Composer releases only after the project's release gate approves tags.
 
