@@ -3,6 +3,7 @@ name: Playground CI
 on:
   push:
     branches: [main, "feat/**"]
+    tags: ["v0.*"]
   pull_request:
 
 permissions:
@@ -22,9 +23,11 @@ jobs:
       - name: Validate Composer manifests and PHP
         run: |
           for stack in react vue svelte; do
-            composer validate "$stack/composer.json" --no-check-publish
-            php -l "$stack/app/Lavertia/Pages/DashboardPage.php"
-            php -l "$stack/tests/Feature/LavertiaDashboardTest.php"
+            composer validate "$stack/composer.json" --strict --no-check-publish
+
+            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Http/Requests/Lavertia/*.php "$stack"/app/Policies/Lavertia*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
+              php -l "$file"
+            done
           done
       - name: Ensure generated files and public env examples are present
         run: |
@@ -62,15 +65,33 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ vars.LAVERTIA_PANELS_REF || 'main' }}
+          ref: main
           path: panels
+      - name: Checkout forms
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/forms
+          ref: main
+          path: forms
+      - name: Checkout tables
+        uses: actions/checkout@v4
+        with:
+          repository: lavertia/tables
+          ref: main
+          path: tables
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, pdo_sqlite, sqlite3
+          extensions: mbstring, pdo_sqlite, sqlite3, pdo_pgsql
           coverage: none
           tools: composer:v2
+      - name: Start PostgreSQL for database portability checks
+        if: matrix.stack == 'react'
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+          sudo -u postgres createdb lavertia_test
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -79,7 +100,10 @@ jobs:
           cache-dependency-path: playground/${{ matrix.stack }}/package-lock.json
       - name: Install dependencies
         run: |
+          composer validate --strict --no-check-publish
           composer install --no-interaction --prefer-dist --no-progress
+          composer show lavertia/forms
+          composer show lavertia/tables
           npm ci --no-audit --no-fund
       - name: Setup Laravel
         run: |
@@ -91,19 +115,54 @@ jobs:
           php artisan optimize:clear
           php artisan wayfinder:generate --with-form
       - name: Test authenticated component protocol
-        run: php artisan test tests/Feature/LavertiaDashboardTest.php --compact
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
+      - name: PostgreSQL authenticated feature tests
+        if: matrix.stack == 'react'
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '5432'
+          DB_DATABASE: lavertia_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+        run: |
+          php artisan config:clear
+          php artisan migrate:fresh --force
+          php artisan test tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
         run: npm run build
 
-  required:
-    name: Three-stack runtime verification
+  release-gate:
+    name: v0 release verification
     needs: [static, integration]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Require all Laravel runtime jobs to succeed
+      - name: Checkout release source
+        if: startsWith(github.ref, 'refs/tags/v0.')
+        uses: actions/checkout@v4
+      - name: Setup Composer
+        if: startsWith(github.ref, 'refs/tags/v0.')
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - name: Verify all three committed Composer lockfiles are current
+        if: startsWith(github.ref, 'refs/tags/v0.')
         run: |
-          test "${{ needs.static.result }}" = "success"
-          test "${{ needs.integration.result }}" = "success"
+          for stack in react vue svelte; do
+            composer validate "$stack/composer.json" --strict --no-check-publish
+          done
+      - name: Reject skipped Laravel compatibility tests
+        run: |
+          if [ "${{ needs.static.result }}" != "success" ] \
+            || [ "${{ needs.integration.result }}" != "success" ]; then
+            echo "::error::v0 release blocked: React/Vue/Svelte Laravel integration must all succeed."
+            exit 1
+          fi
+          echo "All three-stack Laravel tests passed for this tag."
