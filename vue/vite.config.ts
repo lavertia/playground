@@ -10,7 +10,16 @@ export default defineConfig({
     plugins: lazyPlugins(() => [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
-            refresh: true,
+            // Full-page refresh when Laravel / module PHP code changes in development.
+            // Vite handles JS/CSS HMR separately; this is not a PHP runtime hot swap.
+            refresh: [
+                'app/**/*.php',
+                'app-modules/*/src/**/*.php',
+                'lang/**',
+                'resources/lang/**',
+                'resources/views/**',
+                'routes/**',
+            ],
             fonts: [
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
