@@ -34,6 +34,9 @@ jobs:
           for stack in react vue svelte; do
             test -f "$stack/.env.example"
             test ! -f "$stack/.env"
+            # All three Starter Kits must respond to PHP Page and module edits.
+            grep -Fq "'app/**/*.php'" "$stack/vite.config.ts"
+            grep -Fq "'app-modules/*/src/**/*.php'" "$stack/vite.config.ts"
           done
 
   integration:
