@@ -74,6 +74,12 @@ Saving one of those files triggers a **Vite full-browser refresh**, so the brows
 
 For a module in a custom directory, extend the `refresh` paths in that Starter Kit's `vite.config.ts`. Changes to module discovery, Composer autoload or provider registration may also require `composer dump-autoload` and `php artisan optimize:clear`. Never run the Vite development server in production.
 
+## v0.3 modular navigation and dashboard widgets
+
+The three Starter Kits demonstrate the opt-in v0.3 navigation sidebar with Dashboard, Inventory and Model demo Pages. Dashboard also appends an explicitly registered sample DashboardWidget. All Inventory values are illustrative. Navigation links are scoped to registered Lavertia Pages within the authenticated admin Panel, and the entire UI reuses Component Protocol v1.
+
+Modules using `internachi/modular` can register their own NavigationItem and DashboardWidget without editing the host application's Panel configuration; see the [v0.3 Panels guide](https://github.com/lavertia/panels/blob/main/docs/V03.md). For config-defined navigation, use plain arrays to remain compatible with `config:cache`. This Playground keeps sample Pages in `app/Lavertia` for simplicity; real Composer PSR-4 module discovery is covered by Panels integration CI.
+
 ## Current dashboard
 
 - PHP `PageHeader`, `StatsGrid`, `Stat`, `Section`, `Card`, `Table`, `TextColumn`, `Infolist`, `TextEntry`, `TextInput` and `Action` compose freely.

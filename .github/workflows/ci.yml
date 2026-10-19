@@ -25,7 +25,7 @@ jobs:
           for stack in react vue svelte; do
             composer validate "$stack/composer.json" --strict --no-check-publish
 
-            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Http/Requests/Lavertia/*.php "$stack"/app/Policies/Lavertia*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
+            for file in "$stack"/app/Lavertia/Pages/*.php "$stack"/app/Lavertia/Widgets/*.php "$stack"/app/Http/Controllers/Lavertia/*.php "$stack"/app/Http/Requests/Lavertia/*.php "$stack"/app/Policies/Lavertia*.php "$stack"/app/Models/LavertiaDemoProfile.php "$stack"/database/migrations/*lavertia_demo_profiles* "$stack"/tests/Feature/Lavertia*.php "$stack"/lang/{en,ar,fr}/lavertia.php; do
               php -l "$file"
             done
           done
@@ -118,7 +118,7 @@ jobs:
           php artisan optimize:clear
           php artisan wayfinder:generate --with-form
       - name: Test authenticated component protocol
-        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php tests/Feature/LavertiaV03NavigationTest.php --compact
       - name: PostgreSQL authenticated feature tests
         if: matrix.stack == 'react'
         env:
@@ -134,6 +134,13 @@ jobs:
           php artisan config:clear
           php artisan migrate:fresh --force
           php artisan test tests/Feature/LavertiaAdvancedTest.php tests/Feature/LavertiaPackageCompatibilityTest.php --compact
+      - name: Verify v0.3 navigation after Laravel config and route caching
+        if: matrix.stack == 'react'
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan test tests/Feature/LavertiaV03NavigationTest.php --compact
+          php artisan optimize:clear
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
