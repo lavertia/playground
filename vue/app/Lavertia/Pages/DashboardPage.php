@@ -20,6 +20,7 @@ use Lavertia\Panels\Components\TextColumn;
 use Lavertia\Panels\Components\TextEntry;
 use Lavertia\Panels\Components\TextInput;
 use Lavertia\Panels\Pages\Page;
+use Lavertia\Panels\PanelRegistry;
 use Lavertia\Support\Components\Card;
 use Lavertia\Support\Contracts\Component;
 
@@ -145,6 +146,8 @@ final class DashboardPage extends Page
                         Action::make('model')->label(__('lavertia.model_demo'))->appearance('primary')->url('/admin/model-demo'),
                     ]),
                 ]),
+
+            ...app(PanelRegistry::class)->dashboardComponents('admin'),
         ];
     }
 }
