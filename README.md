@@ -60,6 +60,18 @@ svelte: SESSION_COOKIE=lavertia_svelte_session
 
 For stronger cookie and CSRF isolation, use distinct local domains through Herd or Valet. Configure each app's `APP_URL` to its actual host/port. Register or sign in to each Starter Kit before opening `/admin/dashboard`.
 
+## Automatic PHP refresh during development
+
+Run `npm run dev` **inside** the React, Vue or Svelte Starter Kit while its Laravel app is running. All three `vite.config.ts` files now watch:
+
+- `app/**/*.php`: PHP Pages, Widgets, controllers and other application code.
+- `app-modules/*/src/**/*.php`: Composer-backed Laravel modules, including `internachi/modular` Pages.
+- Default Laravel watch areas: views, translations and routes.
+
+Saving one of those files triggers a **Vite full-browser refresh**, so the browser fetches a freshly rendered Inertia component tree from Laravel. JavaScript/TypeScript and CSS retain their existing Vite HMR behavior. This is **not** server-side PHP runtime hot swapping or partial Inertia state preservation.
+
+For a module in a custom directory, extend the `refresh` paths in that Starter Kit's `vite.config.ts`. Changes to module discovery, Composer autoload or provider registration may also require `composer dump-autoload` and `php artisan optimize:clear`. Never run the Vite development server in production.
+
 ## Current dashboard
 
 - PHP `PageHeader`, `StatsGrid`, `Stat`, `Section`, `Card`, `Table`, `TextColumn`, `Infolist`, `TextEntry`, `TextInput` and `Action` compose freely.
