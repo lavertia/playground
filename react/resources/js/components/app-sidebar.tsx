@@ -68,7 +68,7 @@ export function AppSidebar() {
             collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
             variant={panel?.sidebarVariant ?? 'inset'}
             side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
-            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b' } as React.CSSProperties}
+            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' } as React.CSSProperties}
         >
             <SidebarHeader>
                 <SidebarMenu>
@@ -89,7 +89,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {panelGroups.map((group) => (
+                {(panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) && panelGroups.map((group) => (
                     <SidebarGroup className="px-2 py-0" key={group.label}>
                         <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                         <SidebarMenu>
