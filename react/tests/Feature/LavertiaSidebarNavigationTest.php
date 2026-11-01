@@ -10,13 +10,14 @@ beforeEach(function (): void {
 });
 
 it('shows the registered admin panel links in the existing host sidebar', function (): void {
+    $expected = count(app(\Lavertia\Panels\PanelRegistry::class)->navigation('admin', 'lavertia.admin.dashboard'));
     $this->actingAs(User::factory()->create())
         ->get('/admin/dashboard')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('lavertia/page')
-            ->has('lavertia.navigation', 4)
-            ->has('lavertiaSidebar', 4)
+            ->has('lavertia.navigation', $expected)
+            ->has('lavertiaSidebar', $expected)
             ->where('lavertiaSidebar.0.slug', 'dashboard')
             ->where('lavertiaSidebar.0.active', true)
             ->where('lavertiaSidebar.0.url', '/admin/dashboard')
@@ -26,6 +27,11 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaPanel.brandSubtitle', 'Playground')
             ->where('lavertiaPanel.primaryColor', '#f59e0b')
             ->where('lavertiaPanel.sidebarVariant', 'inset')
+            ->where('lavertiaPanel.globalSearch', true)
+            ->where('lavertiaPanel.notifications', true)
+            ->where('lavertiaPanel.tenantSwitcher', true)
+            ->where('lavertiaPanel.footerLinks.0.label', 'Source repository')
+            ->where('lavertiaPanel.userMenuLinks.0.label', 'Lavertia documentation')
             ->etc());
 });
 
