@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Lavertia;
 
+use Lavertia\Panels\Navigation\NavigationItem;
 use Lavertia\Panels\Panel;
 use Lavertia\Panels\Http\Middleware\ResolveLocale;
 use Lavertia\Panels\PanelProvider;
@@ -19,6 +20,17 @@ final class AdminPanelProvider extends PanelProvider
             ->brandSubtitle('Playground')
             ->primaryColor('#f59e0b')
             ->sidebarVariant('inset')
-            ->sidebarCollapsible();
+            ->sidebarCollapsible()
+            ->themeMode('system')
+            ->contentWidth('full')
+            ->sidebarWidth('18rem')
+            ->navigationPosition('sidebar')
+            ->topbar()
+            ->breadcrumbs()
+            ->mobileNavigation()
+            ->pages([\App\Lavertia\Pages\DashboardPage::class])
+            ->navigationItems([
+                NavigationItem::make('dashboard', 'Dashboard'),
+            ]);
     }
 }

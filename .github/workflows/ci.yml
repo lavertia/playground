@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ (github.head_ref == 'feat/panel-provider-configurable-starter-kit' || github.ref_name == 'feat/panel-provider-configurable-starter-kit') && 'feat/panel-provider-configurable-starter-kit' || vars.LAVERTIA_PANELS_REF || 'main' }}
+          ref: ${{ (github.head_ref == 'feat/provider-first-panel-runtime' || github.ref_name == 'feat/provider-first-panel-runtime') && 'feat/provider-first-panel-runtime' || vars.LAVERTIA_PANELS_REF || 'main' }}
           path: panels
       - name: Checkout Forms
         uses: actions/checkout@v4

@@ -17,11 +17,19 @@
     let {
         defaultOpen = true,
         dir = 'ltr',
+        panelWidth = '18rem',
+        panelRadius = '0.5rem',
+        panelFont = 'inherit',
+        themeMode = 'system',
         class: className = '',
         children,
     }: {
         defaultOpen?: boolean;
         dir?: 'ltr' | 'rtl';
+        panelWidth?: string;
+        panelRadius?: string;
+        panelFont?: string;
+        themeMode?: string;
         class?: string;
         children?: Snippet;
     } = $props();
@@ -97,7 +105,8 @@
     <div
         data-slot="sidebar-wrapper"
         {dir}
-        style={`--sidebar-width: ${SIDEBAR_WIDTH}; --sidebar-width-icon: ${SIDEBAR_WIDTH_ICON};`}
+        data-panel-theme={themeMode}
+        style={`--sidebar-width: ${panelWidth}; --sidebar-width-icon: ${SIDEBAR_WIDTH_ICON}; --radius: ${panelRadius}; font-family: ${panelFont};`}
         class={cn(
             'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full',
             className,

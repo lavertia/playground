@@ -49,12 +49,28 @@ class HandleInertiaRequests extends Middleware
             // The existing Starter Kit Sidebar is the single navigation surface.
             // Share the PanelRegistry's navigation on every authenticated Inertia page.
             // Safe, declarative Panel appearance. The Starter Kit renders it.
-            'lavertiaPanel' => fn (): ?array => auth()->check()
-                ? app(\Lavertia\Panels\PanelRegistry::class)->appearance('admin')
-                : null,
-            'lavertiaSidebar' => fn (): array => auth()->check()
-                ? app(\Lavertia\Panels\PanelRegistry::class)->navigation('admin', $request->route()?->getName())
-                : [],
+            'lavertiaPanel' => function () use ($request): ?array {
+                if (! auth()->check()) {
+                    return null;
+                }
+
+                $registry = app(\Lavertia\Panels\PanelRegistry::class);
+                $panelId = $registry->panelForRoute($request->route()?->getName());
+
+                return $panelId !== null ? $registry->appearance($panelId) : null;
+            },
+            'lavertiaSidebar' => function () use ($request): array {
+                if (! auth()->check()) {
+                    return [];
+                }
+
+                $registry = app(\Lavertia\Panels\PanelRegistry::class);
+                $panelId = $registry->panelForRoute($request->route()?->getName());
+
+                return $panelId !== null
+                    ? $registry->navigation($panelId, $request->route()?->getName())
+                    : [];
+            },
             // Resolve locale from the request directly. Inertia's shared props
             // are prepared before the Page-level ResolveLocale middleware runs.
             'lavertiaSidebarDirection' => function () use ($request): string {

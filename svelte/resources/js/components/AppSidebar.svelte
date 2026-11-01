@@ -78,7 +78,7 @@
     collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
     variant={panel?.sidebarVariant ?? 'inset'}
     side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
-    style={`--sidebar-primary: ${panel?.primaryColor ?? '#f59e0b'}; --sidebar-primary-foreground: ${panel?.primaryForeground ?? '#111827'};`}
+    style={`--sidebar-primary: ${panel?.primaryColor ?? '#f59e0b'}; --sidebar-primary-foreground: ${panel?.primaryForeground ?? '#111827'}; --sidebar-width: ${panel?.sidebarWidth ?? '18rem'};`}
 >
     <SidebarHeader>
         <SidebarMenu>
@@ -101,7 +101,7 @@
 
     <SidebarContent>
         <NavMain items={mainNavItems} />
-        {#each panelGroups as group (group.label)}
+        {#each ((panel?.navigationPosition !== 'top' || $isMobile) && (panel?.mobileNavigation !== false || !$isMobile) ? panelGroups : []) as group (group.label)}
             <SidebarGroup class="px-2 py-0">
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                 <SidebarMenu>
