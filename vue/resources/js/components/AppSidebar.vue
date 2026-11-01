@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FileText, LayoutGrid, Link2 } from '@lucide/vue';
+import {
+    Bell, BookOpen, Briefcase, Calendar, ChartColumn, FileChartColumn, FileText,
+    Folder, House, LayoutDashboard, LayoutGrid, Link2, List, Receipt, Settings,
+    Shield, Users, Wallet,
+} from '@lucide/vue';
 import { computed } from 'vue';
+import type { Component } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -22,6 +27,25 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
+
+const navigationIcons: Record<string, Component> = {
+    bell: Bell,
+    'book-open': BookOpen,
+    briefcase: Briefcase,
+    calendar: Calendar,
+    'chart-column': ChartColumn,
+    'file-chart-column': FileChartColumn,
+    'file-text': FileText,
+    folder: Folder,
+    house: House,
+    'layout-dashboard': LayoutDashboard,
+    list: List,
+    receipt: Receipt,
+    settings: Settings,
+    shield: Shield,
+    users: Users,
+    wallet: Wallet,
+};
 
 const page = usePage();
 const panel = computed(() => page.props.lavertiaPanel as PanelAppearance | null | undefined);
@@ -98,9 +122,9 @@ const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []
                         <SidebarMenuButton as-child :is-active="item.active" :tooltip="item.label">
                             <Link :href="item.url" :aria-current="item.active ? 'page' : undefined"
                                 @click="isMobile && setOpenMobile(false)">
-                                <LayoutGrid v-if="item.slug === 'dashboard'" class="size-4 shrink-0" />
-                                <FileText v-else class="size-4 shrink-0" />
-                                <span>{{ item.label }}</span>
+                                <component :is="navigationIcons[item.icon ?? ''] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText)" class="size-4 shrink-0" aria-hidden="true" />
+                                <span class="truncate">{{ item.label }}</span>
+                                <span v-if="item.badge" class="ms-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">{{ item.badge }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

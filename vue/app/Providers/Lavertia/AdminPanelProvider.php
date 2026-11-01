@@ -45,7 +45,7 @@ final class AdminPanelProvider extends PanelProvider
             ->mobileNavigation()
             ->pages([\App\Lavertia\Pages\DashboardPage::class])
             ->navigationItems([
-                NavigationItem::make('dashboard', 'Dashboard'),
+                NavigationItem::make('dashboard', 'Dashboard')->icon('layout-dashboard')->badge('Demo'),
             ]);
     }
 }
