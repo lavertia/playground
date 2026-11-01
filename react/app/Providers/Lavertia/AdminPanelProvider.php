@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Lavertia;
 
 use Lavertia\Panels\Panel;
+use Lavertia\Panels\Http\Middleware\ResolveLocale;
 use Lavertia\Panels\PanelProvider;
 
 final class AdminPanelProvider extends PanelProvider
@@ -13,6 +14,7 @@ final class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
+            ->middleware(['web', 'auth', ResolveLocale::class])
             ->brandName('Lavertia')
             ->brandSubtitle('Playground')
             ->primaryColor('#f59e0b')
