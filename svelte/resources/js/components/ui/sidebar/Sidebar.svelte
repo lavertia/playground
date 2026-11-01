@@ -15,12 +15,14 @@
         variant = 'sidebar',
         collapsible = 'offcanvas',
         class: className = '',
+        style: styleValue = '',
         children,
     }: {
         side?: 'left' | 'right';
         variant?: 'sidebar' | 'floating' | 'inset';
         collapsible?: 'offcanvas' | 'icon' | 'none';
         class?: string;
+        style?: string;
         children?: Snippet;
     } = $props();
 
@@ -30,6 +32,7 @@
 {#if collapsible === 'none'}
     <div
         data-slot="sidebar"
+        style={styleValue}
         class={cn('bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col', className)}
     >
         {@render children?.()}
@@ -53,7 +56,7 @@
                     side === 'left' ? 'left-0 border-r' : 'right-0 border-l',
                     className,
                 )}
-                style={`--sidebar-width: ${SIDEBAR_WIDTH_MOBILE};`}
+                style={`--sidebar-width: ${SIDEBAR_WIDTH_MOBILE}; ${styleValue}`}
                 transition:fly={{ x: side === 'left' ? -320 : 320, duration: 300, opacity: 1, easing: cubicOut }}
             >
                 <div class="flex h-full w-full flex-col">
@@ -67,6 +70,7 @@
         class="group peer text-sidebar-foreground hidden md:block"
         data-slot="sidebar"
         data-state={$state}
+        style={styleValue}
         data-collapsible={$state === 'collapsed' ? collapsible : ''}
         data-variant={variant}
         data-side={side}
