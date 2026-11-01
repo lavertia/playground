@@ -6,13 +6,14 @@ import AppLogo from '@/components/AppLogo.vue';
 import TeamSwitcher from '@/components/TeamSwitcher.vue';
 import PanelSearch from '@/components/PanelSearch.vue';
 import PanelNotifications from '@/components/PanelNotifications.vue';
+import PanelLocaleSwitcher from '@/components/PanelLocaleSwitcher.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
 import type { BreadcrumbItem } from '@/types';
 
 const props = withDefaults(
-    defineProps<{ breadcrumbs?: BreadcrumbItem[] }>(),
-    { breadcrumbs: () => [] },
+    defineProps<{ breadcrumbs?: BreadcrumbItem[]; showSidebarTrigger?: boolean }>(),
+    { breadcrumbs: () => [], showSidebarTrigger: true },
 );
 
 const page = usePage();
@@ -31,7 +32,7 @@ const resolvedBreadcrumbs = computed(() => {
         :class="{ 'sticky top-0 z-30 bg-background/95 backdrop-blur': panel?.stickyHeader }"
     >
         <div class="flex min-w-0 items-center gap-2">
-            <SidebarTrigger class="-ms-1" aria-label="Toggle navigation" />
+            <SidebarTrigger v-if="props.showSidebarTrigger" class="-ms-1" aria-label="Toggle navigation" />
             <Link v-if="panel?.brandLogoDisplay !== 'hidden' && (panel?.brandLogoPlacement === 'topbar' || panel?.brandLogoPlacement === 'both')"
                 href="/admin/dashboard" class="flex items-center gap-2 rounded-md p-1 hover:bg-accent" :aria-label="panel?.brandName">
                 <AppLogo compact />
@@ -44,7 +45,7 @@ const resolvedBreadcrumbs = computed(() => {
         <nav
             v-if="panel?.navigationPosition === 'top' && panel?.topbar !== false"
             aria-label="Panel navigation"
-            class="ms-auto hidden min-w-0 flex-wrap items-center gap-1 md:flex"
+            class="order-3 flex w-full min-w-0 flex-wrap items-center gap-1 md:order-none md:ms-auto md:w-auto"
         >
             <Link
                 v-for="item in links"
@@ -57,6 +58,7 @@ const resolvedBreadcrumbs = computed(() => {
         </nav>
         <div v-if="panel?.topbar !== false" class="ms-auto flex shrink-0 items-center gap-1">
             <TeamSwitcher v-if="panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar'" :in-header="true" />
+            <PanelLocaleSwitcher />
             <PanelSearch v-if="panel?.globalSearch === true" />
             <PanelNotifications v-if="panel?.notifications === true" />
         </div>

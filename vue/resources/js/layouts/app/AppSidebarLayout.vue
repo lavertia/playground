@@ -6,6 +6,7 @@ import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import PanelLocaleSwitcher from '@/components/PanelLocaleSwitcher.vue';
 import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItem } from '@/types';
 
@@ -19,14 +20,26 @@ withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const maxWidths: Record<string, string> = { sm: '40rem', md: '48rem', lg: '64rem', xl: '80rem', '2xl': '96rem', full: 'none' };
+const panel = computed(() => page.props.lavertiaPanel as PanelAppearance | null | undefined);
 const contentMaxWidth = computed(() => {
-    const panel = page.props.lavertiaPanel as PanelAppearance | null | undefined;
-    return maxWidths[panel?.contentWidth ?? 'full'];
+    return maxWidths[panel.value?.contentWidth ?? 'full'];
 });
 </script>
 
 <template>
-    <AppShell variant="sidebar">
+    <div v-if="panel?.layout === 'full'" class="relative min-h-screen w-full" data-panel-layout="full">
+        <div v-if="panel.languageSwitcher" class="absolute end-4 top-4 z-20"><PanelLocaleSwitcher /></div>
+        <slot />
+        <Toaster />
+    </div>
+    <AppShell v-else-if="panel?.layout === 'top'" variant="header">
+        <AppSidebarHeader :breadcrumbs="breadcrumbs" :show-sidebar-trigger="false" />
+        <AppContent variant="header" class="min-w-0 w-full max-w-none overflow-x-clip">
+            <div class="mx-auto w-full min-w-0 flex-1" :style="{ maxWidth: contentMaxWidth }"><slot /></div>
+        </AppContent>
+        <Toaster />
+    </AppShell>
+    <AppShell v-else variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />

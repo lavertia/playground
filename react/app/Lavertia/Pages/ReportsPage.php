@@ -17,6 +17,12 @@ final class ReportsPage extends Page
         return 'reports';
     }
 
+    /** A Page may override its Panel's sidebar-only layout. */
+    public static function layout(): ?string
+    {
+        return 'top';
+    }
+
     public static function title(): string
     {
         return 'Reports';

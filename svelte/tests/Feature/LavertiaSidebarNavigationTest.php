@@ -26,6 +26,10 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaSidebar.0.badge', 'Demo')
             ->where('lavertiaSidebarDirection', 'ltr')
             ->where('lavertiaPanel.id', 'admin')
+            ->where('lavertiaPanel.layout', 'sidebar')
+            ->where('lavertiaPanel.languageSwitcher', true)
+            ->where('lavertiaPanel.locale', 'en')
+            ->where('lavertiaPanel.supportedLocales', ['en', 'ar', 'fr'])
             ->where('lavertiaPanel.brandName', 'Lavertia')
             ->where('lavertiaPanel.brandSubtitle', 'Playground')
             ->where('lavertiaPanel.primaryColor', '#f59e0b')
@@ -46,8 +50,11 @@ it('resolves Arabic RTL on the first response for host and Lavertia Page', funct
     $this->actingAs(User::factory()->create())
         ->get('/admin/dashboard?lang=ar')
         ->assertOk()
+        ->assertSee('lang="ar" dir="rtl"', false)
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertiaSidebarDirection', 'rtl')
+            ->where('lavertiaPanel.locale', 'ar')
+            ->where('lavertiaPanel.direction', 'rtl')
             ->where('lavertia.direction', 'rtl')
             ->etc());
 });

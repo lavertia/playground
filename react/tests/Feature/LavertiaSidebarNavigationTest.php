@@ -25,6 +25,10 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaSidebar.0.badge', null)
             ->where('lavertiaSidebarDirection', 'ltr')
             ->where('lavertiaPanel.id', 'admin')
+            ->where('lavertiaPanel.layout', 'sidebar')
+            ->where('lavertiaPanel.languageSwitcher', true)
+            ->where('lavertiaPanel.locale', 'en')
+            ->where('lavertiaPanel.supportedLocales', ['en', 'ar', 'fr'])
             ->where('lavertiaPanel.brandName', 'Lavertia')
             ->where('lavertiaPanel.brandSubtitle', 'Playground')
             ->where('lavertiaPanel.primaryColor', '#f59e0b')
@@ -52,6 +56,30 @@ it('serializes Reports PageHeader breadcrumb tabs and Action', function (): void
             ->etc());
 });
 
+it('allows a Page to override navigation into top or full shell layouts', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/admin/reports')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertiaPanel.layout', 'top')
+            ->where('lavertiaPanel.navigationPosition', 'top')
+            ->etc());
+
+    $this->actingAs($user)
+        ->get('/admin/fullscreen-demo?lang=ar')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertiaPanel.layout', 'full')
+            ->where('lavertiaPanel.navigationPosition', 'none')
+            ->where('lavertiaPanel.supportedLocales', ['en', 'ar'])
+            ->where('lavertiaPanel.languageSwitcher', true)
+            ->where('lavertia.locale', 'ar')
+            ->where('lavertia.direction', 'rtl')
+            ->etc());
+});
+
 it('does not expose authenticated panel links to guests', function (): void {
     $this->get('/login')
         ->assertOk()
@@ -65,8 +93,11 @@ it('resolves Arabic RTL on the first response for host and Lavertia Page', funct
     $this->actingAs(User::factory()->create())
         ->get('/admin/dashboard?lang=ar')
         ->assertOk()
+        ->assertSee('lang="ar" dir="rtl"', false)
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertiaSidebarDirection', 'rtl')
+            ->where('lavertiaPanel.locale', 'ar')
+            ->where('lavertiaPanel.direction', 'rtl')
             ->where('lavertia.direction', 'rtl')
             ->etc());
 });

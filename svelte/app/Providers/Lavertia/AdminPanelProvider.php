@@ -16,6 +16,8 @@ final class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->middleware(['web', 'auth', ResolveLocale::class])
+            ->locales(['en', 'ar', 'fr'])
+            ->defaultLocale('en')
             ->brandName('Lavertia')
             ->brandSubtitle('Playground')
             ->brandLogoDisplay('full')
