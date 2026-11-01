@@ -16,7 +16,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function NavUser() {
-    const { auth, currentTeam } = usePage().props;
+    const { auth, currentTeam, lavertiaSidebarDirection } = usePage().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
 
@@ -41,7 +41,7 @@ export function NavUser() {
                             isMobile
                                 ? 'bottom'
                                 : state === 'collapsed'
-                                  ? 'left'
+                                  ? (lavertiaSidebarDirection === 'rtl' ? 'right' : 'left')
                                   : 'bottom'
                         }
                     >
