@@ -19,7 +19,7 @@ export function PanelLocaleSwitcher() {
                 value={panel.locale}
                 onChange={event => router.visit(localeUrl(page.url, event.target.value), { preserveScroll: true })}
             >
-                {panel.supportedLocales.map(code => (
+                {(panel.supportedLocales ?? []).map(code => (
                     <option key={code} value={code}>{localeLabel(code, panel.locale ?? 'en')}</option>
                 ))}
             </select>
