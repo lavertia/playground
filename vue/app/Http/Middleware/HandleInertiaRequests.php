@@ -101,17 +101,13 @@ class HandleInertiaRequests extends Middleware
                     ? $registry->navigation($panelId, $request->route()?->getName())
                     : [];
             },
-            // Resolve locale from the request directly. Inertia's shared props
-            // are prepared before the Page-level ResolveLocale middleware runs.
             'lavertiaSidebarDirection' => function () use ($request): string {
-                $locale = $request->query('lang');
+                $registry = app(\\Lavertia\\Panels\\PanelRegistry::class);
+                $panelId = $registry->panelForRoute($request->route()?->getName());
 
-                if (! is_string($locale) || ! in_array($locale, ['en', 'ar', 'fr'], true)) {
-                    $locale = $request->session()->get('lavertia_locale', config('app.locale', 'en'));
-                }
-
-                return in_array($locale, ['ar', 'fa', 'he', 'ur'], true) ? 'rtl' : 'ltr';
-            },
-        ];
+                return $panelId !== null
+                    ? \\Lavertia\\Panels\\Localization\\LocaleContext::resolve($request, $registry, $panelId)['direction']
+                    : \\Lavertia\\Panels\\Localization\\LocaleContext::direction((string) config('app.locale', 'en'));
+            },        ];
     }
 }
