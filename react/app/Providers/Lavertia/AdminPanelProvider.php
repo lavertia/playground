@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers\Lavertia;
 
+use App\Themes\PlaygroundTheme;
+use Lavertia\Panels\Navigation\NavigationGroup;
 use Lavertia\Panels\Navigation\NavigationItem;
+use Lavertia\Panels\Navigation\NavigationSlot;
 use Lavertia\Panels\Panel;
 use Lavertia\Panels\Http\Middleware\ResolveLocale;
 use Lavertia\Panels\PanelProvider;
@@ -18,6 +21,7 @@ final class AdminPanelProvider extends PanelProvider
             ->middleware(['web', 'auth', ResolveLocale::class])
             ->locales(['en', 'ar', 'fr'])
             ->defaultLocale('en')
+            ->theme(new PlaygroundTheme)
             ->brandName('Lavertia')
             ->brandSubtitle('Playground')
             ->brandLogoDisplay('full')
@@ -49,6 +53,31 @@ final class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 ['label' => 'Lavertia', 'sort' => 0],
                 ['label' => 'Management', 'sort' => 10, 'collapsible' => true, 'collapsedByDefault' => true],
+            ])
+            ->shellSlots([
+                NavigationSlot::make('quick-top')
+                    ->position('topbar')
+                    ->components([
+                        NavigationItem::make('workspace-demo', 'Workspace')->icon('layout-dashboard'),
+                    ]),
+                NavigationSlot::make('module-rail')
+                    ->position('icon-rail')
+                    ->components([
+                        NavigationItem::make('workspace-demo', 'Workspace')->icon('layout-dashboard'),
+                    ]),
+                NavigationSlot::make('context-tools')
+                    ->position('context')
+                    ->components([
+                        NavigationGroup::make('Workspace tools')
+                            ->components([
+                                NavigationItem::make('fullscreen-demo', 'Fullscreen')->icon('house'),
+                            ]),
+                    ]),
+                NavigationSlot::make('quick-footer')
+                    ->position('footer')
+                    ->components([
+                        NavigationItem::make('workspace-demo', 'Workspace')->icon('layout-dashboard'),
+                    ]),
             ])
             ->navigationItems([
                 NavigationItem::make('dashboard', 'Dashboard')->icon('layout-dashboard'),
