@@ -1,9 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
-import { createElement } from 'react';
+import { createElement, useState } from 'react';
 import {
     Bell, BookOpen, Briefcase, Calendar, ChartColumn, FileChartColumn, FileText,
     Folder, House, LayoutDashboard, LayoutGrid, Link2, List, Receipt, Settings,
-    Shield, Users, Wallet,
+    Shield, Users, Wallet, ChevronDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -25,7 +25,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
-import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
+import { panelNavigationGroups } from '@/components/lavertia/types';
+import type { NavigationLink, NavigationGroupView, PanelAppearance } from '@/components/lavertia/types';
 
 const navigationIcons: Record<string, LucideIcon> = {
     bell: Bell,
@@ -45,6 +46,50 @@ const navigationIcons: Record<string, LucideIcon> = {
     users: Users,
     wallet: Wallet,
 };
+
+function PanelNavGroup({ group }: { group: NavigationGroupView }) {
+    const { state, isMobile, setOpenMobile } = useSidebar();
+    const [open, setOpen] = useState(!group.collapsedByDefault);
+    const expanded = !group.collapsible || group.active || open || (state === 'collapsed' && !isMobile);
+
+    return (
+        <SidebarGroup className="px-2 py-0">
+            <SidebarGroupLabel>
+                {group.collapsible ? (
+                    <button type="button" className="flex w-full items-center justify-between gap-2 text-start focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring group-data-[collapsible=icon]:hidden"
+                        aria-expanded={expanded} onClick={() => setOpen(value => !value)}>
+                        <span className="truncate">{group.label}</span>
+                        <ChevronDown aria-hidden="true" className={`size-3.5 shrink-0 transition-transform ${expanded ? '' : '-rotate-90'}`} />
+                    </button>
+                ) : group.label}
+            </SidebarGroupLabel>
+            {expanded && (
+                <SidebarMenu>
+                    {group.items.map(item => (
+                        <SidebarMenuItem key={item.slug}>
+                            <SidebarMenuButton asChild isActive={item.active} tooltip={{ children: item.label }}
+                                className={item.parentSlug ? 'ps-5 group-data-[collapsible=icon]:ps-0' : undefined}>
+                                <Link href={item.url} aria-current={item.active ? 'page' : undefined} prefetch
+                                    onClick={() => { if (isMobile) setOpenMobile(false); }}>
+                                    {createElement(navigationIcons[item.icon ?? ''] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText), {
+                                        'aria-hidden': true,
+                                        className: 'size-4 shrink-0',
+                                    })}
+                                    <span className="truncate">{item.label}</span>
+                                    {item.badge && (
+                                        <span className="ms-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">
+                                            {item.badge}
+                                        </span>
+                                    )}
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            )}
+        </SidebarGroup>
+    );
+}
 
 export function AppSidebar() {
     const page = usePage();
@@ -67,13 +112,7 @@ export function AppSidebar() {
         },
     ];
 
-    const panelGroups = panelLinks.reduce<Array<{ label: string; items: NavigationLink[] }>>((groups, item) => {
-        const label = item.group || 'Lavertia';
-        const group = groups.find((entry) => entry.label === label);
-        if (group) group.items.push(item);
-        else groups.push({ label, items: [item] });
-        return groups;
-    }, []);
+    const panelGroups = panelNavigationGroups(panelLinks, panel?.navigationGroups);
 
     const footerNavItems: NavItem[] = (panel?.footerLinks ?? []).map((item) => ({
         title: item.label,
@@ -114,35 +153,8 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {(panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) && panelGroups.map((group) => (
-                    <SidebarGroup className="px-2 py-0" key={group.label}>
-                        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-                        <SidebarMenu>
-                            {group.items.map((item) => (
-                                <SidebarMenuItem key={item.slug}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        isActive={item.active}
-                                        tooltip={{ children: item.label }}
-                                    >
-                                        <Link href={item.url} aria-current={item.active ? 'page' : undefined} prefetch
-                                            onClick={() => { if (isMobile) setOpenMobile(false); }}>
-                                            {createElement(navigationIcons[item.icon ?? ''] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText), {
-                                                'aria-hidden': true,
-                                                className: 'size-4 shrink-0',
-                                            })}
-                                            <span className="truncate">{item.label}</span>
-                                            {item.badge && (
-                                                <span className="ms-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">
-                                                    {item.badge}
-                                                </span>
-                                            )}
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroup>
+                {(panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) && panelGroups.map(group => (
+                    <PanelNavGroup key={group.label} group={group} />
                 ))}
             </SidebarContent>
 
