@@ -24,6 +24,7 @@
     import NavFooter from '@/components/NavFooter.svelte';
     import NavMain from '@/components/NavMain.svelte';
     import NavUser from '@/components/NavUser.svelte';
+    import ShellNavigationSlots from '@/components/ShellNavigationSlots.svelte';
     import TeamSwitcher from '@/components/TeamSwitcher.svelte';
     import {
         Sidebar,
@@ -133,6 +134,8 @@
             </SidebarMenuItem>
         </SidebarMenu>
         {/if}
+        <ShellNavigationSlots position="tenant" />
+        <ShellNavigationSlots position="icon-rail" />
     </SidebarHeader>
 
     <SidebarContent>
@@ -174,9 +177,11 @@
                 {/if}
             </SidebarGroup>
         {/each}
+        <ShellNavigationSlots position="sidebar" />
     </SidebarContent>
 
     <SidebarFooter>
+        <ShellNavigationSlots position="footer" />
         {#if footerNavItems.length > 0}
             <NavFooter items={footerNavItems} />
         {/if}
