@@ -51,6 +51,8 @@ class HandleInertiaRequests extends Middleware
             'lavertiaSidebar' => fn (): array => $user
                 ? app(\Lavertia\Panels\PanelRegistry::class)->navigation('admin', $request->route()?->getName())
                 : [],
+            'lavertiaSidebarDirection' => fn (): string => in_array(app()->getLocale(), ['ar', 'fa', 'he', 'ur'], true)
+                ? 'rtl' : 'ltr',
         ];
     }
 }
