@@ -17,12 +17,14 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import type { NavigationLink } from '@/components/lavertia/types';
 
 const page = usePage();
+const { isMobile, setOpenMobile } = useSidebar();
 
 const starterDashboard = computed(() =>
     page.props.currentTeam ? dashboard(page.props.currentTeam.slug).url : '/',
@@ -90,7 +92,8 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenu>
                     <SidebarMenuItem v-for="item in group.items" :key="item.slug">
                         <SidebarMenuButton as-child :is-active="item.active" :tooltip="item.label">
-                            <Link :href="item.url" :aria-current="item.active ? 'page' : undefined">
+                            <Link :href="item.url" :aria-current="item.active ? 'page' : undefined"
+                                @click="isMobile && setOpenMobile(false)">
                                 <LayoutGrid v-if="item.slug === 'dashboard'" class="size-4 shrink-0" />
                                 <FileText v-else class="size-4 shrink-0" />
                                 <span>{{ item.label }}</span>
