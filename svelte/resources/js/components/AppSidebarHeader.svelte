@@ -1,6 +1,10 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
     import Breadcrumbs from '@/components/Breadcrumbs.svelte';
+    import AppLogo from '@/components/AppLogo.svelte';
+    import TeamSwitcher from '@/components/TeamSwitcher.svelte';
+    import PanelSearch from '@/components/PanelSearch.svelte';
+    import PanelNotifications from '@/components/PanelNotifications.svelte';
     import { SidebarTrigger } from '@/components/ui/sidebar';
     import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
     import type { BreadcrumbItem } from '@/types';
@@ -19,6 +23,10 @@
 >
     <div class="flex min-w-0 items-center gap-2">
         <SidebarTrigger class="-ms-1" />
+        {#if panel?.brandLogoDisplay !== 'hidden' && (panel?.brandLogoPlacement === 'topbar' || panel?.brandLogoPlacement === 'both')}
+            <Link href="/admin/dashboard" aria-label={panel?.brandName}
+                class="flex items-center gap-2 rounded-md p-1 hover:bg-accent"><AppLogo compact /></Link>
+        {/if}
         {#if panel?.breadcrumbs !== false && panel?.topbar !== false}
             <Breadcrumbs breadcrumbs={resolvedBreadcrumbs} />
         {/if}
@@ -31,5 +39,18 @@
                 >{item.label}</Link>
             {/each}
         </nav>
+    {/if}
+    {#if panel?.topbar !== false}
+        <div class="ms-auto flex shrink-0 items-center gap-1">
+            {#if panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar'}
+                <TeamSwitcher inHeader />
+            {/if}
+            {#if panel?.globalSearch}
+                <PanelSearch />
+            {/if}
+            {#if panel?.notifications}
+                <PanelNotifications />
+            {/if}
+        </div>
     {/if}
 </header>
