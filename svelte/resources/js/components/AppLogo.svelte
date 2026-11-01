@@ -7,8 +7,9 @@
     let subtitle = $derived(panel?.brandSubtitle ?? 'Playground');
 </script>
 
-<div class="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black text-gray-950 shadow-sm ring-1 ring-black/10"
-    style:background-color={panel?.primaryColor ?? '#f59e0b'}>
+<div class="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black shadow-sm ring-1 ring-black/10"
+    style:background-color={panel?.primaryColor ?? '#f59e0b'}
+    style:color={panel?.primaryForeground ?? '#111827'}>
     {#if panel?.brandLogo}
         <img src={panel.brandLogo} alt="" class="size-full object-contain" />
     {:else}
