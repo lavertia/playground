@@ -44,8 +44,11 @@ final class AdminPanelProvider extends PanelProvider
             ->breadcrumbs()
             ->mobileNavigation()
             ->pages([\App\Lavertia\Pages\DashboardPage::class])
+            ->navigationGroups([
+                ['label' => 'Workspace', 'sort' => 0, 'collapsible' => true, 'collapsedByDefault' => false],
+            ])
             ->navigationItems([
-                NavigationItem::make('dashboard', 'Dashboard')->icon('layout-dashboard')->badge('Demo'),
+                NavigationItem::make('dashboard', 'Dashboard')->icon('layout-dashboard')->badge('Demo')->group('Workspace'),
             ]);
     }
 }
