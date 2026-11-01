@@ -18,9 +18,9 @@ export default function AppSidebarLayout({
             <AppSidebar />
             <AppContent variant="sidebar" className="min-w-0 overflow-x-clip">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <main className="mx-auto w-full min-w-0 flex-1" style={{ maxWidth: maxWidths[panel?.contentWidth ?? 'full'] }}>
+                <div className="mx-auto w-full min-w-0 flex-1" style={{ maxWidth: maxWidths[panel?.contentWidth ?? 'full'] }}>
                     {children}
-                </main>
+                </div>
             </AppContent>
         </AppShell>
     );
