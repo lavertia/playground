@@ -34,7 +34,12 @@
         currentTeam ? dashboard(currentTeam.slug) : '/',
     );
 
+    let panelLinks = $derived((page.props.lavertiaSidebar ?? []) as NavigationLink[]);
+
     const mainNavItems = $derived<NavItem[]>([
+        ...(!panelLinks.some((item) => item.slug === 'dashboard')
+            ? [{ title: 'Lavertia overview', href: '/admin/dashboard', icon: LayoutGrid }]
+            : []),
         {
             title: 'Starter dashboard',
             href: starterDashboard,
@@ -43,7 +48,7 @@
     ]);
 
     let panelGroups = $derived.by(() => {
-        const links = (page.props.lavertiaSidebar ?? []) as NavigationLink[];
+        const links = panelLinks;
         const groups: Array<{ label: string; items: NavigationLink[] }> = [];
         for (const item of links) {
             const label = item.group || 'Lavertia';
