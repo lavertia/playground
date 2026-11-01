@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers\Lavertia;
 
+use App\Themes\PlaygroundTheme;
+use Lavertia\Panels\Navigation\NavigationGroup;
 use Lavertia\Panels\Navigation\NavigationItem;
+use Lavertia\Panels\Navigation\NavigationSlot;
 use Lavertia\Panels\Panel;
 use Lavertia\Panels\Http\Middleware\ResolveLocale;
 use Lavertia\Panels\PanelProvider;
@@ -18,6 +21,7 @@ final class AdminPanelProvider extends PanelProvider
             ->middleware(['web', 'auth', ResolveLocale::class])
             ->locales(['en', 'ar', 'fr'])
             ->defaultLocale('en')
+            ->theme(new PlaygroundTheme)
             ->brandName('Lavertia')
             ->brandSubtitle('Playground')
             ->brandLogoDisplay('full')
