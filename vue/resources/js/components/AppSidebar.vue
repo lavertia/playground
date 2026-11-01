@@ -11,6 +11,7 @@ import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+import ShellNavigationSlots from '@/components/ShellNavigationSlots.vue';
 import TeamSwitcher from '@/components/TeamSwitcher.vue';
 import {
     Sidebar,
@@ -114,6 +115,8 @@ const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []
                     <TeamSwitcher />
                 </SidebarMenuItem>
             </SidebarMenu>
+            <ShellNavigationSlots position="tenant" />
+            <ShellNavigationSlots position="icon-rail" />
         </SidebarHeader>
 
         <SidebarContent>
@@ -140,9 +143,11 @@ const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarGroup>
+            <ShellNavigationSlots position="sidebar" />
         </SidebarContent>
 
         <SidebarFooter>
+            <ShellNavigationSlots position="footer" />
             <NavFooter v-if="footerNavItems.length" :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
