@@ -18,7 +18,7 @@
     class={`flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-sidebar-border/70 px-4 py-2 md:px-6 ${panel?.stickyHeader ? 'sticky top-0 z-30 bg-background/95 backdrop-blur' : ''}`}
 >
     <div class="flex min-w-0 items-center gap-2">
-        <SidebarTrigger class="-ms-1" aria-label="Toggle navigation" />
+        <SidebarTrigger class="-ms-1" />
         {#if panel?.breadcrumbs !== false && panel?.topbar !== false}
             <Breadcrumbs breadcrumbs={resolvedBreadcrumbs} />
         {/if}
