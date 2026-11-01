@@ -78,7 +78,7 @@
     collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
     variant={panel?.sidebarVariant ?? 'inset'}
     side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
-    style:--sidebar-primary={panel?.primaryColor ?? '#f59e0b'}
+    style={`--sidebar-primary: ${panel?.primaryColor ?? '#f59e0b'}; --sidebar-primary-foreground: ${panel?.primaryForeground ?? '#111827'};`}
 >
     <SidebarHeader>
         <SidebarMenu>
