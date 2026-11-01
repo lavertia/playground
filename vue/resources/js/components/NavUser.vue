@@ -44,7 +44,7 @@ const currentTeam = computed(() => page.props.currentTeam as Team | null);
                         isMobile
                             ? 'bottom'
                             : state === 'collapsed'
-                              ? 'left'
+                              ? (page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left')
                               : 'bottom'
                     "
                     align="end"

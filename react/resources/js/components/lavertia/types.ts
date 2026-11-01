@@ -15,15 +15,41 @@ export interface NavigationLink {
     active: boolean;
 }
 
+export interface PanelMenuLink {
+    label: string;
+    url: string;
+    external: boolean;
+}
+
 export interface PanelAppearance {
     id: string;
     brandName: string;
     brandSubtitle: string;
     brandLogo: string | null;
+    brandLogoDisplay: 'full' | 'icon' | 'hidden';
+    brandLogoPlacement: 'sidebar' | 'topbar' | 'both';
+    tenantSwitcher: boolean;
+    tenantSwitcherPlacement: 'sidebar' | 'topbar';
+    globalSearch: boolean;
+    notifications: boolean;
+    footerLinks: PanelMenuLink[];
+    userMenuLinks: PanelMenuLink[];
+    userMenuSettings: boolean;
+    userMenuLogout: boolean;
     primaryColor: string;
     primaryForeground: string;
     sidebarCollapsible: boolean;
     sidebarVariant: 'inset' | 'sidebar' | 'floating';
+    themeMode: 'light' | 'dark' | 'system';
+    fontFamily: string;
+    borderRadius: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+    contentWidth: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+    sidebarWidth: string;
+    navigationPosition: 'sidebar' | 'top';
+    topbar: boolean;
+    breadcrumbs: boolean;
+    stickyHeader: boolean;
+    mobileNavigation: boolean;
 }
 
 export interface LavertiaPayload {

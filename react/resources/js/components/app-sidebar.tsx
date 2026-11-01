@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FileText, FolderGit2, LayoutGrid } from 'lucide-react';
+import { BookOpen, FileText, LayoutGrid, Link2 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -50,46 +50,46 @@ export function AppSidebar() {
         return groups;
     }, []);
 
-    const footerNavItems: NavItem[] = [
-        {
-            title: 'Source repository',
-            href: 'https://github.com/lavertia/playground',
-            icon: FolderGit2,
-        },
-        {
-            title: 'Lavertia project',
-            href: 'https://github.com/lavertia/lavertia',
-            icon: BookOpen,
-        },
-    ];
+    const footerNavItems: NavItem[] = (panel?.footerLinks ?? []).map((item) => ({
+        title: item.label,
+        href: item.url,
+        icon: Link2,
+    }));
+
+    const logoInSidebar = panel?.brandLogoDisplay !== 'hidden'
+        && (panel?.brandLogoPlacement ?? 'sidebar') !== 'topbar';
 
     return (
         <Sidebar
             collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
             variant={panel?.sidebarVariant ?? 'inset'}
             side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
-            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b' } as React.CSSProperties}
+            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' } as React.CSSProperties}
         >
             <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href="/admin/dashboard" prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <TeamSwitcher />
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                {logoInSidebar && (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size="lg" asChild tooltip={{ children: panel?.brandName ?? 'Lavertia' }}>
+                                <Link href="/admin/dashboard" prefetch>
+                                    <AppLogo />
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
+                {panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement !== 'topbar' && (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <TeamSwitcher />
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
             </SidebarHeader>
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {panelGroups.map((group) => (
+                {(panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) && panelGroups.map((group) => (
                     <SidebarGroup className="px-2 py-0" key={group.label}>
                         <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                         <SidebarMenu>
@@ -114,7 +114,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {footerNavItems.length > 0 && <NavFooter items={footerNavItems} className="mt-auto" />}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

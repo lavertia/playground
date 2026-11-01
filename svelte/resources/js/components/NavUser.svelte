@@ -42,7 +42,7 @@
             <DropdownMenuContent
                 class="w-full min-w-0 rounded-lg"
                 side={$sidebarState === 'collapsed' && !$isMobile
-                    ? 'left'
+                    ? (page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left')
                     : 'top'}
                 align="end"
                 sideOffset={4}

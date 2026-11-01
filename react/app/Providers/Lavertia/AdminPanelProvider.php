@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers\Lavertia;
 
-use Lavertia\Panels\Http\Middleware\ResolveLocale;
 use Lavertia\Panels\Navigation\NavigationItem;
 use Lavertia\Panels\Panel;
+use Lavertia\Panels\Http\Middleware\ResolveLocale;
 use Lavertia\Panels\PanelProvider;
 
 final class AdminPanelProvider extends PanelProvider
@@ -15,55 +15,40 @@ final class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
-            ->path('admin')
-            ->middleware([
-                'web',
-                'auth',
-                ResolveLocale::class,
-            ])
-
-            // Branding
+            ->middleware(['web', 'auth', ResolveLocale::class])
             ->brandName('Lavertia')
-            ->brandSubtitle('Administration')
-            ->brandLogo('/images/logo.svg')
-            ->primaryColor('#2563eb')
-
-            // Theme
-            ->themeMode('system')
-            ->fontFamily('Inter')
-            ->borderRadius('lg')
-            ->contentWidth('full')
-
-            // Sidebar & navigation
+            ->brandSubtitle('Playground')
+            ->brandLogoDisplay('full')
+            ->brandLogoPlacement('sidebar')
+            ->tenantSwitcher()
+            ->tenantSwitcherPlacement('sidebar')
+            ->globalSearch()
+            ->notifications()
+            ->footerLinks([
+                ['label' => 'Source repository', 'url' => 'https://github.com/lavertia/playground', 'external' => true],
+                ['label' => 'Lavertia project', 'url' => 'https://github.com/lavertia/lavertia', 'external' => true],
+            ])
+            ->userMenuSettings()
+            ->userMenuLogout()
+            ->userMenuLinks([
+                ['label' => 'Lavertia documentation', 'url' => 'https://github.com/lavertia/lavertia', 'external' => true],
+            ])
+            ->primaryColor('#f59e0b')
             ->sidebarVariant('inset')
-            ->sidebarWidth('18rem')
             ->sidebarCollapsible()
+            ->themeMode('system')
+            ->contentWidth('full')
+            ->sidebarWidth('18rem')
             ->navigationPosition('sidebar')
-            ->mobileNavigation()
-
-            // Header
             ->topbar()
             ->breadcrumbs()
-            ->stickyHeader()
-
-            // Pages
-            ->discoverPages(
-                app_path('Lavertia/Pages'),
-                'App\\Lavertia\\Pages',
-            )
-
-            // Navigation
+            ->mobileNavigation()
+            ->discoverPages(app_path('Lavertia/Pages'), 'App\\Lavertia\\Pages')
             ->navigationItems([
                 NavigationItem::make('dashboard', 'Dashboard'),
-
-                NavigationItem::make('invoices', 'Invoices')
-                    ->group('Management'),
-
-                NavigationItem::make('reports', 'Reports')
-                    ->group('Management'),
-            ])
-
-            // Extensions
-            ->plugins([]);
+                NavigationItem::make('invoices', 'Invoices')->group('Management'),
+                NavigationItem::make('reports', 'Reports')->group('Management'),
+                NavigationItem::make('billing/reports', 'Billing Reports')->group('Billing'),
+            ]);
     }
 }

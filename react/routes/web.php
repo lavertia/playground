@@ -14,6 +14,8 @@ Route::prefix('{current_team}')
     });
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('admin/notifications/{notification}/read', \App\Http\Controllers\MarkPanelNotificationReadController::class)
+        ->name('lavertia.notifications.read');
     Route::post('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
 });

@@ -9,6 +9,9 @@ import { provideSidebarContext, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SID
 const props = withDefaults(defineProps<{
   defaultOpen?: boolean
   open?: boolean
+  panelWidth?: string
+  panelRadius?: string
+  panelFont?: string
   class?: HTMLAttributes["class"]
 }>(), {
   defaultOpen: !defaultDocument?.cookie.includes(`${SIDEBAR_COOKIE_NAME}=false`),
@@ -70,7 +73,9 @@ provideSidebarContext({
     <div
       data-slot="sidebar-wrapper"
       :style="{
-        '--sidebar-width': SIDEBAR_WIDTH,
+        '--sidebar-width': props.panelWidth ?? SIDEBAR_WIDTH,
+        '--radius': props.panelRadius ?? '0.5rem',
+        'font-family': props.panelFont === 'inherit' ? undefined : props.panelFont,
         '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
       }"
       :class="cn('group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full', props.class)"
