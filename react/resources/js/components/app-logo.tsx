@@ -9,8 +9,8 @@ export default function AppLogo() {
     return (
         <>
             <div
-                className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black text-gray-950 shadow-sm ring-1 ring-black/10"
-                style={{ backgroundColor: panel?.primaryColor ?? '#f59e0b' }}
+                className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black shadow-sm ring-1 ring-black/10"
+                style={{ backgroundColor: panel?.primaryColor ?? '#f59e0b', color: panel?.primaryForeground ?? '#111827' }}
             >
                 {panel?.brandLogo ? (
                     <img src={panel.brandLogo} alt="" className="size-full object-contain" />
