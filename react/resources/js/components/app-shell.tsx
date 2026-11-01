@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
+import type { PanelAppearance } from '@/components/lavertia/types';
 
 type Props = {
     children: ReactNode;
@@ -10,6 +11,7 @@ type Props = {
 
 export function AppShell({ children, variant = 'sidebar' }: Props) {
     const page = usePage();
+    const panel = page.props.lavertiaPanel as PanelAppearance | null | undefined;
     const isOpen = page.props.sidebarOpen;
     const direction = page.props.lavertiaSidebarDirection === 'rtl' ? 'rtl' : 'ltr';
 
@@ -19,5 +21,20 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
         );
     }
 
-    return <SidebarProvider defaultOpen={isOpen} dir={direction}>{children}</SidebarProvider>;
+    const radii = { none: '0rem', sm: '0.25rem', md: '0.5rem', lg: '0.75rem', xl: '1rem' };
+
+    return (
+        <SidebarProvider
+            defaultOpen={isOpen}
+            dir={direction}
+            data-panel-theme={panel?.themeMode ?? 'system'}
+            style={{
+                '--sidebar-width': panel?.sidebarWidth ?? '18rem',
+                '--radius': radii[panel?.borderRadius ?? 'md'],
+                fontFamily: panel?.fontFamily === 'inherit' ? undefined : panel?.fontFamily,
+            } as React.CSSProperties}
+        >
+            {children}
+        </SidebarProvider>
+    );
 }
