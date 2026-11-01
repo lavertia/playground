@@ -18,6 +18,21 @@ final class AdminPanelProvider extends PanelProvider
             ->middleware(['web', 'auth', ResolveLocale::class])
             ->brandName('Lavertia')
             ->brandSubtitle('Playground')
+            ->brandLogoDisplay('full')
+            ->brandLogoPlacement('sidebar')
+            ->tenantSwitcher()
+            ->tenantSwitcherPlacement('sidebar')
+            ->globalSearch()
+            ->notifications()
+            ->footerLinks([
+                ['label' => 'Source repository', 'url' => 'https://github.com/lavertia/playground', 'external' => true],
+                ['label' => 'Lavertia project', 'url' => 'https://github.com/lavertia/lavertia', 'external' => true],
+            ])
+            ->userMenuSettings()
+            ->userMenuLogout()
+            ->userMenuLinks([
+                ['label' => 'Lavertia documentation', 'url' => 'https://github.com/lavertia/lavertia', 'external' => true],
+            ])
             ->primaryColor('#f59e0b')
             ->sidebarVariant('inset')
             ->sidebarCollapsible()

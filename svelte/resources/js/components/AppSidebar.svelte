@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
     import BookOpen from '@lucide/svelte/icons/book-open';
-    import FolderGit2 from '@lucide/svelte/icons/folder-git-2';
+    import Link2 from '@lucide/svelte/icons/link-2';
     import FileText from '@lucide/svelte/icons/file-text';
     import LayoutGrid from '@lucide/svelte/icons/layout-grid';
     import type { Snippet } from 'svelte';
@@ -60,18 +60,11 @@
         return groups;
     });
 
-    const footerNavItems: NavItem[] = [
-        {
-            title: 'Source repository',
-            href: 'https://github.com/lavertia/playground',
-            icon: FolderGit2,
-        },
-        {
-            title: 'Lavertia project',
-            href: 'https://github.com/lavertia/lavertia',
-            icon: BookOpen,
-        },
-    ];
+    let footerNavItems = $derived<NavItem[]>((panel?.footerLinks ?? []).map(item => ({
+        title: item.label,
+        href: item.url,
+        icon: Link2,
+    })));
 </script>
 
 <Sidebar
@@ -81,6 +74,7 @@
     style={`--sidebar-primary: ${panel?.primaryColor ?? '#f59e0b'}; --sidebar-primary-foreground: ${panel?.primaryForeground ?? '#111827'}; --sidebar-width: ${panel?.sidebarWidth ?? '18rem'};`}
 >
     <SidebarHeader>
+        {#if panel?.brandLogoDisplay !== 'hidden' && panel?.brandLogoPlacement !== 'topbar'}
         <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton size="lg" asChild>
@@ -92,11 +86,14 @@
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
+        {/if}
+        {#if panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement !== 'topbar'}
         <SidebarMenu>
             <SidebarMenuItem>
                 <TeamSwitcher />
             </SidebarMenuItem>
         </SidebarMenu>
+        {/if}
     </SidebarHeader>
 
     <SidebarContent>
@@ -128,7 +125,9 @@
     </SidebarContent>
 
     <SidebarFooter>
-        <NavFooter items={footerNavItems} />
+        {#if footerNavItems.length > 0}
+            <NavFooter items={footerNavItems} />
+        {/if}
         <NavUser />
     </SidebarFooter>
 </Sidebar>

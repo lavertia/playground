@@ -1,5 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import AppLogo from '@/components/app-logo';
+import { PanelSearch } from '@/components/panel-search';
+import { PanelNotifications } from '@/components/panel-notifications';
+import { TeamSwitcher } from '@/components/team-switcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
@@ -24,6 +28,9 @@ export function AppSidebarHeader({
         ].join(' ')}>
             <div className="flex min-w-0 items-center gap-2">
                 <SidebarTrigger className="-ms-1" aria-label="Toggle navigation" />
+                {panel?.brandLogoDisplay !== 'hidden'
+                    && (panel?.brandLogoPlacement === 'topbar' || panel?.brandLogoPlacement === 'both')
+                    && <Link href="/admin/dashboard" aria-label={panel.brandName} className="flex min-w-0 items-center gap-2 rounded-md p-1 hover:bg-accent"><AppLogo compact /></Link>}
                 {panel?.breadcrumbs !== false && panel?.topbar !== false && (
                     <Breadcrumbs breadcrumbs={pageBreadcrumbs} />
                 )}
@@ -44,6 +51,15 @@ export function AppSidebarHeader({
                         </Link>
                     ))}
                 </nav>
+            )}
+            {panel?.topbar !== false && (
+                <div className="ms-auto flex shrink-0 items-center gap-1">
+                    {panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar' && (
+                        <TeamSwitcher inHeader />
+                    )}
+                    {panel?.globalSearch === true && <PanelSearch />}
+                    {panel?.notifications === true && <PanelNotifications />}
+                </div>
             )}
         </header>
     );

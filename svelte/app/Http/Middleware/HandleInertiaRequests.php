@@ -59,6 +59,36 @@ class HandleInertiaRequests extends Middleware
 
                 return $panelId !== null ? $registry->appearance($panelId) : null;
             },
+            'lavertiaNotifications' => function () use ($request): array {
+                $user = $request->user();
+
+                if ($user === null) {
+                    return [];
+                }
+
+                $registry = app(\Lavertia\Panels\PanelRegistry::class);
+                $panelId = $registry->panelForRoute($request->route()?->getName());
+                $appearance = $panelId !== null ? $registry->appearance($panelId) : null;
+
+                if (($appearance['notifications'] ?? false) !== true) {
+                    return [];
+                }
+
+                return $user->notifications()->latest()->limit(10)->get()
+                    ->map(static function ($notification): array {
+                        $data = is_array($notification->data) ? $notification->data : [];
+                        $url = $data['url'] ?? null;
+
+                        return [
+                            'id' => (string) $notification->id,
+                            'title' => mb_substr((string) ($data['title'] ?? 'Notification'), 0, 120),
+                            'message' => mb_substr((string) ($data['message'] ?? ''), 0, 250),
+                            'url' => is_string($url) && str_starts_with($url, '/') && ! str_starts_with($url, '//')
+                                && ! str_contains($url, chr(92)) && preg_match('/\\s/', $url) !== 1 ? $url : null,
+                            'read' => $notification->read_at !== null,
+                        ];
+                    })->all();
+            },
             'lavertiaSidebar' => function () use ($request): array {
                 if (! auth()->check()) {
                     return [];

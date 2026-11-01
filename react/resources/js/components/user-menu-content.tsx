@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
@@ -11,6 +11,7 @@ import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
+import type { PanelAppearance } from '@/components/lavertia/types';
 
 type Props = {
     user: User;
@@ -18,6 +19,7 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const panel = usePage().props.lavertiaPanel as PanelAppearance | null | undefined;
 
     const handleLogout = () => {
         cleanup();
@@ -32,7 +34,7 @@ export function UserMenuContent({ user }: Props) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {panel?.userMenuSettings !== false && <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link
                         className="block w-full cursor-pointer"
@@ -44,9 +46,22 @@ export function UserMenuContent({ user }: Props) {
                         Settings
                     </Link>
                 </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
+            </DropdownMenuGroup>}
+            {(panel?.userMenuLinks ?? []).map((item) => (
+                <DropdownMenuItem asChild key={item.url}>
+                    {item.external ? (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="block w-full cursor-pointer">
+                            {item.label}
+                        </a>
+                    ) : (
+                        <Link href={item.url} className="block w-full cursor-pointer" onClick={cleanup}>
+                            {item.label}
+                        </Link>
+                    )}
+                </DropdownMenuItem>
+            ))}
+            {panel?.userMenuLogout !== false && <DropdownMenuSeparator />}
+            {panel?.userMenuLogout !== false && <DropdownMenuItem asChild>
                 <Link
                     className="block w-full cursor-pointer"
                     href={logout()}
@@ -57,7 +72,7 @@ export function UserMenuContent({ user }: Props) {
                     <LogOut className="mr-2" />
                     Log out
                 </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem>}
         </>
     );
 }

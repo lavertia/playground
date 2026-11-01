@@ -2,6 +2,10 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import AppLogo from '@/components/AppLogo.vue';
+import TeamSwitcher from '@/components/TeamSwitcher.vue';
+import PanelSearch from '@/components/PanelSearch.vue';
+import PanelNotifications from '@/components/PanelNotifications.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
 import type { BreadcrumbItem } from '@/types';
@@ -28,6 +32,10 @@ const resolvedBreadcrumbs = computed(() => {
     >
         <div class="flex min-w-0 items-center gap-2">
             <SidebarTrigger class="-ms-1" aria-label="Toggle navigation" />
+            <Link v-if="panel?.brandLogoDisplay !== 'hidden' && (panel?.brandLogoPlacement === 'topbar' || panel?.brandLogoPlacement === 'both')"
+                href="/admin/dashboard" class="flex items-center gap-2 rounded-md p-1 hover:bg-accent" :aria-label="panel?.brandName">
+                <AppLogo compact />
+            </Link>
             <Breadcrumbs
                 v-if="panel?.breadcrumbs !== false && panel?.topbar !== false"
                 :breadcrumbs="resolvedBreadcrumbs"
@@ -47,5 +55,10 @@ const resolvedBreadcrumbs = computed(() => {
                 :class="item.active ? 'bg-accent font-semibold text-accent-foreground' : 'text-muted-foreground'"
             >{{ item.label }}</Link>
         </nav>
+        <div v-if="panel?.topbar !== false" class="ms-auto flex shrink-0 items-center gap-1">
+            <TeamSwitcher v-if="panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar'" :in-header="true" />
+            <PanelSearch v-if="panel?.globalSearch === true" />
+            <PanelNotifications v-if="panel?.notifications === true" />
+        </div>
     </header>
 </template>

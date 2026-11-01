@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Link, router } from '@inertiajs/svelte';
+    import { Link, router, page } from '@inertiajs/svelte';
     import LogOut from '@lucide/svelte/icons/log-out';
     import Settings from '@lucide/svelte/icons/settings';
     import {
@@ -13,12 +13,15 @@
     import { logout } from '@/routes';
     import { edit } from '@/routes/profile';
     import type { User } from '@/types';
+    import type { PanelAppearance } from '@/components/lavertia/types';
 
     let {
         user,
     }: {
         user: User;
     } = $props();
+
+    let panel = $derived(page.props.lavertiaPanel as PanelAppearance | null | undefined);
 
     function handleLogout(propsOnClick?: () => void) {
         return () => {
@@ -34,6 +37,7 @@
     </div>
 </DropdownMenuLabel>
 <DropdownMenuSeparator />
+{#if panel?.userMenuSettings !== false}
 <DropdownMenuGroup>
     <DropdownMenuItem asChild>
         {#snippet children(props)}
@@ -49,6 +53,19 @@
         {/snippet}
     </DropdownMenuItem>
 </DropdownMenuGroup>
+{/if}
+{#each panel?.userMenuLinks ?? [] as item (item.url)}
+    <DropdownMenuItem asChild>
+        {#snippet children(props)}
+            {#if item.external}
+                <a href={item.url} target="_blank" rel="noopener noreferrer" class={props.class}>{item.label}</a>
+            {:else}
+                <Link href={item.url} class={props.class}>{item.label}</Link>
+            {/if}
+        {/snippet}
+    </DropdownMenuItem>
+{/each}
+{#if panel?.userMenuLogout !== false}
 <DropdownMenuSeparator />
 <DropdownMenuItem asChild>
     {#snippet children(props)}
@@ -64,3 +81,4 @@
         </Link>
     {/snippet}
 </DropdownMenuItem>
+{/if}

@@ -1,27 +1,37 @@
 import { usePage } from '@inertiajs/react';
+import AppLogoIcon from '@/components/app-logo-icon';
 import type { PanelAppearance } from '@/components/lavertia/types';
 
-export default function AppLogo() {
+export default function AppLogo({ compact = false }: { compact?: boolean }) {
     const panel = usePage().props.lavertiaPanel as PanelAppearance | null | undefined;
+
+    if (panel?.brandLogoDisplay === 'hidden') return null;
+
     const name = panel?.brandName ?? 'Lavertia';
     const subtitle = panel?.brandSubtitle ?? 'Playground';
+    const showText = !compact && panel?.brandLogoDisplay !== 'icon';
 
     return (
         <>
             <div
-                className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black shadow-sm ring-1 ring-black/10"
-                style={{ backgroundColor: panel?.primaryColor ?? '#f59e0b', color: panel?.primaryForeground ?? '#111827' }}
+                className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-sm ring-1 ring-black/5"
+                style={{
+                    backgroundColor: panel?.brandLogo ? 'transparent' : (panel?.primaryColor ?? '#f59e0b'),
+                    color: panel?.primaryForeground ?? '#111827',
+                }}
             >
                 {panel?.brandLogo ? (
-                    <img src={panel.brandLogo} alt="" className="size-full object-contain" />
-                ) : name.charAt(0).toLocaleUpperCase()}
-            </div>
-            <div className="ms-1 grid min-w-0 flex-1 text-start">
-                <span className="truncate text-sm font-bold leading-tight">{name}</span>
-                {subtitle && (
-                    <span className="truncate text-[10px] font-medium text-muted-foreground">{subtitle}</span>
+                    <img src={panel.brandLogo} alt={name} className="size-full object-contain" />
+                ) : (
+                    <AppLogoIcon className="size-6 fill-current" aria-hidden="true" />
                 )}
             </div>
+            {showText && (
+                <div className="ms-2 grid min-w-0 flex-1 text-start group-data-[collapsible=icon]:hidden">
+                    <span className="truncate text-sm font-semibold leading-tight">{name}</span>
+                    {subtitle && <span className="truncate text-xs text-muted-foreground">{subtitle}</span>}
+                </div>
+            )}
         </>
     );
 }
