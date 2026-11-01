@@ -18,7 +18,7 @@ function change(event: Event): void {
         <span class="sr-only">Language</span>
         <select aria-label="Language" :value="panel.locale" @change="change"
             class="h-9 min-w-24 max-w-44 rounded-md border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-            <option v-for="code in panel.supportedLocales" :key="code" :value="code">{{ localeLabel(code, panel.locale ?? 'en') }}</option>
+            <option v-for="code in (panel.supportedLocales ?? [])" :key="code" :value="code">{{ localeLabel(code, panel.locale ?? 'en') }}</option>
         </select>
     </label>
 </template>
