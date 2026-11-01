@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
+import { themeVariables } from '@/components/lavertia/types';
 import type { PanelAppearance } from '@/components/lavertia/types';
 
 type Props = {
@@ -17,7 +18,7 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
 
     if (variant === 'header') {
         return (
-            <div className="flex min-h-screen w-full flex-col">{children}</div>
+            <div className="flex min-h-screen w-full flex-col" data-lavertia-theme={panel?.theme?.id ?? 'default'} style={themeVariables(panel)}>{children}</div>
         );
     }
 
@@ -25,12 +26,14 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
 
     return (
         <SidebarProvider
+            data-lavertia-theme={panel?.theme?.id ?? 'default'}
             defaultOpen={isOpen}
             dir={direction}
             data-panel-theme={panel?.themeMode ?? 'system'}
             style={{
                 '--sidebar-width': panel?.sidebarWidth ?? '18rem',
                 '--radius': radii[panel?.borderRadius ?? 'md'],
+                ...themeVariables(panel),
                 fontFamily: panel?.fontFamily === 'inherit' ? undefined : panel?.fontFamily,
             } as React.CSSProperties}
         >
