@@ -30,7 +30,12 @@ const starterDashboard = computed(() =>
     page.props.currentTeam ? dashboard(page.props.currentTeam.slug).url : '/',
 );
 
+const panelLinks = computed(() => (page.props.lavertiaSidebar ?? []) as NavigationLink[]);
+
 const mainNavItems = computed<NavItem[]>(() => [
+    ...(!panelLinks.value.some((item) => item.slug === 'dashboard')
+        ? [{ title: 'Lavertia overview', href: '/admin/dashboard', icon: LayoutGrid }]
+        : []),
     {
         title: 'Starter dashboard',
         href: starterDashboard.value,
@@ -39,7 +44,7 @@ const mainNavItems = computed<NavItem[]>(() => [
 ]);
 
 const panelGroups = computed(() => {
-    const links = (page.props.lavertiaSidebar ?? []) as NavigationLink[];
+    const links = panelLinks.value;
     const groups: Array<{ label: string; items: NavigationLink[] }> = [];
 
     for (const item of links) {
