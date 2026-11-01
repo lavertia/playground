@@ -93,6 +93,7 @@ it('resolves Arabic RTL on the first response for host and Lavertia Page', funct
     $this->actingAs(User::factory()->create())
         ->get('/admin/dashboard?lang=ar')
         ->assertOk()
+        ->assertSee('lang="ar" dir="rtl"', false)
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertiaSidebarDirection', 'rtl')
             ->where('lavertiaPanel.locale', 'ar')
