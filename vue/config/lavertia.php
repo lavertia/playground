@@ -17,9 +17,12 @@ return [
     'panels' => [
         'admin' => [
             'path' => 'admin',
-            'middleware' => ['web', 'auth'],
+            'middleware' => ['web', 'auth', \Lavertia\Panels\Http\Middleware\ResolveLocale::class],
             'pages' => [
                 \App\Lavertia\Pages\DashboardPage::class,
+            ],
+            'navigation' => [
+                ['slug' => 'dashboard', 'label' => 'Dashboard', 'sort' => 0],
             ],
         ],
     ],

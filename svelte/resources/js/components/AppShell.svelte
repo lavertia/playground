@@ -22,7 +22,7 @@
         {@render children?.()}
     </div>
 {:else}
-    <SidebarProvider defaultOpen={isOpen}>
+    <SidebarProvider defaultOpen={isOpen} dir={page.props.lavertiaSidebarDirection === 'rtl' ? 'rtl' : 'ltr'}>
         {@render children?.()}
     </SidebarProvider>
 {/if}

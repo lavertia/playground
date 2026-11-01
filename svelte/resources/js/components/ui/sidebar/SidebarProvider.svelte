@@ -16,10 +16,12 @@
 
     let {
         defaultOpen = true,
+        dir = 'ltr',
         class: className = '',
         children,
     }: {
         defaultOpen?: boolean;
+        dir?: 'ltr' | 'rtl';
         class?: string;
         children?: Snippet;
     } = $props();
@@ -94,6 +96,7 @@
 <TooltipProvider>
     <div
         data-slot="sidebar-wrapper"
+        {dir}
         style={`--sidebar-width: ${SIDEBAR_WIDTH}; --sidebar-width-icon: ${SIDEBAR_WIDTH_ICON};`}
         class={cn(
             'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full',

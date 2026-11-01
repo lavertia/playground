@@ -9,7 +9,9 @@ type Props = {
 };
 
 export function AppShell({ children, variant = 'sidebar' }: Props) {
-    const isOpen = usePage().props.sidebarOpen;
+    const page = usePage();
+    const isOpen = page.props.sidebarOpen;
+    const direction = page.props.lavertiaSidebarDirection === 'rtl' ? 'rtl' : 'ltr';
 
     if (variant === 'header') {
         return (
@@ -17,5 +19,5 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
         );
     }
 
-    return <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>;
+    return <SidebarProvider defaultOpen={isOpen} dir={direction}>{children}</SidebarProvider>;
 }
