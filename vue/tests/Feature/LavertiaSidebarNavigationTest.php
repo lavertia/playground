@@ -31,3 +31,13 @@ it('does not share authenticated panel links with guests', function (): void {
             ->where('lavertiaSidebar', [])
             ->etc());
 });
+
+it('uses RTL for the host navigation and the PHP-rendered Lavertia Page', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get('/admin/dashboard?lang=ar')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertiaSidebarDirection', 'rtl')
+            ->where('lavertia.direction', 'rtl')
+            ->etc());
+});
