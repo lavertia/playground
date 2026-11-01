@@ -6,6 +6,7 @@
     import AppShell from '@/components/AppShell.svelte';
     import AppSidebar from '@/components/AppSidebar.svelte';
     import AppSidebarHeader from '@/components/AppSidebarHeader.svelte';
+    import PanelLocaleSwitcher from '@/components/PanelLocaleSwitcher.svelte';
     import { Toaster } from '@/components/ui/sonner';
     import type { BreadcrumbItem } from '@/types';
 
@@ -22,6 +23,25 @@
     let maxWidth = $derived(maxWidths[panel?.contentWidth ?? 'full']);
 </script>
 
+{#if panel?.layout === 'full'}
+    <div class="relative min-h-screen w-full" data-panel-layout="full">
+        {#if panel.languageSwitcher}
+            <div class="absolute end-4 top-4 z-20"><PanelLocaleSwitcher /></div>
+        {/if}
+        {@render children?.()}
+        <Toaster />
+    </div>
+{:else if panel?.layout === 'top'}
+    <AppShell variant="header">
+        <AppSidebarHeader {breadcrumbs} showSidebarTrigger={false} />
+        <AppContent variant="header" class="min-w-0 w-full max-w-none overflow-x-clip">
+            <div class="mx-auto w-full min-w-0 flex-1" style:max-width={maxWidth}>
+                {@render children?.()}
+            </div>
+        </AppContent>
+        <Toaster />
+    </AppShell>
+{:else}
 <AppShell variant="sidebar">
     <AppSidebar />
     <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
@@ -32,3 +52,5 @@
     </AppContent>
     <Toaster />
 </AppShell>
+
+{/if}
