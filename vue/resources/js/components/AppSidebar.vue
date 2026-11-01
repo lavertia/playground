@@ -3,9 +3,9 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     Bell, BookOpen, Briefcase, Calendar, ChartColumn, FileChartColumn, FileText,
     Folder, House, LayoutDashboard, LayoutGrid, Link2, List, Receipt, Settings,
-    Shield, Users, Wallet,
+    Shield, Users, Wallet, ChevronDown,
 } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { Component } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -26,7 +26,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
-import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
+import { panelNavigationGroups } from '@/components/lavertia/types';
+import type { NavigationLink, NavigationGroupView, PanelAppearance } from '@/components/lavertia/types';
 
 const navigationIcons: Record<string, Component> = {
     bell: Bell,
@@ -49,7 +50,21 @@ const navigationIcons: Record<string, Component> = {
 
 const page = usePage();
 const panel = computed(() => page.props.lavertiaPanel as PanelAppearance | null | undefined);
-const { isMobile, setOpenMobile } = useSidebar();
+const { state, isMobile, setOpenMobile } = useSidebar();
+const groupOpen = ref<Record<string, boolean>>({});
+
+function groupExpanded(group: NavigationGroupView): boolean {
+    return !group.collapsible || group.active
+        || (state.value === 'collapsed' && !isMobile.value)
+        || (groupOpen.value[group.label] ?? !group.collapsedByDefault);
+}
+
+function toggleGroup(group: NavigationGroupView): void {
+    groupOpen.value = {
+        ...groupOpen.value,
+        [group.label]: !(groupOpen.value[group.label] ?? !group.collapsedByDefault),
+    };
+}
 
 const starterDashboard = computed(() =>
     page.props.currentTeam ? dashboard(page.props.currentTeam.slug).url : '/',
@@ -68,19 +83,7 @@ const mainNavItems = computed<NavItem[]>(() => [
     },
 ]);
 
-const panelGroups = computed(() => {
-    const links = panelLinks.value;
-    const groups: Array<{ label: string; items: NavigationLink[] }> = [];
-
-    for (const item of links) {
-        const label = item.group || 'Lavertia';
-        const group = groups.find((entry) => entry.label === label);
-        if (group) group.items.push(item);
-        else groups.push({ label, items: [item] });
-    }
-
-    return groups;
-});
+const panelGroups = computed(() => panelNavigationGroups(panelLinks.value, panel.value?.navigationGroups));
 
 const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []).map((item) => ({
     title: item.label,
@@ -116,10 +119,17 @@ const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []
         <SidebarContent>
             <NavMain :items="mainNavItems" />
             <SidebarGroup v-for="group in ((panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) ? panelGroups : [])" :key="group.label" class="px-2 py-0">
-                <SidebarGroupLabel>{{ group.label }}</SidebarGroupLabel>
-                <SidebarMenu>
+                <SidebarGroupLabel>
+                    <button v-if="group.collapsible" type="button" class="flex w-full items-center justify-between gap-2 text-start focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring group-data-[collapsible=icon]:hidden"
+                        :aria-expanded="groupExpanded(group)" @click="toggleGroup(group)">
+                        <span class="truncate">{{ group.label }}</span>
+                        <ChevronDown class="size-3.5 shrink-0 transition-transform" :class="groupExpanded(group) ? '' : '-rotate-90'" aria-hidden="true" />
+                    </button>
+                    <template v-else>{{ group.label }}</template>
+                </SidebarGroupLabel>
+                <SidebarMenu v-if="groupExpanded(group)">
                     <SidebarMenuItem v-for="item in group.items" :key="item.slug">
-                        <SidebarMenuButton as-child :is-active="item.active" :tooltip="item.label">
+                        <SidebarMenuButton as-child :is-active="item.active" :tooltip="item.label" :class="item.parentSlug ? 'ps-5 group-data-[collapsible=icon]:ps-0' : undefined">
                             <Link :href="item.url" :aria-current="item.active ? 'page' : undefined"
                                 @click="isMobile && setOpenMobile(false)">
                                 <component :is="navigationIcons[item.icon ?? ''] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText)" class="size-4 shrink-0" aria-hidden="true" />

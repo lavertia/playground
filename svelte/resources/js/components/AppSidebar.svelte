@@ -18,6 +18,7 @@
     import Shield from '@lucide/svelte/icons/shield';
     import Users from '@lucide/svelte/icons/users';
     import Wallet from '@lucide/svelte/icons/wallet';
+    import ChevronDown from '@lucide/svelte/icons/chevron-down';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -38,7 +39,8 @@
     } from '@/components/ui/sidebar';
     import { dashboard } from '@/routes';
     import type { NavItem, Team } from '@/types';
-    import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
+    import { panelNavigationGroups } from '@/components/lavertia/types';
+    import type { NavigationLink, NavigationGroupView, PanelAppearance } from '@/components/lavertia/types';
 
     const navigationIcons = {
         bell: Bell,
@@ -60,7 +62,21 @@
     } as const;
 
     let { children }: { children?: Snippet } = $props();
-    const { isMobile, setOpenMobile } = useSidebar();
+    const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
+    let groupOpen = $state<Record<string, boolean>>({});
+
+    function groupExpanded(group: NavigationGroupView): boolean {
+        return !group.collapsible || group.active
+            || ($sidebarState === 'collapsed' && !$isMobile)
+            || (groupOpen[group.label] ?? !group.collapsedByDefault);
+    }
+
+    function toggleGroup(group: NavigationGroupView): void {
+        groupOpen = {
+            ...groupOpen,
+            [group.label]: !(groupOpen[group.label] ?? !group.collapsedByDefault),
+        };
+    }
 
     const currentTeam = $derived(page.props.currentTeam as Team | null);
     const starterDashboard = $derived(
@@ -81,17 +97,7 @@
         },
     ]);
 
-    let panelGroups = $derived.by(() => {
-        const links = panelLinks;
-        const groups: Array<{ label: string; items: NavigationLink[] }> = [];
-        for (const item of links) {
-            const label = item.group || 'Lavertia';
-            const group = groups.find((entry) => entry.label === label);
-            if (group) group.items.push(item);
-            else groups.push({ label, items: [item] });
-        }
-        return groups;
-    });
+    let panelGroups = $derived(panelNavigationGroups(panelLinks, panel?.navigationGroups));
 
     let footerNavItems = $derived<NavItem[]>((panel?.footerLinks ?? []).map(item => ({
         title: item.label,
@@ -133,12 +139,24 @@
         <NavMain items={mainNavItems} />
         {#each ((panel?.navigationPosition !== 'top' || $isMobile) && (panel?.mobileNavigation !== false || !$isMobile) ? panelGroups : []) as group (group.label)}
             <SidebarGroup class="px-2 py-0">
-                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                <SidebarGroupLabel>
+                    {#if group.collapsible}
+                        <button type="button" class="flex w-full items-center justify-between gap-2 text-start focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring group-data-[collapsible=icon]:hidden"
+                            aria-expanded={groupExpanded(group)} onclick={() => toggleGroup(group)}>
+                            <span class="truncate">{group.label}</span>
+                            <ChevronDown class={`size-3.5 shrink-0 transition-transform ${groupExpanded(group) ? '' : '-rotate-90'}`} aria-hidden="true" />
+                        </button>
+                    {:else}
+                        {group.label}
+                    {/if}
+                </SidebarGroupLabel>
+                {#if groupExpanded(group)}
                 <SidebarMenu>
                     {#each group.items as item (item.slug)}
                         {@const NavIcon = navigationIcons[item.icon as keyof typeof navigationIcons] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText)}
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={item.active} tooltip={item.label}>
+                            <SidebarMenuButton asChild isActive={item.active} tooltip={item.label}
+                                class={item.parentSlug ? 'ps-5 group-data-[collapsible=icon]:ps-0' : undefined}>
                                 {#snippet children(props)}
                                     <Link {...props} href={item.url} aria-current={item.active ? 'page' : undefined} class={props.class}
                                         onclick={() => { if ($isMobile) setOpenMobile(false); }}>
@@ -153,6 +171,7 @@
                         </SidebarMenuItem>
                     {/each}
                 </SidebarMenu>
+                {/if}
             </SidebarGroup>
         {/each}
     </SidebarContent>
