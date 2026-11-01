@@ -98,7 +98,7 @@ const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []
         :collapsible="panel?.sidebarCollapsible === false ? 'none' : 'icon'"
         :variant="panel?.sidebarVariant ?? 'inset'"
         :side="page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'"
-        :style="{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' }"
+        :style="{ '--sidebar-primary': panel?.theme?.tokens['sidebar-primary'] ?? panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' }"
     >
         <SidebarHeader>
             <SidebarMenu v-if="panel?.brandLogoDisplay !== 'hidden' && panel?.brandLogoPlacement !== 'topbar'">
