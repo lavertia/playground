@@ -1,5 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FileText, LayoutGrid, Link2 } from 'lucide-react';
+import { createElement } from 'react';
+import {
+    Bell, BookOpen, Briefcase, Calendar, ChartColumn, FileChartColumn, FileText,
+    Folder, House, LayoutDashboard, LayoutGrid, Link2, List, Receipt, Settings,
+    Shield, Users, Wallet,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -20,6 +26,25 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
+
+const navigationIcons: Record<string, LucideIcon> = {
+    bell: Bell,
+    'book-open': BookOpen,
+    briefcase: Briefcase,
+    calendar: Calendar,
+    'chart-column': ChartColumn,
+    'file-chart-column': FileChartColumn,
+    'file-text': FileText,
+    folder: Folder,
+    house: House,
+    'layout-dashboard': LayoutDashboard,
+    list: List,
+    receipt: Receipt,
+    settings: Settings,
+    shield: Shield,
+    users: Users,
+    wallet: Wallet,
+};
 
 export function AppSidebar() {
     const page = usePage();
@@ -102,8 +127,16 @@ export function AppSidebar() {
                                     >
                                         <Link href={item.url} aria-current={item.active ? 'page' : undefined} prefetch
                                             onClick={() => { if (isMobile) setOpenMobile(false); }}>
-                                            {item.slug === 'dashboard' ? <LayoutGrid /> : <FileText />}
-                                            <span>{item.label}</span>
+                                            {createElement(navigationIcons[item.icon ?? ''] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText), {
+                                                'aria-hidden': true,
+                                                className: 'size-4 shrink-0',
+                                            })}
+                                            <span className="truncate">{item.label}</span>
+                                            {item.badge && (
+                                                <span className="ms-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">
+                                                    {item.badge}
+                                                </span>
+                                            )}
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
