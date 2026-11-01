@@ -45,10 +45,10 @@ final class AdminPanelProvider extends PanelProvider
             ->mobileNavigation()
             ->discoverPages(app_path('Lavertia/Pages'), 'App\\Lavertia\\Pages')
             ->navigationItems([
-                NavigationItem::make('dashboard', 'Dashboard'),
-                NavigationItem::make('invoices', 'Invoices')->group('Management'),
-                NavigationItem::make('reports', 'Reports')->group('Management'),
-                NavigationItem::make('billing/reports', 'Billing Reports')->group('Billing'),
+                NavigationItem::make('dashboard', 'Dashboard')->icon('layout-dashboard'),
+                NavigationItem::make('invoices', 'Invoices')->icon('receipt')->group('Management'),
+                NavigationItem::make('reports', 'Reports')->icon('chart-column')->group('Management'),
+                NavigationItem::make('billing/reports', 'Billing Reports')->icon('file-chart-column')->badge('New')->group('Billing'),
             ]);
     }
 }

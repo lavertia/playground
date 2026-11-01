@@ -20,6 +20,8 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaSidebar.0.slug', 'dashboard')
             ->where('lavertiaSidebar.0.active', true)
             ->where('lavertiaSidebar.0.url', '/admin/dashboard')
+            ->where('lavertiaSidebar.0.icon', 'layout-dashboard')
+            ->where('lavertiaSidebar.0.badge', 'Demo')
             ->where('lavertiaSidebarDirection', 'ltr')
             ->where('lavertiaPanel.id', 'admin')
             ->where('lavertiaPanel.brandName', 'Lavertia')

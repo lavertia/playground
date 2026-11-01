@@ -4,6 +4,20 @@
     import Link2 from '@lucide/svelte/icons/link-2';
     import FileText from '@lucide/svelte/icons/file-text';
     import LayoutGrid from '@lucide/svelte/icons/layout-grid';
+    import Bell from '@lucide/svelte/icons/bell';
+    import Briefcase from '@lucide/svelte/icons/briefcase';
+    import Calendar from '@lucide/svelte/icons/calendar';
+    import ChartColumn from '@lucide/svelte/icons/chart-column';
+    import FileChartColumn from '@lucide/svelte/icons/file-chart-column';
+    import Folder from '@lucide/svelte/icons/folder';
+    import House from '@lucide/svelte/icons/house';
+    import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
+    import List from '@lucide/svelte/icons/list';
+    import Receipt from '@lucide/svelte/icons/receipt';
+    import Settings from '@lucide/svelte/icons/settings';
+    import Shield from '@lucide/svelte/icons/shield';
+    import Users from '@lucide/svelte/icons/users';
+    import Wallet from '@lucide/svelte/icons/wallet';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -25,6 +39,25 @@
     import { dashboard } from '@/routes';
     import type { NavItem, Team } from '@/types';
     import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
+
+    const navigationIcons = {
+        bell: Bell,
+        'book-open': BookOpen,
+        briefcase: Briefcase,
+        calendar: Calendar,
+        'chart-column': ChartColumn,
+        'file-chart-column': FileChartColumn,
+        'file-text': FileText,
+        folder: Folder,
+        house: House,
+        'layout-dashboard': LayoutDashboard,
+        list: List,
+        receipt: Receipt,
+        settings: Settings,
+        shield: Shield,
+        users: Users,
+        wallet: Wallet,
+    } as const;
 
     let { children }: { children?: Snippet } = $props();
     const { isMobile, setOpenMobile } = useSidebar();
@@ -103,17 +136,17 @@
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                 <SidebarMenu>
                     {#each group.items as item (item.slug)}
+                        {@const NavIcon = navigationIcons[item.icon as keyof typeof navigationIcons] ?? (item.slug === 'dashboard' ? LayoutGrid : FileText)}
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={item.active} tooltip={item.label}>
                                 {#snippet children(props)}
                                     <Link {...props} href={item.url} aria-current={item.active ? 'page' : undefined} class={props.class}
                                         onclick={() => { if ($isMobile) setOpenMobile(false); }}>
-                                        {#if item.slug === 'dashboard'}
-                                            <LayoutGrid class="size-4 shrink-0" />
-                                        {:else}
-                                            <FileText class="size-4 shrink-0" />
+                                        <NavIcon class="size-4 shrink-0" aria-hidden="true" />
+                                        <span class="truncate">{item.label}</span>
+                                        {#if item.badge}
+                                            <span class="ms-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">{item.badge}</span>
                                         {/if}
-                                        <span>{item.label}</span>
                                     </Link>
                                 {/snippet}
                             </SidebarMenuButton>

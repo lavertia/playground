@@ -7,6 +7,16 @@ export interface ComponentNode {
     components: ComponentNode[];
 }
 
+export interface NavigationLink {
+    label: string;
+    slug: string;
+    group: string | null;
+    url: string;
+    active: boolean;
+    icon?: string | null;
+    badge?: string | null;
+}
+
 export interface PanelMenuLink {
     label: string;
     url: string;
