@@ -7,6 +7,17 @@ export interface ComponentNode {
     components: ComponentNode[];
 }
 
+export interface PanelAppearance {
+    id: string;
+    brandName: string;
+    brandSubtitle: string;
+    brandLogo: string | null;
+    primaryColor: string;
+    primaryForeground: string;
+    sidebarCollapsible: boolean;
+    sidebarVariant: 'inset' | 'sidebar' | 'floating';
+}
+
 export interface LavertiaPayload {
     version: number;
     title?: string;

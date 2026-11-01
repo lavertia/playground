@@ -24,7 +24,7 @@
     } from '@/components/ui/sidebar';
     import { dashboard } from '@/routes';
     import type { NavItem, Team } from '@/types';
-    import type { NavigationLink } from '@/components/lavertia/types';
+    import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
 
     let { children }: { children?: Snippet } = $props();
     const { isMobile, setOpenMobile } = useSidebar();
@@ -34,6 +34,7 @@
         currentTeam ? dashboard(currentTeam.slug) : '/',
     );
 
+    let panel = $derived(page.props.lavertiaPanel as PanelAppearance | null | undefined);
     let panelLinks = $derived((page.props.lavertiaSidebar ?? []) as NavigationLink[]);
 
     const mainNavItems = $derived<NavItem[]>([
@@ -73,7 +74,12 @@
     ];
 </script>
 
-<Sidebar collapsible="icon" variant="inset" side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}>
+<Sidebar
+    collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
+    variant={panel?.sidebarVariant ?? 'inset'}
+    side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
+    style={`--sidebar-primary: ${panel?.primaryColor ?? '#f59e0b'}; --sidebar-primary-foreground: ${panel?.primaryForeground ?? '#111827'};`}
+>
     <SidebarHeader>
         <SidebarMenu>
             <SidebarMenuItem>

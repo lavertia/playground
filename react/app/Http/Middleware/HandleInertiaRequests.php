@@ -48,6 +48,10 @@ class HandleInertiaRequests extends Middleware
             'teams' => fn () => $user?->toUserTeams(includeCurrent: true) ?? [],
             // The existing Starter Kit Sidebar is the single navigation surface.
             // Share the PanelRegistry's navigation on every authenticated Inertia page.
+            // Safe, declarative Panel appearance. The Starter Kit renders it.
+            'lavertiaPanel' => fn (): ?array => auth()->check()
+                ? app(\Lavertia\Panels\PanelRegistry::class)->appearance('admin')
+                : null,
             'lavertiaSidebar' => fn (): array => auth()->check()
                 ? app(\Lavertia\Panels\PanelRegistry::class)->navigation('admin', $request->route()?->getName())
                 : [],

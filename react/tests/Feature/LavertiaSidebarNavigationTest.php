@@ -15,12 +15,17 @@ it('shows the registered admin panel links in the existing host sidebar', functi
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('lavertia/page')
-            ->has('lavertia.navigation', 1)
-            ->has('lavertiaSidebar', 1)
+            ->has('lavertia.navigation', 4)
+            ->has('lavertiaSidebar', 4)
             ->where('lavertiaSidebar.0.slug', 'dashboard')
             ->where('lavertiaSidebar.0.active', true)
             ->where('lavertiaSidebar.0.url', '/admin/dashboard')
             ->where('lavertiaSidebarDirection', 'ltr')
+            ->where('lavertiaPanel.id', 'admin')
+            ->where('lavertiaPanel.brandName', 'Lavertia')
+            ->where('lavertiaPanel.brandSubtitle', 'Playground')
+            ->where('lavertiaPanel.primaryColor', '#f59e0b')
+            ->where('lavertiaPanel.sidebarVariant', 'inset')
             ->etc());
 });
 
@@ -29,6 +34,7 @@ it('does not expose authenticated panel links to guests', function (): void {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertiaSidebar', [])
+            ->where('lavertiaPanel', null)
             ->etc());
 });
 

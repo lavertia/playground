@@ -19,10 +19,11 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
-import type { NavigationLink } from '@/components/lavertia/types';
+import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
 
 export function AppSidebar() {
     const page = usePage();
+    const panel = page.props.lavertiaPanel as PanelAppearance | null | undefined;
     const { isMobile, setOpenMobile } = useSidebar();
     const starterDashboard = page.props.currentTeam
         ? dashboard(page.props.currentTeam.slug)
@@ -63,7 +64,12 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset" side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}>
+        <Sidebar
+            collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
+            variant={panel?.sidebarVariant ?? 'inset'}
+            side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
+            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b' } as React.CSSProperties}
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
