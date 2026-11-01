@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { BookOpen, FileText, FolderGit2, LayoutGrid } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -9,6 +9,8 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarGroup,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -16,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
+import type { NavigationLink } from '@/components/lavertia/types';
 
 export function AppSidebar() {
     const page = usePage();
@@ -25,16 +28,20 @@ export function AppSidebar() {
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Lavertia overview',
-            href: '/admin/dashboard',
-            icon: LayoutGrid,
-        },
-        {
             title: 'Starter dashboard',
             href: starterDashboard,
             icon: BookOpen,
         },
     ];
+
+    const panelLinks = (page.props.lavertiaSidebar ?? []) as NavigationLink[];
+    const panelGroups = panelLinks.reduce<Array<{ label: string; items: NavigationLink[] }>>((groups, item) => {
+        const label = item.group || 'Lavertia';
+        const group = groups.find((entry) => entry.label === label);
+        if (group) group.items.push(item);
+        else groups.push({ label, items: [item] });
+        return groups;
+    }, []);
 
     const footerNavItems: NavItem[] = [
         {
@@ -50,7 +57,7 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -70,6 +77,27 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                {panelGroups.map((group) => (
+                    <SidebarGroup className="px-2 py-0" key={group.label}>
+                        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {group.items.map((item) => (
+                                <SidebarMenuItem key={item.slug}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={item.active}
+                                        tooltip={{ children: item.label }}
+                                    >
+                                        <Link href={item.url} aria-current={item.active ? 'page' : undefined} prefetch>
+                                            {item.slug === 'dashboard' ? <LayoutGrid /> : <FileText />}
+                                            <span>{item.label}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                ))}
             </SidebarContent>
 
             <SidebarFooter>
