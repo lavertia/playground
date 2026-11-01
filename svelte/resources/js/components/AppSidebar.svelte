@@ -20,12 +20,14 @@
         SidebarMenu,
         SidebarMenuButton,
         SidebarMenuItem,
+        useSidebar,
     } from '@/components/ui/sidebar';
     import { dashboard } from '@/routes';
     import type { NavItem, Team } from '@/types';
     import type { NavigationLink } from '@/components/lavertia/types';
 
     let { children }: { children?: Snippet } = $props();
+    const { isMobile, setOpenMobile } = useSidebar();
 
     const currentTeam = $derived(page.props.currentTeam as Team | null);
     const starterDashboard = $derived(
@@ -96,7 +98,8 @@
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={item.active} tooltip={item.label}>
                                 {#snippet children(props)}
-                                    <Link {...props} href={item.url} aria-current={item.active ? 'page' : undefined} class={props.class}>
+                                    <Link {...props} href={item.url} aria-current={item.active ? 'page' : undefined} class={props.class}
+                                        onclick={() => { if ($isMobile) setOpenMobile(false); }}>
                                         {#if item.slug === 'dashboard'}
                                             <LayoutGrid class="size-4 shrink-0" />
                                         {:else}
