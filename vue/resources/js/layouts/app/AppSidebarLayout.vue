@@ -30,9 +30,9 @@ const contentMaxWidth = computed(() => {
         <AppSidebar />
         <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-            <main class="mx-auto w-full min-w-0 flex-1" :style="{ maxWidth: contentMaxWidth }">
+            <div class="mx-auto w-full min-w-0 flex-1" :style="{ maxWidth: contentMaxWidth }">
                 <slot />
-            </main>
+            </div>
         </AppContent>
         <Toaster />
     </AppShell>
