@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { LogOut, Settings } from '@lucide/vue';
 import {
     DropdownMenuGroup,
@@ -11,10 +11,13 @@ import UserInfo from '@/components/UserInfo.vue';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
+import type { PanelAppearance } from '@/components/lavertia/types';
 
 type Props = {
     user: User;
 };
+
+const panel = usePage().props.lavertiaPanel as PanelAppearance | null | undefined;
 
 const handleLogout = () => {
     router.flushAll();
@@ -30,7 +33,7 @@ defineProps<Props>();
         </div>
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
-    <DropdownMenuGroup>
+    <DropdownMenuGroup v-if="panel?.userMenuSettings !== false">
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full cursor-pointer" :href="edit()" prefetch>
                 <Settings class="mr-2 h-4 w-4" />
@@ -38,8 +41,12 @@ defineProps<Props>();
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
-    <DropdownMenuSeparator />
-    <DropdownMenuItem :as-child="true">
+    <DropdownMenuItem v-for="item in panel?.userMenuLinks ?? []" :key="item.url" :as-child="true">
+        <a v-if="item.external" :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
+        <Link v-else :href="item.url">{{ item.label }}</Link>
+    </DropdownMenuItem>
+    <DropdownMenuSeparator v-if="panel?.userMenuLogout !== false" />
+    <DropdownMenuItem v-if="panel?.userMenuLogout !== false" :as-child="true">
         <Link
             class="block w-full cursor-pointer"
             :href="logout()"
