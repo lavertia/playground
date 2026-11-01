@@ -16,6 +16,8 @@
     } = $props();
 
     const isOpen = $derived(page.props.sidebarOpen);
+    let panel = $derived(page.props.lavertiaPanel as PanelAppearance | null | undefined);
+    const radii: Record<string, string> = { none: '0rem', sm: '0.25rem', md: '0.5rem', lg: '0.75rem', xl: '1rem' };
 </script>
 
 {#if variant === 'header'}
