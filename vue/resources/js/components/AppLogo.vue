@@ -11,8 +11,8 @@ const subtitle = computed(() => panel.value?.brandSubtitle ?? 'Playground');
 
 <template>
     <div
-        class="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black text-gray-950 shadow-sm ring-1 ring-black/10"
-        :style="{ backgroundColor: panel?.primaryColor ?? '#f59e0b' }"
+        class="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg text-base font-black shadow-sm ring-1 ring-black/10"
+        :style="{ backgroundColor: panel?.primaryColor ?? '#f59e0b', color: panel?.primaryForeground ?? '#111827' }"
     >
         <img v-if="panel?.brandLogo" :src="panel.brandLogo" alt="" class="size-full object-contain" />
         <template v-else>{{ brandName.charAt(0).toLocaleUpperCase() }}</template>
