@@ -102,12 +102,12 @@ class HandleInertiaRequests extends Middleware
                     : [];
             },
             'lavertiaSidebarDirection' => function () use ($request): string {
-                $registry = app(\\Lavertia\\Panels\\PanelRegistry::class);
+                $registry = app(\Lavertia\Panels\\PanelRegistry::class);
                 $panelId = $registry->panelForRoute($request->route()?->getName());
 
                 return $panelId !== null
-                    ? \\Lavertia\\Panels\\Localization\\LocaleContext::resolve($request, $registry, $panelId)['direction']
-                    : \\Lavertia\\Panels\\Localization\\LocaleContext::direction((string) config('app.locale', 'en'));
+                    ? \Lavertia\Panels\Localization\LocaleContext::resolve($request, $registry, $panelId)['direction']
+                    : \Lavertia\Panels\Localization\LocaleContext::direction((string) config('app.locale', 'en'));
             },        ];
     }
 }
