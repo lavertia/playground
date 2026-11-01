@@ -84,7 +84,7 @@ class HandleInertiaRequests extends Middleware
                             'title' => mb_substr((string) ($data['title'] ?? 'Notification'), 0, 120),
                             'message' => mb_substr((string) ($data['message'] ?? ''), 0, 250),
                             'url' => is_string($url) && str_starts_with($url, '/') && ! str_starts_with($url, '//')
-                                && ! str_contains($url, '\\\\') ? $url : null,
+                                && ! str_contains($url, chr(92)) && preg_match('/\\s/', $url) !== 1 ? $url : null,
                             'read' => $notification->read_at !== null,
                         ];
                     })->all();
