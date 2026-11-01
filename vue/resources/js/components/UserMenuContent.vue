@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { LogOut, Settings } from '@lucide/vue';
+import { computed } from 'vue';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -17,7 +18,8 @@ type Props = {
     user: User;
 };
 
-const panel = usePage().props.lavertiaPanel as PanelAppearance | null | undefined;
+const page = usePage();
+const panel = computed(() => page.props.lavertiaPanel as PanelAppearance | null | undefined);
 
 const handleLogout = () => {
     router.flushAll();
