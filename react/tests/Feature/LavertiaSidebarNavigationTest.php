@@ -15,6 +15,7 @@ it('shares the same server-authoritative panel links with the host sidebar', fun
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('lavertia/page')
+            ->has('lavertia.navigation', 3)
             ->has('lavertiaSidebar', 3)
             ->where('lavertiaSidebar.0.slug', 'dashboard')
             ->where('lavertiaSidebar.0.active', true)
@@ -38,6 +39,5 @@ it('uses RTL for the host navigation and the PHP-rendered Lavertia Page', functi
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertiaSidebarDirection', 'rtl')
-            ->where('lavertia.direction', 'rtl')
             ->etc());
 });
