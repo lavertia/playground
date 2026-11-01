@@ -18,6 +18,8 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->has('lavertia.navigation', 1)
             ->has('lavertiaSidebar', 1)
             ->where('lavertiaSidebar.0.slug', 'dashboard')
+            ->where('lavertiaSidebar.0.group', 'Workspace')
+            ->where('lavertiaPanel.navigationGroups.0.collapsible', true)
             ->where('lavertiaSidebar.0.active', true)
             ->where('lavertiaSidebar.0.url', '/admin/dashboard')
             ->where('lavertiaSidebar.0.icon', 'layout-dashboard')
