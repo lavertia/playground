@@ -10,9 +10,17 @@ beforeEach(function (): void {
 });
 
 it('shares the same server-authoritative panel links with the host sidebar', function (): void {
-    $this->actingAs(User::factory()->create())
-        ->get('/admin/dashboard')
-        ->assertOk()
+    $response = $this->actingAs(User::factory()->create())
+        ->get('/admin/dashboard');
+
+    fwrite(STDERR, 'NAV_DIAGNOSTICS='.json_encode([
+        'configCount' => count(config('lavertia.panels.admin.navigation', [])),
+        'authenticated' => auth()->check(),
+        'routeExists' => \Illuminate\Support\Facades\Route::has('lavertia.admin.dashboard'),
+        'directRegistryCount' => count(app(\Lavertia\Panels\PanelRegistry::class)->navigation('admin', 'lavertia.admin.dashboard')),
+    ]).PHP_EOL);
+
+    $response->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('lavertia/page')
             ->has('lavertia.navigation', 3)
