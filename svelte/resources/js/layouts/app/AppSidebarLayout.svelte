@@ -26,9 +26,9 @@
     <AppSidebar />
     <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
         <AppSidebarHeader {breadcrumbs} />
-        <main class="mx-auto w-full min-w-0 flex-1" style:max-width={maxWidth}>
+        <div class="mx-auto w-full min-w-0 flex-1" style:max-width={maxWidth}>
             {@render children?.()}
-        </main>
+        </div>
     </AppContent>
     <Toaster />
 </AppShell>
