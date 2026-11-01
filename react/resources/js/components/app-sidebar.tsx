@@ -28,7 +28,12 @@ export function AppSidebar() {
         ? dashboard(page.props.currentTeam.slug)
         : '/';
 
+    const panelLinks = (page.props.lavertiaSidebar ?? []) as NavigationLink[];
+
     const mainNavItems: NavItem[] = [
+        ...(!panelLinks.some((item) => item.slug === 'dashboard')
+            ? [{ title: 'Lavertia overview', href: '/admin/dashboard', icon: LayoutGrid }]
+            : []),
         {
             title: 'Starter dashboard',
             href: starterDashboard,
@@ -36,7 +41,6 @@ export function AppSidebar() {
         },
     ];
 
-    const panelLinks = (page.props.lavertiaSidebar ?? []) as NavigationLink[];
     const panelGroups = panelLinks.reduce<Array<{ label: string; items: NavigationLink[] }>>((groups, item) => {
         const label = item.group || 'Lavertia';
         const group = groups.find((entry) => entry.label === label);
