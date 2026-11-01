@@ -102,7 +102,7 @@ class HandleInertiaRequests extends Middleware
                     : [];
             },
             'lavertiaSidebarDirection' => function () use ($request): string {
-                $registry = app(\Lavertia\Panels\\PanelRegistry::class);
+                $registry = app(\Lavertia\Panels\PanelRegistry::class);
                 $panelId = $registry->panelForRoute($request->route()?->getName());
 
                 return $panelId !== null
