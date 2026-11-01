@@ -77,7 +77,7 @@ const footerNavItems: NavItem[] = [
         :collapsible="panel?.sidebarCollapsible === false ? 'none' : 'icon'"
         :variant="panel?.sidebarVariant ?? 'inset'"
         :side="page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'"
-        :style="{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b' }"
+        :style="{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' }"
     >
         <SidebarHeader>
             <SidebarMenu>
@@ -98,7 +98,7 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
-            <SidebarGroup v-for="group in panelGroups" :key="group.label" class="px-2 py-0">
+            <SidebarGroup v-for="group in ((panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) ? panelGroups : [])" :key="group.label" class="px-2 py-0">
                 <SidebarGroupLabel>{{ group.label }}</SidebarGroupLabel>
                 <SidebarMenu>
                     <SidebarMenuItem v-for="item in group.items" :key="item.slug">
