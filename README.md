@@ -60,6 +60,47 @@ svelte: SESSION_COOKIE=lavertia_svelte_session
 
 For stronger cookie and CSRF isolation, use distinct local domains through Herd or Valet. Configure each app's `APP_URL` to its actual host/port. Register or sign in to each Starter Kit before opening `/admin/dashboard`.
 
+## Unified navigation (opt-in host Sidebar)
+
+The React, Vue and Svelte Starter Kits render Lavertia Page links **inside their existing
+Sidebar**, alongside the Starter dashboard and user menu. They do not create a
+second floating navigation card. The same existing SidebarProvider controls the
+desktop collapsed icons and the mobile drawer; clicking a Lavertia link closes
+the mobile drawer. RTL places the sidebar and mobile sheet on the right.
+
+Each app's `HandleInertiaRequests::share()` injects
+`lavertiaSidebar` from the PHP `PanelRegistry::navigation('admin', ...)`
+and `lavertiaSidebarDirection` from the first-response server locale.
+The `lavertia/page` adapter suppresses its embedded list **only when**
+this shared prop exists, retaining backward compatibility with older hosts.
+
+**To test the combined unmerged feature branches:**
+
+```bash
+git -C ../panels switch feat/unified-panel-navigation
+git -C ../playground switch feat/unified-panel-navigation
+
+cd react
+composer dump-autoload -o
+php artisan lavertia:install --stack=react --force
+php artisan optimize:clear
+npm run types:check
+npm run build
+php artisan test tests/Feature/LavertiaSidebarNavigationTest.php
+```
+
+Run the corresponding `--stack=vue` or `--stack=svelte` in the
+other applications. Review any generated renderer edits before `--force`.
+For apps with local unsaved Page/config changes, commit them on the app
+branch first and merge the Playground feature branch rather than switching
+away. The feature branch does **not** modify the app's `config/lavertia.php`,
+so locally added Invoices/Reports registrations remain intact.
+
+Navigation links are not authorization. Keep Panel route middleware,
+record/tenant policies, and any role-aware navigation filtering on the
+server.
+
+
 ## Current dashboard
 
 - PHP `PageHeader`, `StatsGrid`, `Stat`, `Section`, `Card`, `Table`, `TextColumn`, `Infolist`, `TextEntry`, `TextInput` and `Action` compose freely.
