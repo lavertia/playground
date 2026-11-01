@@ -122,7 +122,7 @@ export interface PanelAppearance {
     contentWidth: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
     sidebarWidth: string;
     navigationPosition: 'sidebar' | 'top' | 'none';
-    layout?: 'sidebar' | 'top' | 'full';
+    layout?: 'sidebar' | 'top' | 'full' | 'workspace';
     locale?: string;
     direction?: 'ltr' | 'rtl';
     supportedLocales?: string[];
