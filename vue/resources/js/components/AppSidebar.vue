@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FileText, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { BookOpen, FileText, LayoutGrid, Link2 } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -58,18 +58,11 @@ const panelGroups = computed(() => {
     return groups;
 });
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Source repository',
-        href: 'https://github.com/lavertia/playground',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Lavertia project',
-        href: 'https://github.com/lavertia/lavertia',
-        icon: BookOpen,
-    },
-];
+const footerNavItems = computed<NavItem[]>(() => (panel.value?.footerLinks ?? []).map((item) => ({
+    title: item.label,
+    href: item.url,
+    icon: Link2,
+})));
 </script>
 
 <template>
@@ -80,7 +73,7 @@ const footerNavItems: NavItem[] = [
         :style="{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' }"
     >
         <SidebarHeader>
-            <SidebarMenu>
+            <SidebarMenu v-if="panel?.brandLogoDisplay !== 'hidden' && panel?.brandLogoPlacement !== 'topbar'">
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link href="/admin/dashboard">
@@ -89,7 +82,7 @@ const footerNavItems: NavItem[] = [
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarMenu>
+            <SidebarMenu v-if="panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement !== 'topbar'">
                 <SidebarMenuItem>
                     <TeamSwitcher />
                 </SidebarMenuItem>
@@ -116,7 +109,7 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+            <NavFooter v-if="footerNavItems.length" :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
