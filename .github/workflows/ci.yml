@@ -91,7 +91,7 @@ jobs:
           php artisan optimize:clear
           php artisan wayfinder:generate --with-form
       - name: Test authenticated component protocol
-        run: php artisan test tests/Feature/LavertiaDashboardTest.php --compact
+        run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaSidebarNavigationTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
