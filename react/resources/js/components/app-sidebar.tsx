@@ -15,6 +15,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
@@ -22,6 +23,7 @@ import type { NavigationLink } from '@/components/lavertia/types';
 
 export function AppSidebar() {
     const page = usePage();
+    const { isMobile, setOpenMobile } = useSidebar();
     const starterDashboard = page.props.currentTeam
         ? dashboard(page.props.currentTeam.slug)
         : '/';
@@ -88,7 +90,8 @@ export function AppSidebar() {
                                         isActive={item.active}
                                         tooltip={{ children: item.label }}
                                     >
-                                        <Link href={item.url} aria-current={item.active ? 'page' : undefined} prefetch>
+                                        <Link href={item.url} aria-current={item.active ? 'page' : undefined} prefetch
+                                            onClick={() => { if (isMobile) setOpenMobile(false); }}>
                                             {item.slug === 'dashboard' ? <LayoutGrid /> : <FileText />}
                                             <span>{item.label}</span>
                                         </Link>
