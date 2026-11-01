@@ -129,7 +129,7 @@ export function AppSidebar() {
             collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
             variant={panel?.sidebarVariant ?? 'inset'}
             side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
-            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' } as React.CSSProperties}
+            style={{ '--sidebar-primary': panel?.theme?.tokens['sidebar-primary'] ?? panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' } as React.CSSProperties}
         >
             <SidebarHeader>
                 {logoInSidebar && (
