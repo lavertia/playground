@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import AppLogo from '@/components/app-logo';
 import { PanelSearch } from '@/components/panel-search';
+import { ShellNavigationSlots } from '@/components/shell-navigation-slots';
 import { PanelNotifications } from '@/components/panel-notifications';
 import { PanelLocaleSwitcher } from '@/components/panel-locale-switcher';
 import { TeamSwitcher } from '@/components/team-switcher';
@@ -60,6 +61,7 @@ export function AppSidebarHeader({
                     {panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar' && (
                         <TeamSwitcher inHeader />
                     )}
+                    <ShellNavigationSlots position="topbar" />
                     <PanelLocaleSwitcher />
                     {panel?.globalSearch === true && <PanelSearch />}
                     {panel?.notifications === true && <PanelNotifications />}
