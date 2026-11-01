@@ -29,12 +29,26 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaPanel.brandSubtitle', 'Playground')
             ->where('lavertiaPanel.primaryColor', '#f59e0b')
             ->where('lavertiaPanel.sidebarVariant', 'inset')
-            ->where('lavertiaSidebar.1.badge', 'New')
+            ->where('lavertiaSidebar.3.badge', 'New')
+            ->where('lavertiaSidebar.3.parentSlug', 'reports')
+            ->where('lavertiaPanel.navigationGroups.1.collapsible', true)
+            ->where('lavertiaPanel.navigationGroups.1.collapsedByDefault', true)
             ->where('lavertiaPanel.globalSearch', true)
             ->where('lavertiaPanel.notifications', true)
             ->where('lavertiaPanel.tenantSwitcher', true)
             ->where('lavertiaPanel.footerLinks.0.label', 'Source repository')
             ->where('lavertiaPanel.userMenuLinks.0.label', 'Lavertia documentation')
+            ->etc());
+});
+
+it('serializes Reports PageHeader breadcrumb tabs and Action', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get('/admin/reports')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.0.props.tabs.0.label', 'Overview')
+            ->where('lavertia.tree.components.0.props.breadcrumbs.0.url', '/admin/dashboard')
+            ->has('lavertia.tree.components.0.components', 1)
             ->etc());
 });
 
