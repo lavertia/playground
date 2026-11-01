@@ -3,6 +3,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import AppLogo from '@/components/app-logo';
 import { PanelSearch } from '@/components/panel-search';
 import { PanelNotifications } from '@/components/panel-notifications';
+import { PanelLocaleSwitcher } from '@/components/panel-locale-switcher';
 import { TeamSwitcher } from '@/components/team-switcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { NavigationLink, PanelAppearance } from '@/components/lavertia/types';
@@ -10,8 +11,10 @@ import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
 export function AppSidebarHeader({
     breadcrumbs = [],
+    showSidebarTrigger = true,
 }: {
     breadcrumbs?: BreadcrumbItemType[];
+    showSidebarTrigger?: boolean;
 }) {
     const { props } = usePage();
     const panel = props.lavertiaPanel as PanelAppearance | null | undefined;
@@ -27,7 +30,7 @@ export function AppSidebarHeader({
             panel?.stickyHeader ? 'sticky top-0 z-30 bg-background/95 backdrop-blur' : '',
         ].join(' ')}>
             <div className="flex min-w-0 items-center gap-2">
-                <SidebarTrigger className="-ms-1" aria-label="Toggle navigation" />
+                {showSidebarTrigger && <SidebarTrigger className="-ms-1" aria-label="Toggle navigation" />}
                 {panel?.brandLogoDisplay !== 'hidden'
                     && (panel?.brandLogoPlacement === 'topbar' || panel?.brandLogoPlacement === 'both')
                     && <Link href="/admin/dashboard" aria-label={panel.brandName} className="flex min-w-0 items-center gap-2 rounded-md p-1 hover:bg-accent"><AppLogo compact /></Link>}
@@ -36,7 +39,7 @@ export function AppSidebarHeader({
                 )}
             </div>
             {panel?.navigationPosition === 'top' && panel.topbar !== false && (
-                <nav aria-label="Panel navigation" className="ms-auto hidden min-w-0 flex-wrap items-center gap-1 md:flex">
+                <nav aria-label="Panel navigation" className="order-3 flex w-full min-w-0 flex-wrap items-center gap-1 md:order-none md:ms-auto md:w-auto">
                     {links.map((item) => (
                         <Link
                             key={item.slug}
@@ -57,6 +60,7 @@ export function AppSidebarHeader({
                     {panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar' && (
                         <TeamSwitcher inHeader />
                     )}
+                    <PanelLocaleSwitcher />
                     {panel?.globalSearch === true && <PanelSearch />}
                     {panel?.notifications === true && <PanelNotifications />}
                 </div>
