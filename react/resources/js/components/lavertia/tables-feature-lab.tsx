@@ -106,7 +106,7 @@ export default function TablesFeatureLab({ node }: { node: ComponentNode }) {
         setLoadingDemo(true);
         const timeout = window.setTimeout(() => setLoadingDemo(false), 850);
         return () => window.clearTimeout(timeout);
-    }, [active?.id, isVisualLoading]);
+    }, [active?.id, isVisualLoading, navigationCount]);
 
     function selectFeature(id: number) {
         if (id === active?.id) return;
@@ -128,10 +128,7 @@ export default function TablesFeatureLab({ node }: { node: ComponentNode }) {
         });
     }
     function replayLoading() {
-        setLoadingDemo(true);
-        const task = window.setTimeout(() => setLoadingDemo(false), 1500);
         setNavigationCount(old => old + 1);
-        return () => window.clearTimeout(task);
     }
     async function copyCode() {
         if (!active) return;
