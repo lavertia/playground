@@ -91,7 +91,7 @@ const money = (n: number): string => new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD',
 }).format(n);
 const button = 'inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-40';
-const iconButton = 'inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring';
+const iconButton = 'relative inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring';
 const input = 'h-9 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40';
 
 function valueOf(row: RecordRow, key: string): string | number | boolean | undefined {
