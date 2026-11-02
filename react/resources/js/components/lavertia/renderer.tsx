@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { createContext, createElement, useContext, useEffect, useRef, useState } from 'react';
+import {
+    Bell, BookOpen, Briefcase, Calendar, ChartColumn, FileChartColumn, FileText,
+    Folder, House, LayoutDashboard, LayoutGrid, List, Receipt, Settings, Shield,
+    Users, Wallet,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { Link, router } from '@inertiajs/react';
 import type { ComponentNode } from './types';
@@ -24,6 +30,17 @@ import {
     statAccentClass,
     translate,
 } from './types';
+
+/** A shell slot only uses compact navigation within the collapsed desktop sidebar. */
+export const NavigationDisplayContext = createContext({ position: 'page', collapsed: false });
+
+const navigationIcons: Record<string, LucideIcon> = {
+    bell: Bell, 'book-open': BookOpen, briefcase: Briefcase, calendar: Calendar,
+    'chart-column': ChartColumn, 'file-chart-column': FileChartColumn,
+    'file-text': FileText, folder: Folder, house: House,
+    'layout-dashboard': LayoutDashboard, list: List, receipt: Receipt,
+    settings: Settings, shield: Shield, users: Users, wallet: Wallet,
+};
 
 function FormRenderer({ node, children, onSaved }: { node: ComponentNode; children: ReactNode; onSaved?: () => void }) {
     const [processing, setProcessing] = useState(false);
@@ -208,6 +225,7 @@ function ActionLink({ node }: { node: ComponentNode }) {
 }
 
 export default function LavertiaRenderer({ node }: { node: ComponentNode }) {
+    const navigationDisplay = useContext(NavigationDisplayContext);
     const [input, setInput] = useState(String(node.props.value ?? ''));
     const [checked, setChecked] = useState(node.props.checked === true);
     const inputDirty = useRef(false);
@@ -231,22 +249,43 @@ export default function LavertiaRenderer({ node }: { node: ComponentNode }) {
         case 'navigation-item': {
             const url = safeHref(node.props.url);
             if (node.props.visible !== true || !url || !url.startsWith('/')) return null;
-            return <Link href={url} aria-current={node.props.active === true ? 'page' : undefined}
-                className={`inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${node.props.active === true ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground hover:bg-accent'}`}>
-                <span>{String(node.props.label ?? '')}</span>
-                {typeof node.props.badge === 'string' && <span className="ms-auto rounded bg-muted px-1.5 text-xs text-muted-foreground">{node.props.badge}</span>}
+
+            const label = String(node.props.label ?? '');
+            const compact = navigationDisplay.collapsed;
+            const shellIcon = ['sidebar', 'footer', 'tenant', 'icon-rail'].includes(navigationDisplay.position);
+            const iconName = typeof node.props.icon === 'string' ? node.props.icon : '';
+            const Icon = navigationIcons[iconName] ?? (node.props.slug === 'dashboard' ? LayoutGrid : FileText);
+
+            return <Link href={url}
+                aria-current={node.props.active === true ? 'page' : undefined}
+                aria-label={compact ? label : undefined} title={compact ? label : undefined}
+                className={`inline-flex min-h-9 items-center gap-2 rounded-md text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${compact ? 'size-9 justify-center p-2' : 'px-3 py-2'} ${node.props.active === true ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground hover:bg-accent'}`}>
+                {shellIcon && createElement(Icon, { 'aria-hidden': true, className: 'size-4 shrink-0' })}
+                {!compact && <span className="truncate">{label}</span>}
+                {!compact && typeof node.props.badge === 'string' &&
+                    <span className="ms-auto shrink-0 rounded bg-muted px-1.5 text-xs text-muted-foreground">{node.props.badge}</span>}
             </Link>;
         }
 
         case 'navigation-group': {
             const visible = node.components.some(item => item.props.visible === true);
             if (!visible) return null;
+            const label = String(node.props.label ?? '');
+
+            // A collapsed desktop sidebar has no room for a group heading.
+            // Keep authorized children discoverable as icon links instead.
+            if (navigationDisplay.collapsed) {
+                return <div role="group" aria-label={label} className="flex min-w-0 flex-col items-center gap-1">
+                    {children}
+                </div>;
+            }
+
             const expanded = node.components.some(item => item.props.active === true || item.props.descendantActive === true)
                 || node.props.collapsible === false || node.props.collapsedByDefault !== true;
             return <details open={expanded ? true : undefined}
                 className="min-w-0 rounded-md group/nav">
                 <summary className="cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring">
-                    {String(node.props.label ?? '')}
+                    {label}
                 </summary>
                 <div className="flex min-w-0 flex-col ps-2">{children}</div>
             </details>;
@@ -254,7 +293,7 @@ export default function LavertiaRenderer({ node }: { node: ComponentNode }) {
 
         case 'navigation-slot':
             return <nav aria-label={String(node.props.name ?? 'Navigation')}
-                className={`flex min-w-0 gap-1 ${node.props.position === 'topbar' ? 'flex-row flex-wrap' : 'flex-col'}`}>{children}</nav>;
+                className={`flex min-w-0 gap-1 ${node.props.position === 'topbar' ? 'flex-row flex-wrap' : 'flex-col'} ${navigationDisplay.collapsed ? 'items-center' : ''}`}>{children}</nav>;
 
         case 'container':
         case 'column':
