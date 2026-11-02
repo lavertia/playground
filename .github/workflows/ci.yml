@@ -104,7 +104,9 @@ jobs:
           php artisan migrate --force
           mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions
           php artisan optimize:clear
-          php artisan lavertia:install --stack=${{ matrix.stack }} --force
+          # Playground owns custom renderer adapters; a forced install would
+          # overwrite committed React/Vue/Svelte files before type-check/build.
+          test -f resources/js/components/lavertia/renderer.${{ matrix.stack == 'react' && 'tsx' || matrix.stack == 'vue' && 'vue' || 'svelte' }}
           php artisan wayfinder:generate --with-form
       - name: Test authenticated component protocol
         run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaSidebarNavigationTest.php tests/Feature/LavertiaPanelNotificationsTest.php --compact
