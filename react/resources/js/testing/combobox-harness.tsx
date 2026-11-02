@@ -77,7 +77,7 @@ function Harness() {
     const [submitted, setSubmitted] = useState('');
 
     return (
-        <main className="mx-auto flex max-w-xl flex-col gap-8 p-10">
+        <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 sm:p-6 lg:p-10">
             <section data-testid="group-control">
                 <h2>Group by</h2>
                 <SearchableSelect
