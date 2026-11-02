@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Lavertia;
 
+use App\Lavertia\Resources\DemoTicketResource;
 use App\Themes\PlaygroundTheme;
 use Lavertia\Panels\Navigation\NavigationGroup;
 use Lavertia\Panels\Navigation\NavigationItem;
@@ -50,6 +51,7 @@ final class AdminPanelProvider extends PanelProvider
             ->breadcrumbs()
             ->mobileNavigation()
             ->discoverPages(app_path('Lavertia/Pages'), 'App\\Lavertia\\Pages')
+            ->resources([DemoTicketResource::class])
             ->navigationGroups([
                 ['label' => 'Lavertia', 'sort' => 0],
                 ['label' => 'Management', 'sort' => 10, 'collapsible' => true, 'collapsedByDefault' => true],
