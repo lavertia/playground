@@ -63,7 +63,7 @@ async function choose(scope, label, search) {
 
 try {
     await page.goto(url);
-    await page.getByText('Group by', { exact: true }).waitFor();
+    await page.getByTestId('group-control').getByText('Group by', { exact: true }).waitFor();
     const groupScope = page.getByTestId('group-control');
     await choose(groupScope, 'Role', 'role');
     assert.equal(await page.getByTestId('group-value').textContent(), 'role');
@@ -101,6 +101,19 @@ try {
     await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
     await choose(groupScope, 'Verified', 'ver');
     assert.equal(await page.getByTestId('group-value').textContent(), 'verified');
+
+    const table = page.getByTestId('native-table');
+    await table.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
+    assert.equal(await table.getByRole('row').count(), 4, 'Native table should render header and 3 records');
+
+    await table.getByRole('button', { name: 'Filters', exact: true }).click();
+    await choose(table, 'Published', 'pub');
+    assert.equal(await table.getByRole('row').count(), 3, 'The native snapshot table must filter to 2 rows');
+
+    await table.getByRole('button', { name: 'Manage columns' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Status' }).click();
+    assert.equal(await table.getByRole('columnheader', { name: 'Status' }).count(), 0,
+        'Column manager must update the shared table renderer');
 
     assert.deepEqual(errors, [], 'No client-side React exceptions should occur');
     console.log('PASS Base UI Combobox/Select opens, aligns options without gaps, filters, submits, and works in Dialog/RTL');
