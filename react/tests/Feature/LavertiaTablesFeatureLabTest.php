@@ -48,6 +48,45 @@ it('contains all 28 named experiments and a PHP-defined bounded snapshot table',
             ->etc());
 });
 
+it('shows filter controls only in the dedicated filtering experiment', function (): void {
+    $owner = User::factory()->create();
+    featureLabPosts($owner, 6);
+
+    $this->actingAs($owner)
+        ->get('/admin/tables-feature-lab?feature=1')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('lavertia.tree.components.1.components.0.components', 7)
+            ->where('lavertia.tree.components.1.components.0.props.mode', 'snapshot')
+            ->etc());
+
+    // An attempted filter query parameter cannot affect a table that has no
+    // configured filter, even if it uses the Eloquent data provider.
+    $this->get('/admin/tables-feature-lab?feature=2&lvt_feature-explorer_filter_status=published')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('lavertia.tree.components.1.components.0.components', 7)
+            ->where('lavertia.tree.components.1.components.0.props.pagination.total', 6)
+            ->where('lavertia.tree.components.1.components.0.props.appliedFilters', [])
+            ->etc());
+
+    $this->get('/admin/tables-feature-lab?feature=5&lvt_feature-explorer_filter_status=published')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('lavertia.tree.components.1.components.0.components', 9)
+            ->where('lavertia.tree.components.1.components.0.components.7.type', 'select-filter')
+            ->where('lavertia.tree.components.1.components.0.components.8.type', 'select-filter')
+            ->where('lavertia.tree.components.1.components.0.props.appliedFilters.status', 'published')
+            ->where('lavertia.tree.components.1.components.0.props.pagination.total', 2)
+            ->etc());
+
+    $this->get('/admin/tables-feature-lab?feature=6')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('lavertia.tree.components.1.components.0.components', 7)
+            ->etc());
+});
+
 it('demonstrates native pushColumns instead of replacing existing columns', function (): void {
     $this->actingAs(User::factory()->create())
         ->get('/admin/tables-feature-lab?feature=4')
