@@ -9,31 +9,31 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('requires an authenticated user for the Filament-style React table laboratory', function (): void {
+it('requires authentication for Users and Posts', function (): void {
     $this->get('/admin/filament-tables-lab')->assertRedirect('/login');
 });
 
-it('provides only fictitious client-side fixtures to the React component', function (): void {
+it('renders native PHP Tables based on Eloquent, not browser-only fixtures', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user)
-        ->get('/admin/filament-tables-lab')
-        ->assertOk()
+    $this->actingAs($user)->get('/admin/filament-tables-lab')->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('lavertia/page')
-            ->where('lavertia.title', 'Filament Tables Lab')
-            ->where('lavertia.tree.components.1.type', 'filament-tables-lab')
-            ->where('lavertia.tree.components.1.props.demoOnly', true)
-            ->has('lavertia.tree.components.1.props.users', 51)
-            ->has('lavertia.tree.components.1.props.posts', 50)
-            ->where('lavertia.tree.components.1.props.users.0.name', 'Dan Harrin')
-            ->where('lavertia.tree.components.1.props.users.0.email', 'dan.harrin@example.test')
-            ->where('lavertia.tree.components.1.props.posts.0.status', 'published')
-            ->where('lavertia.seo.robots', 'noindex,nofollow')
+            ->where('lavertia.title', 'Users & Posts Tables')
+            ->where('lavertia.tree.components.1.components.0.type', 'table')
+            ->where('lavertia.tree.components.1.components.0.props.name', 'lab-users')
+            ->where('lavertia.tree.components.1.components.0.props.mode', 'eloquent')
+            ->where('lavertia.tree.components.1.components.0.props.pagination.total', 1)
+            ->where('lavertia.tree.components.1.components.0.props.rows.0.email', $user->email)
+            ->missing('lavertia.tree.components.1.components.0.props.rows.0.password')
+            ->where('lavertia.tree.components.2.components.0.type', 'table')
+            ->where('lavertia.tree.components.2.components.0.props.name', 'lab-posts')
+            ->where('lavertia.tree.components.2.components.0.props.mode', 'eloquent')
+            ->where('lavertia.tree.components.2.components.0.props.pagination.total', 0)
             ->etc());
 });
 
-it('keeps RTL direction in the first Inertia response', function (): void {
+it('includes server-selected language and RTL in the first response', function (): void {
     $this->actingAs(User::factory()->create())
         ->get('/admin/filament-tables-lab?lang=ar')
         ->assertOk()
@@ -41,6 +41,5 @@ it('keeps RTL direction in the first Inertia response', function (): void {
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertia.direction', 'rtl')
             ->where('lavertia.locale', 'ar')
-            ->where('lavertia.tree.components.1.props.locale', 'ar')
             ->etc());
 });
