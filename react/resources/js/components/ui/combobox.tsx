@@ -96,7 +96,7 @@ function ComboboxList({
     return (
         <ComboboxPrimitive.List
             data-slot="combobox-list"
-            className={cn('max-h-64 scroll-py-1 overflow-y-auto overscroll-contain p-1', className)}
+            className={cn('max-h-64 min-h-0 scroll-py-1 overflow-y-auto overscroll-contain p-1', className)}
             {...props}
         />
     );
@@ -117,7 +117,7 @@ function ComboboxItem({
             )}
             {...props}
         >
-            <span className="min-w-0 flex-1 truncate">{children}</span>
+            <span data-slot="combobox-item-content" className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden [&>span]:min-w-0 [&>span]:truncate">{children}</span>
             <ComboboxPrimitive.ItemIndicator
                 data-slot="combobox-item-indicator"
                 className="pointer-events-none absolute end-2 inline-flex size-4 items-center justify-center text-primary"
@@ -135,7 +135,7 @@ function ComboboxEmpty({
     return (
         <ComboboxPrimitive.Empty
             data-slot="combobox-empty"
-            className={cn('px-3 py-6 text-center text-sm text-muted-foreground', className)}
+            className={cn('px-3 py-2 text-center text-sm text-muted-foreground empty:h-0 empty:min-h-0 empty:p-0', className)}
             {...props}
         />
     );

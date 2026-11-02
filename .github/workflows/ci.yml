@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ (github.head_ref == 'feat/p0-10-filament-tables-lab' || github.ref_name == 'feat/p0-10-filament-tables-lab') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-09-tables-showcase' || github.ref_name == 'feat/p0-09-tables-showcase') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-08-resource-tabs-docs' || github.ref_name == 'feat/p0-08-resource-tabs-docs') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-07-parameterized-resource-pages' || github.ref_name == 'feat/p0-07-parameterized-resource-pages') && 'feat/p0-07-parameterized-resource-pages' || (github.head_ref == 'feat/p0-06-resource-auth-pages' || github.ref_name == 'feat/p0-06-resource-auth-pages') && 'feat/p0-06-resource-auth-pages' || (github.head_ref == 'feat/p0-05-composable-page-system' || github.ref_name == 'feat/p0-05-composable-page-system') && 'feat/p0-05-composable-page-system' || (github.head_ref == 'feat/p0-04-widget-shell-themes' || github.ref_name == 'feat/p0-04-widget-shell-themes') && 'feat/p0-04-widget-shell-themes' || (github.head_ref == 'feat/p0-03-locales-layouts' || github.ref_name == 'feat/p0-03-locales-layouts') && 'feat/p0-03-locales-layouts' || (github.head_ref == 'feat/p0-02-navigation-headers' || github.ref_name == 'feat/p0-02-navigation-headers') && 'feat/p0-02-navigation-headers' || (github.head_ref == 'feat/p0-navigation-metadata' || github.ref_name == 'feat/p0-navigation-metadata') && 'feat/p0-navigation-metadata' || (github.head_ref == 'feat/panel-shell-controls' || github.ref_name == 'feat/panel-shell-controls') && 'feat/panel-shell-controls' || vars.LAVERTIA_PANELS_REF || 'main' }}
+          ref: ${{ (github.head_ref == 'feat/p0-11-commerce-tables-query-builder' || github.ref_name == 'feat/p0-11-commerce-tables-query-builder') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-10-filament-tables-lab' || github.ref_name == 'feat/p0-10-filament-tables-lab') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-09-tables-showcase' || github.ref_name == 'feat/p0-09-tables-showcase') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-08-resource-tabs-docs' || github.ref_name == 'feat/p0-08-resource-tabs-docs') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-07-parameterized-resource-pages' || github.ref_name == 'feat/p0-07-parameterized-resource-pages') && 'feat/p0-07-parameterized-resource-pages' || (github.head_ref == 'feat/p0-06-resource-auth-pages' || github.ref_name == 'feat/p0-06-resource-auth-pages') && 'feat/p0-06-resource-auth-pages' || (github.head_ref == 'feat/p0-05-composable-page-system' || github.ref_name == 'feat/p0-05-composable-page-system') && 'feat/p0-05-composable-page-system' || (github.head_ref == 'feat/p0-04-widget-shell-themes' || github.ref_name == 'feat/p0-04-widget-shell-themes') && 'feat/p0-04-widget-shell-themes' || (github.head_ref == 'feat/p0-03-locales-layouts' || github.ref_name == 'feat/p0-03-locales-layouts') && 'feat/p0-03-locales-layouts' || (github.head_ref == 'feat/p0-02-navigation-headers' || github.ref_name == 'feat/p0-02-navigation-headers') && 'feat/p0-02-navigation-headers' || (github.head_ref == 'feat/p0-navigation-metadata' || github.ref_name == 'feat/p0-navigation-metadata') && 'feat/p0-navigation-metadata' || (github.head_ref == 'feat/panel-shell-controls' || github.ref_name == 'feat/panel-shell-controls') && 'feat/panel-shell-controls' || vars.LAVERTIA_PANELS_REF || 'main' }}
           path: panels
       - name: Checkout Forms
         uses: actions/checkout@v4
@@ -120,10 +120,35 @@ jobs:
       - name: Test Filament-style React Table Lab
         if: matrix.stack == 'react'
         run: php artisan test tests/Feature/LavertiaFilamentTablesLabTest.php --compact
+      - name: Test Commerce Tables Lab
+        if: matrix.stack == 'react'
+        run: php artisan test tests/Feature/LavertiaCommerceTablesLabTest.php --compact
+      - name: Test Advanced Query Builder evaluator
+        if: matrix.stack == 'react'
+        run: node --experimental-strip-types --test tests/js/filter-query.test.mjs
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
         run: npm run build
+      - name: Browser smoke test Base UI Combobox (React)
+        if: matrix.stack == 'react'
+        timeout-minutes: 8
+        run: |
+          npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.58.2
+          if command -v google-chrome > /dev/null 2>&1; then
+            export BROWSER_EXECUTABLE="$(command -v google-chrome)"
+          else
+            npx playwright install chromium --with-deps
+          fi
+          LARAVEL_BYPASS_ENV_CHECK=1 npm run dev -- --host 127.0.0.1 --port 5173 > /tmp/lavertia-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          if ! node tests/browser/combobox-smoke.mjs; then
+            echo "::group::Vite browser harness diagnostics"
+            tail -n 120 /tmp/lavertia-vite.log || true
+            echo "::endgroup::"
+            exit 1
+          fi
 
   required:
     name: Three-stack runtime verification

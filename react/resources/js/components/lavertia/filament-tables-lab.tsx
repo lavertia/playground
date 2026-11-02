@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { TableSelect } from '@/components/ui/table-select';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -417,7 +418,7 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
                         </> : <div className="inline-flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
                             <Layers3 aria-hidden="true" className="size-4 shrink-0" />
                             <span className="whitespace-nowrap">Group by</span>
-                            <SearchableSelect label="Group by" size="sm" className="w-36"
+                            <TableSelect label="Group by" size="sm" className="w-36"
                                 value={groupBy} options={isUsers ? groupUserOptions : groupPostOptions}
                                 onValueChange={(value) => { setGroupBy(value); setCollapsedGroups([]); }} />
                         </div>}
@@ -490,7 +491,7 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
             <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border px-4 py-3 text-sm sm:px-5">
                 <p aria-live="polite" className="text-muted-foreground">Showing {from} to {to} of {filtered.length} results</p>
                 <div className="inline-flex items-center gap-2 text-muted-foreground"><span>Per page</span>
-                    <SearchableSelect label="Rows per page" size="sm" className="w-20"
+                    <TableSelect label="Rows per page" size="sm" className="w-20"
                         value={String(perPage)} options={pageSizeOptions}
                         onValueChange={(value) => { setPerPage(Number(value)); setPage(1); }} />
                 </div>
@@ -513,7 +514,7 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
             {showOptions && <div className="mt-4 flex flex-wrap gap-x-6 gap-y-4 border-t border-border pt-4">
                 {([['striped', striped, setStriped, 'Striped rows'], ['tinted', tinted, setTinted, 'Status-colored rows'], ['compact', compact, setCompact, 'Compact density'], ['showHeader', showHeader, setShowHeader, 'Header'], ['skeleton', skeleton, setSkeleton, 'Skeleton loading']] as const).map(([key, value, setter, title]) => <label key={key} className="inline-flex cursor-pointer items-center gap-2 text-sm"><Checkbox checked={value} onCheckedChange={(checked) => setter(checked === true)} />{title}</label>)}
                 <div className="inline-flex items-center gap-2 text-sm"><span>Pagination</span>
-                    <SearchableSelect label="Pagination" size="sm" className="w-36" value={pageStyle}
+                    <TableSelect label="Pagination" size="sm" className="w-36" value={pageStyle}
                         options={pageStyleOptions} onValueChange={(value) => setPageStyle(value as PageStyle)} />
                 </div>
                 <button type="button" className={buttonClass} onClick={resetView}><RotateCcw className="size-4" />Reset search & filters</button>
