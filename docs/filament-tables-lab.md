@@ -9,6 +9,9 @@ This page is a **UI behavior laboratory**, not an implementation of Filament or 
 - PHP fixture component: react/app/Lavertia/Components/FilamentTablesLab.php
 - React interactive component: react/resources/js/components/lavertia/filament-tables-lab.tsx
 - React adapter integration: react/resources/js/components/lavertia/renderer.tsx
+- shadcn Base UI Combobox: react/resources/js/components/ui/combobox.tsx
+- shadcn Base UI Select: react/resources/js/components/ui/select.tsx
+- Scalar option adapter: react/resources/js/components/ui/searchable-select.tsx
 - Navigation: react/app/Providers/Lavertia/AdminPanelProvider.php
 - Feature tests: react/tests/Feature/LavertiaFilamentTablesLabTest.php
 
@@ -64,13 +67,24 @@ React state. No POST/PUT/PATCH/DELETE request, no real database writes, no user
 PII from Eloquent, and no tenant identifiers are sent to the lab. The genuine
 Eloquent table is still query-scoped and Policy-gated.
 
+## Official shadcn Base UI controls
+
+All selectors in the React Table Lab, live TablePreview filters, schema-driven form selects, panel language switcher and the team invitation role picker are composed from **shadcn-style Base UI Combobox**. No application-specific keyboard handler, option filtering, or popover positioning is implemented. `@base-ui/react` is installed with a synchronized `package-lock.json`; the reusable shadcn-style `Select` primitive is also Base UI for future non-searchable selection.
+
+- [Base UI Select](https://ui.shadcn.com/docs/components/base/select)
+- [Base UI Combobox](https://ui.shadcn.com/docs/components/base/combobox)
+- The adapter maps scalar values to `{ value, label }` options while Base UI handles filtering, listbox focus and keyboard interactions.
+- Base UI's native `name` / `required` form support submits the selected option (no duplicate hidden inputs).
+- Popovers inside the existing Radix Dialog portal into that dialog to remain inside its focus trap.
+- This is a React UI change only; no new PHP Table or Filter methods have been added.
+
 ## Select interaction QA
 
 - Table toolbar: **Group by** trigger is compact, keyboard-focusable, and its dropdown supports a search box.
 - Filters: **Role / Verified / Status / Featured** use the same searchable Select. Selecting a draft filter does not apply it until **Apply filters** is clicked.
 - Footer + settings: **Per page** and **Pagination** use compact searchable Select controls.
 - Create/Edit dialogs: role and status dropdowns use the same controlled Select without submitting the form.
-- Existing \`/admin/tables-showcase\` SelectFilters also display searchable dropdowns; Eloquent selection still triggers the original server-side filter query.
+- Existing `/admin/tables-showcase` SelectFilters also display searchable dropdowns; Eloquent selection still triggers the original server-side filter query.
 - Test keyboard interactions: open with Enter or ArrowDown, type to narrow, navigate ArrowUp/ArrowDown, choose with Enter, close with Escape, click outside to dismiss.
 - Check empty-search feedback, selection checkmarks, dark/light appearance, narrow viewport, and Arabic RTL.
 
