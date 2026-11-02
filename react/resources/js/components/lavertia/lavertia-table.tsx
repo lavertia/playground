@@ -4,7 +4,7 @@ import { router } from '@inertiajs/react';
 import {
     ArrowDown, ArrowUp, CheckCircle2, ChevronLeft, ChevronRight,
     ChevronsLeft, ChevronsRight, Columns3, Download, Filter,
-    ImageIcon, Layers3, MoreHorizontal, RotateCcw, Search, XCircle,
+    ImageIcon, Layers3, MoreHorizontal, RotateCcw, Search, XCircle, GripVertical,
 } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import type { ComponentNode, Scalar, TableColumn, TableRow } from './types';
 import {
     badgeClass, columnBadgeTone, defaultHiddenColumns, tableColumns,
-    tableColumnsInOrder, tableFilters, tableRows, tableStateUrl, translate,
+    tableColumnsInOrder, tableFilters, tableRows, tableStateUrl, translate, safeHref,
     visibleTableRows,
 } from './types';
 
@@ -104,6 +104,15 @@ function exportCurrentRows(rows: TableRow[], columns: TableColumn[], name: strin
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+}
+
+function toneClass(value: Scalar, config: { field?: string; tones?: Record<string, string> } | null): string {
+    const tone = config?.tones?.[String(value ?? '')];
+    if (tone === 'success') return 'bg-emerald-500/10 hover:bg-emerald-500/15';
+    if (tone === 'warning') return 'bg-amber-500/10 hover:bg-amber-500/15';
+    if (tone === 'danger') return 'bg-rose-500/10 hover:bg-rose-500/15';
+    if (tone === 'info') return 'bg-sky-500/10 hover:bg-sky-500/15';
+    return '';
 }
 
 /**
@@ -329,7 +338,16 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
             <div className="space-y-1"><h3 className="text-base font-semibold">{title}</h3>
                 {typeof node.props.description === 'string' && <p className="max-w-3xl text-sm text-muted-foreground">{node.props.description}</p>}
             </div>
-            <span className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground">Read-only</span>
+            <div className="flex flex-wrap items-center gap-2">
+                {node.props.pollIntervalMs && mode === 'eloquent' &&
+                    <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Polling every {Math.round(Number(node.props.pollIntervalMs) / 1000)}s</span>}
+                {reorderDemo && <button type="button" aria-pressed={reordering} onClick={toggleDemoReorder}
+                    className="inline-flex h-9 items-center gap-2 rounded-lg border border-input px-3 text-xs font-semibold hover:bg-muted">
+                    <GripVertical className="size-4" />
+                    {reordering ? 'Finish reordering' : String(node.props.demoReorderLabel ?? 'Enable reordering')}
+                </button>}
+                <span className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground">Read-only</span>
+            </div>
         </header>
 
         {Object.keys(tabs).length > 0 && <div role="tablist" aria-label={title + ' status'} className="flex flex-wrap items-center gap-1 border-b border-border px-4 py-2">
@@ -456,13 +474,41 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                 </button></td>
                         </tr>}
                         {!collapsed.includes(label) && groupRows.map((row, index) =>
-                            <tr key={String(row.id ?? index)} className="border-b border-border/70 transition-colors hover:bg-muted/30">
+                            <tr key={String(row.id ?? index)}
+                                tabIndex={typeof row.__recordUrl === 'string' ? 0 : undefined}
+                                role={typeof row.__recordUrl === 'string' ? 'link' : undefined}
+                                aria-label={typeof row.__recordUrl === 'string' ? 'Open ' + String(row.title ?? row.name ?? row.id) : undefined}
+                                onClick={event => {
+                                    if (typeof row.__recordUrl !== 'string') return;
+                                    if ((event.target as Element).closest('button,input,a,[role="checkbox"]')) return;
+                                    const href = safeHref(row.__recordUrl);
+                                    if (href?.startsWith('/')) router.get(href);
+                                }}
+                                onKeyDown={event => {
+                                    if (typeof row.__recordUrl !== 'string' || (event.key !== 'Enter' && event.key !== ' ')) return;
+                                    event.preventDefault();
+                                    const href = safeHref(row.__recordUrl);
+                                    if (href?.startsWith('/')) router.get(href);
+                                }}
+                                className={cn(
+                                    'border-b border-border/70 transition-colors hover:bg-muted/30',
+                                    striped && index % 2 === 1 && 'bg-muted/45',
+                                    rowTones && toneClass(row[rowTones.field ?? 'status'], rowTones),
+                                    typeof row.__recordUrl === 'string' && 'cursor-pointer focus-visible:outline-2 focus-visible:outline-primary',
+                                )}>
                                 <td className="px-4 py-3"><Checkbox aria-label={'Select record ' + String(row.id)}
                                     checked={selected.includes(String(row.id))} onCheckedChange={checked => toggleRow(String(row.id), checked === true)} /></td>
                                 {ordered.map(col => <td key={col.key} className="max-w-72 whitespace-nowrap px-3 py-3 text-start text-sm">
                                     {renderCell(row, col)}
                                 </td>)}
                                 <td className="px-2 py-2 text-end">
+                                    <div className="flex items-center justify-end gap-0.5">
+                                    {reordering && <div className="flex gap-0.5">
+                                        <button type="button" className={iconButton} aria-label={'Move record ' + String(row.id) + ' up'}
+                                            onClick={() => moveDemoRow(String(row.id), -1)}><ArrowUp className="size-4" /></button>
+                                        <button type="button" className={iconButton} aria-label={'Move record ' + String(row.id) + ' down'}
+                                            onClick={() => moveDemoRow(String(row.id), 1)}><ArrowDown className="size-4" /></button>
+                                    </div>}
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <button type="button" aria-label={'Actions for record ' + String(row.id)} className={iconButton}>
@@ -474,6 +520,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                             <DropdownMenuItem onSelect={() => exportCurrentRows([row], ordered, prefix)}>Export row CSV</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
+                                    </div>
                                 </td>
                             </tr>)}
                     </Fragment>)}
@@ -499,29 +546,46 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
             </table>
         </div>
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs">
-            <p aria-live="polite" className="text-muted-foreground">Showing {first} to {last} of {totalRows.toLocaleString('en-US')} results</p>
-            <div className="flex items-center gap-2 text-muted-foreground">
-                <span>Per page</span>
-                <TableSelect label="Rows per page" size="sm" className="w-20"
-                    value={String(paginationSize)} options={[5, 10, 25, 50, 100].map(n => ({ value: String(n), label: String(n) }))}
-                    onValueChange={value => {
-                        if (mode === 'eloquent') navigate({ perPage: value, page: null });
-                        else { setLocalPerPage(Number(value)); setLocalPage(1); }
-                    }} />
-            </div>
-            <nav aria-label="Table pagination" className="flex items-center overflow-hidden rounded-lg border border-border">
-                <button aria-label="First page" type="button" disabled={page <= 1 || busy} className={iconButton} onClick={() => setPage(1)}><ChevronsLeft className="size-4 rtl:rotate-180" /></button>
-                <button aria-label="Previous page" type="button" disabled={page <= 1 || busy} className={iconButton} onClick={() => setPage(page - 1)}><ChevronLeft className="size-4 rtl:rotate-180" /></button>
-                {pages.map((pageNumber, index) => <span key={pageNumber} className="inline-flex items-center">
-                    {index > 0 && pageNumber > pages[index - 1] + 1 && <span className="px-2 text-muted-foreground">…</span>}
-                    <button type="button" aria-label={'Page ' + pageNumber} aria-current={page === pageNumber ? 'page' : undefined}
-                        className={cn('size-9 text-sm hover:bg-muted', page === pageNumber && 'bg-muted font-semibold text-primary')} onClick={() => setPage(pageNumber)}>
-                        {pageNumber}</button>
-                </span>)}
-                <button aria-label="Next page" type="button" disabled={page >= lastPage || busy} className={iconButton} onClick={() => setPage(page + 1)}><ChevronRight className="size-4 rtl:rotate-180" /></button>
-                <button aria-label="Last page" type="button" disabled={page >= lastPage || busy} className={iconButton} onClick={() => setPage(lastPage)}><ChevronsRight className="size-4 rtl:rotate-180" /></button>
-            </nav>
+            <p aria-live="polite" className="text-muted-foreground">
+                {totalKnown ? 'Showing ' + first + ' to ' + last + ' of ' + totalRows.toLocaleString('en-US') + ' results'
+                    : 'Showing ' + first + ' to ' + last + ' · total not calculated'}
+                {pager.truncated === true && ' · limited to 100 records'}
+            </p>
+            {paginationEnabled && <>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <span>Per page</span>
+                    <TableSelect label="Rows per page" size="sm" className="w-20"
+                        value={String(paginationSize)}
+                        options={allowedOptions.map(size => ({ value: String(size), label: String(size) }))}
+                        onValueChange={value => {
+                            if (mode === 'eloquent') navigate({ perPage: value, page: null });
+                            else { setLocalPerPage(Number(value)); setLocalPage(1); }
+                        }} />
+                </div>
+                <nav aria-label="Table pagination" className="flex items-center overflow-hidden rounded-lg border border-border">
+                    {!simplePagination && extremeLinks &&
+                        <button aria-label="First page" type="button" disabled={page <= 1 || busy} className={iconButton}
+                            onClick={() => setPage(1)}><ChevronsLeft className="size-4 rtl:rotate-180" /></button>}
+                    <button aria-label="Previous page" type="button" disabled={page <= 1 || busy} className={iconButton}
+                        onClick={() => setPage(page - 1)}><ChevronLeft className="size-4 rtl:rotate-180" /></button>
+                    {!simplePagination && pages.map((pageNumber, index) => <span key={pageNumber} className="inline-flex items-center">
+                        {index > 0 && pageNumber > pages[index - 1] + 1 && <span className="px-2 text-muted-foreground">…</span>}
+                        <button type="button" aria-label={'Page ' + pageNumber} aria-current={page === pageNumber ? 'page' : undefined}
+                            className={cn('size-9 text-sm hover:bg-muted', page === pageNumber && 'bg-muted font-semibold text-primary')}
+                            onClick={() => setPage(pageNumber)}>{pageNumber}</button>
+                    </span>)}
+                    <button aria-label="Next page" type="button" disabled={!hasNext || busy} className={iconButton}
+                        onClick={() => setPage(page + 1)}><ChevronRight className="size-4 rtl:rotate-180" /></button>
+                    {!simplePagination && extremeLinks &&
+                        <button aria-label="Last page" type="button" disabled={page >= lastPage || busy} className={iconButton}
+                            onClick={() => setPage(lastPage)}><ChevronsRight className="size-4 rtl:rotate-180" /></button>}
+                </nav>
+            </>}
         </footer>
+        {reorderDemo && reorderEvents.length > 0 && <div role="status" className="border-t border-border bg-muted/20 px-5 py-3 text-xs">
+            <p className="mb-2 font-semibold">Reordering event log (local only)</p>
+            {reorderEvents.map((event, index) => <p key={index} className="font-mono text-muted-foreground">{event}</p>)}
+        </div>
         <Dialog open={detailRow !== null} onOpenChange={open => { if (!open) setDetailRow(null); }}>
             <DialogContent className="max-w-xl">
                 <DialogHeader>
