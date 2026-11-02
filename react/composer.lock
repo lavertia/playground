@@ -2106,7 +2106,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../tables",
-                "reference": "c5ab1903c0863ca0e9474ac5fcea5ec8e217b883"
+                "reference": "a980f52c69ce389f01f4e497c3a7d1e0dc0ed561"
             },
             "require": {
                 "ext-mbstring": "*",

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { Link, router } from '@inertiajs/react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import type { ComponentNode, TableColumn, TableRow } from './types';
 import {
     addRepeaterRow,
@@ -315,9 +316,15 @@ function TablePreview({ node }: { node: ComponentNode }) {
                     <tbody className="divide-y divide-gray-100 dark:divide-white/[0.07]">
                         {pageRows.map((row, index) => <tr key={String(row.id ?? index)} className="hover:bg-gray-50 dark:hover:bg-white/[0.035]">
                             {visibleColumns.map((column) => <td key={column.key} className="whitespace-nowrap px-5 py-3.5">
-                                {column.badge
-                                    ? <span className={'inline-flex rounded-md px-2 py-1 text-xs ring-1 ring-inset ' + badgeClass(columnBadgeTone(column, row[column.key]))}>{String(row[column.key] ?? '—')}</span>
-                                    : <span>{String(row[column.key] ?? '—')}</span>}
+                                {column.type === 'icon' && column.boolean
+                                    ? (row[column.key] === true || row[column.key] === 1 || row[column.key] === '1'
+                                        ? <CheckCircle2 role="img" aria-label="Yes" className="size-5 text-emerald-600 dark:text-emerald-400" />
+                                        : row[column.key] === false || row[column.key] === 0 || row[column.key] === '0'
+                                            ? <XCircle role="img" aria-label="No" className="size-5 text-rose-600 dark:text-rose-400" />
+                                            : <span aria-label="Unknown" className="text-muted-foreground">—</span>)
+                                    : column.badge
+                                        ? <span className={'inline-flex rounded-md px-2 py-1 text-xs ring-1 ring-inset ' + badgeClass(columnBadgeTone(column, row[column.key]))}>{String(row[column.key] ?? '—')}</span>
+                                        : <span>{String(row[column.key] ?? '—')}</span>}
                             </td>)}
                         </tr>)}
                     </tbody>

@@ -50,7 +50,14 @@ async function choose(scope, label, search) {
     const popup = await openSelect(scope);
     const input = popup.locator('input[data-slot="combobox-input"]');
     await input.fill(search);
-    await popup.getByRole('option', { name: label, exact: true }).click();
+    const option = popup.getByRole('option', { name: label, exact: true });
+    await option.waitFor({ state: 'visible' });
+    const inputRect = await input.boundingBox();
+    const optionRect = await option.boundingBox();
+    assert.ok(inputRect && optionRect, 'Input and first option must be visible');
+    const gap = optionRect.y - (inputRect.y + inputRect.height);
+    assert.ok(gap >= -12 && gap <= 48, 'Unexpected empty space between Combobox search and options: ' + gap);
+    await option.click();
     await popup.waitFor({ state: 'hidden' });
 }
 
@@ -60,6 +67,13 @@ try {
     const groupScope = page.getByTestId('group-control');
     await choose(groupScope, 'Role', 'role');
     assert.equal(await page.getByTestId('group-value').textContent(), 'role');
+
+    const compact = page.getByTestId('compact-control');
+    await compact.locator('[data-slot="select-trigger"]').click();
+    const selectPopup = page.locator('[data-slot="select-content"]:visible');
+    await selectPopup.waitFor({ state: 'visible' });
+    await selectPopup.getByRole('option', { name: 'Descending' }).click();
+    assert.equal(await page.getByTestId('direction-value').textContent(), 'desc');
 
     await page.getByRole('button', { name: 'Toggle Filters' }).click();
     const filterScope = page.getByTestId('filter-control');
@@ -89,7 +103,7 @@ try {
     assert.equal(await page.getByTestId('group-value').textContent(), 'verified');
 
     assert.deepEqual(errors, [], 'No client-side React exceptions should occur');
-    console.log('PASS Base UI Combobox opens, filters, selects, submits, works in a Dialog and under RTL');
+    console.log('PASS Base UI Combobox/Select opens, aligns options without gaps, filters, submits, and works in Dialog/RTL');
 } catch (error) {
     await page.screenshot({ path: '/tmp/lavertia-combobox-browser-failure.png', fullPage: true });
     console.error('Browser console errors:', errors);
