@@ -14,6 +14,7 @@ import {
     repeaterFieldNode,
 } from './form-state';
 import { runClientAction } from './client-actions';
+import FilamentTablesLab from './filament-tables-lab';
 import {
     badgeClass,
     headerLinks,
@@ -605,6 +606,9 @@ case 'form':
 
         case 'table':
             return <TablePreview node={node} />;
+
+        case 'filament-tables-lab':
+            return <FilamentTablesLab node={node} />;
 
         case 'action':
             return <ActionLink node={node} />;
