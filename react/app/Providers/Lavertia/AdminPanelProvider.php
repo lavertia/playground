@@ -86,6 +86,8 @@ final class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('invoices', 'Invoices')->icon('receipt')->group('Management'),
                 NavigationItem::make('reports', 'Reports')->icon('chart-column')->group('Management'),
                 NavigationItem::make('billing/reports', 'Billing Reports')->icon('file-chart-column')->badge('New')->group('Management')->parent('reports'),
+                NavigationItem::make('tickets-published', 'Published tickets')->icon('file-text')->group('Management')->resource('demo-tickets', 'published'),
+                NavigationItem::make('tickets-drafts', 'Draft tickets')->icon('file-text')->group('Management')->resource('demo-tickets', 'drafts'),
             ]);
     }
 }
