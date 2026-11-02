@@ -189,7 +189,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
         if (mode !== 'eloquent' || interval < 5000 || interval > 300000) return;
         const timer = window.setInterval(() => {
             if (document.visibilityState === 'visible' && !busy) {
-                router.reload({ preserveScroll: true, preserveState: true });
+                router.reload();
             }
         }, interval);
         return () => window.clearInterval(timer);
@@ -339,7 +339,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                 {typeof node.props.description === 'string' && <p className="max-w-3xl text-sm text-muted-foreground">{node.props.description}</p>}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-                {node.props.pollIntervalMs && mode === 'eloquent' &&
+                {Number(node.props.pollIntervalMs ?? 0) > 0 && mode === 'eloquent' &&
                     <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Polling every {Math.round(Number(node.props.pollIntervalMs) / 1000)}s</span>}
                 {reorderDemo && <button type="button" aria-pressed={reordering} onClick={toggleDemoReorder}
                     className="inline-flex h-9 items-center gap-2 rounded-lg border border-input px-3 text-xs font-semibold hover:bg-muted">
