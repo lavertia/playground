@@ -33,6 +33,7 @@ This page is a **UI behavior laboratory**, not an implementation of Filament or 
 | Feature / Unfeature | Blog posts > action | Local demo |
 | Status badges and boolean icons | Blog posts / Users | Local demo |
 | Grouping and collapsible groups | Group by Role/Verified/Status/Author | Local demo |
+| Searchable compact Select controls | Open Group by, Role, Status or page size, type an option name; Enter selects, Escape closes | Local UI; Eloquent filters use server queries |
 | Status-colored rows | Blog posts > All table options > Status-colored rows | Local demo |
 | Striped/compact rows | All table options | Local demo |
 | Skeleton rows | All table options > Skeleton loading | Local demo |
@@ -62,6 +63,16 @@ The lab runs after panel authentication. Every mutation is only to in-memory
 React state. No POST/PUT/PATCH/DELETE request, no real database writes, no user
 PII from Eloquent, and no tenant identifiers are sent to the lab. The genuine
 Eloquent table is still query-scoped and Policy-gated.
+
+## Select interaction QA
+
+- Table toolbar: **Group by** trigger is compact, keyboard-focusable, and its dropdown supports a search box.
+- Filters: **Role / Verified / Status / Featured** use the same searchable Select. Selecting a draft filter does not apply it until **Apply filters** is clicked.
+- Footer + settings: **Per page** and **Pagination** use compact searchable Select controls.
+- Create/Edit dialogs: role and status dropdowns use the same controlled Select without submitting the form.
+- Existing \`/admin/tables-showcase\` SelectFilters also display searchable dropdowns; Eloquent selection still triggers the original server-side filter query.
+- Test keyboard interactions: open with Enter or ArrowDown, type to narrow, navigate ArrowUp/ArrowDown, choose with Enter, close with Escape, click outside to dismiss.
+- Check empty-search feedback, selection checkmarks, dark/light appearance, narrow viewport, and Arabic RTL.
 
 ## Verification
 
