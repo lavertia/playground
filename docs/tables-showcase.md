@@ -46,3 +46,21 @@ npm run build
 ```
 
 See also: [Tables documentation](https://lavertia.github.io/lavertia-doc/packages/tables/).
+
+## Interactive Filament-style visual lab (P0-10)
+
+Launch **Try Filament-style table lab** from the Tables Showcase page, or open `/lavertia-tables-lab.html` on the Playground. The source is at `react/public/lavertia-tables-lab.html`, and does not require a build step or back-end endpoint.
+
+The visual lab reproduces the screenshot scenarios with 51 fictitious users and 50 fictitious blog posts:
+
+- Search, sortable headers, grouping by field and collapsible groups.
+- Filter popover with Reset / Apply, status and featured/verified filters.
+- Column show/hide and move controls, dark/light, RTL layout, compact/striped/colored rows.
+- Pagination (numbered, simple and cursor-*style preview*), selectable per-page size.
+- Checkbox selection, select-all matching, bulk feature/delete and destructive confirmation.
+- Create/edit/delete with in-browser demo state, drag-and-drop record order and a keyboard fallback.
+- Loading skeleton and empty-state visual examples.
+
+**Important:** This visual lab is an isolated prototype. It does not implement the corresponding `lavertia/tables` Eloquent write APIs, server-side bulk operations, real cursor pagination, server persistence, Form Request validation or cross-adapter support. The existing main Page continues to display a real, authorized Eloquent *read-only* table. Do not treat these local interactions as production-grade server features.
+
+Visual QA: verified HTML/JS syntax and tested the essential interactions using Playwright and Chromium in an isolated browser; repository-wide GitHub CI/browser test suites are separate.
