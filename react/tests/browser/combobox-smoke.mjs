@@ -119,10 +119,55 @@ try {
     await featureLab.getByRole('heading', { name: 'Defining table columns' }).waitFor();
     assert.equal(await featureLab.getByRole('button', { name: 'Filters', exact: true }).count(), 0,
         'Defining columns must not show filters from other experiments');
+    assert.equal(await featureLab.getByRole('button', { name: 'Search table' }).count(), 0,
+        'Defining columns must not show the searchable columns feature');
+    assert.equal(await featureLab.getByRole('columnheader', { name: 'Actions' }).count(), 0,
+        'Defining columns must not show row actions');
+    assert.equal(await featureLab.getByRole('checkbox').count(), 0,
+        'Defining columns must not show record selection');
+    assert.equal(await featureLab.getByRole('navigation', { name: 'Table pagination' }).count(), 0,
+        'Defining columns must not show pagination controls');
+
+    await featureLab.getByRole('button', { name: 'Manage columns' }).click();
+    const manager = page.locator('[data-slot="dropdown-menu-content"]:visible');
+    const menuLabels = async () => (await manager.locator('[data-slot="dropdown-menu-checkbox-item"]').allTextContents())
+        .map(label => label.trim());
+    const tableHeaders = async () => (await featureLab.getByRole('columnheader').allTextContents())
+        .map(label => label.trim());
+    assert.deepEqual(await menuLabels(), ['Name', 'Status', 'Featured']);
+    assert.deepEqual(await tableHeaders(), ['Name', 'Status', 'Featured']);
+
+    await manager.getByRole('button', { name: 'Move Status up' }).click();
+    assert.deepEqual(await menuLabels(), ['Status', 'Name', 'Featured'],
+        'Column manager order must follow live header order');
+    assert.deepEqual(await tableHeaders(), ['Status', 'Name', 'Featured'],
+        'Column header must update with the manager');
+    assert.ok(await manager.getByRole('button', { name: 'Move Status up' }).isDisabled(),
+        'Cannot move the first visible column further up');
+
+    await manager.getByRole('button', { name: 'Move Featured up' }).click();
+    assert.deepEqual(await menuLabels(), ['Status', 'Featured', 'Name']);
+    assert.deepEqual(await tableHeaders(), ['Status', 'Featured', 'Name']);
+
+    await manager.getByRole('button', { name: 'Move Name down' }).isDisabled()
+        .then(disabled => assert.equal(disabled, true));
+    await manager.getByRole('button', { name: 'Move Status down' }).click();
+    assert.deepEqual(await menuLabels(), ['Featured', 'Status', 'Name']);
+    await manager.getByRole('button', { name: 'Reset columns' }).click();
+    assert.deepEqual(await tableHeaders(), ['Name', 'Status', 'Featured']);
+    await page.keyboard.press('Escape');
+
     await featureLab.getByRole('tab', { name: 'PHP source' }).click();
     await featureLab.locator('pre code').getByText("->columns([TextColumn::make('title')])").waitFor();
     await featureLab.getByRole('tab', { name: 'Live preview' }).click();
     await featureLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
+
+    await page.goto(url + '?labFeature=2');
+    const searchLab = page.getByTestId('feature-lab');
+    await searchLab.getByRole('heading', { name: 'Sortable and searchable columns' }).waitFor();
+    await searchLab.getByRole('button', { name: 'Search table' }).waitFor();
+    assert.equal(await searchLab.getByRole('button', { name: 'Manage columns' }).count(), 0,
+        'Search-only example must not include column management');
 
     await page.goto(url + '?labFeature=5');
     const filteringLab = page.getByTestId('feature-lab');
@@ -131,6 +176,14 @@ try {
     await choose(filteringLab, 'Published', 'pub');
     assert.equal(await filteringLab.getByRole('row').count(), 3,
         'The filtering experiment must filter snapshot records');
+
+    await page.goto(url + '?labFeature=6');
+    const actionsLab = page.getByTestId('feature-lab');
+    await actionsLab.getByRole('heading', { name: 'Table actions' }).waitFor();
+    await actionsLab.getByRole('button', { name: 'Actions for record 1' }).waitFor();
+    assert.ok(await actionsLab.getByRole('checkbox').count() > 0,
+        'Selection controls must appear for the actions experiment');
+    assert.equal(await actionsLab.getByRole('button', { name: 'Manage columns' }).count(), 0);
 
     await page.goto(url + '?labFeature=16');
     const reorderLab = page.getByTestId('feature-lab');
@@ -165,6 +218,8 @@ try {
 
             assert.equal(await responsiveLab.getByRole('button', { name: 'Filters', exact: true }).count(), 0,
                 'Column preview must not expose filters at any viewport');
+            assert.equal(await responsiveLab.getByRole('button', { name: 'Search table' }).count(), 0,
+                'Column preview must not expose search at any viewport');
 
             const dimensions = await page.evaluate(() => ({
                 page: document.documentElement.scrollWidth,
@@ -180,10 +235,11 @@ try {
 
             if (width === 390) {
                 const liveTable = responsiveLab.locator('[data-lavertia-table]').first();
-                const searchBox = await liveTable.getByRole('button', { name: 'Search table' }).boundingBox();
                 const columnsBox = await liveTable.getByRole('button', { name: 'Manage columns' }).boundingBox();
-                assert.ok(searchBox && columnsBox && Math.abs(searchBox.y - columnsBox.y) <= 2,
-                    `Mobile table toolbar controls must share one row at ${width}px, ${direction}`);
+                const tableBox = await liveTable.boundingBox();
+                assert.ok(columnsBox && tableBox && columnsBox.x >= tableBox.x
+                    && columnsBox.x + columnsBox.width <= tableBox.x + tableBox.width + 2,
+                    `Mobile column manager must remain inside the table card at ${width}px, ${direction}`);
             }
 
             const codeTab = responsiveLab.getByRole('tab', { name: 'PHP source' });
@@ -200,6 +256,23 @@ try {
             });
         }
     }
+
+    await page.goto(url);
+    const shell = page.getByTestId('shell-slot-test');
+    const slotContent = shell.getByTestId('shell-slot-content');
+    assert.ok(await slotContent.getByText('Workspace', { exact: true }).isVisible());
+    await shell.getByRole('button', { name: 'Toggle rail' }).click();
+    assert.equal(await slotContent.getByText('Workspace', { exact: true }).count(), 0,
+        'Collapsed icon rail must not render a visible Workspace label');
+    assert.equal(await slotContent.getByText('Workspace tools', { exact: true }).count(), 0,
+        'Collapsed icon rail must not render group headings');
+    assert.ok(await slotContent.getByRole('link', { name: 'Workspace' }).isVisible(),
+        'Collapsed navigation icon keeps an accessible link name');
+    assert.ok(await slotContent.getByRole('link', { name: 'Fullscreen' }).isVisible(),
+        'Group children remain accessible when sidebar collapses');
+    await shell.getByRole('button', { name: 'Toggle rail' }).click();
+    assert.ok(await slotContent.getByText('Workspace', { exact: true }).isVisible(),
+        'Expanded rail restores the navigation labels');
 
     assert.deepEqual(errors, [], 'No client-side React exceptions should occur');
     console.log('PASS Base UI controls, native tables and 28-feature Lab preview/code, reorder logs and skeleton');
