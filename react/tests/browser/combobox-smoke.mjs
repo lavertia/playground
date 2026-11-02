@@ -19,7 +19,10 @@ for (let attempt = 0; attempt < 75; attempt++) {
 }
 assert.ok(ready, 'Vite did not serve the Combobox test harness');
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+    headless: true,
+    ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}),
+});
 const page = await browser.newPage({ viewport: { width: 1120, height: 800 } });
 page.on('pageerror', error => errors.push(error.message));
 
