@@ -48,7 +48,8 @@ final class TablesShowcasePage extends Page
                     Action::make('filament-style-lab')
                         ->label('Try Filament-style table lab')
                         ->appearance('primary')
-                        ->url('/lavertia-tables-lab.html'),
+                        ->url('/lavertia-tables-lab.html')
+                        ->openUrlInNewTab(),
                     Action::make('table-docs')
                         ->label('Table documentation')
                         ->appearance('outline')
