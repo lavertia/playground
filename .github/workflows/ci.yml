@@ -117,6 +117,9 @@ jobs:
       - name: Test Table Showcase Page
         if: matrix.stack == 'react'
         run: php artisan test tests/Feature/LavertiaTablesShowcaseTest.php --compact
+      - name: Test Filament-style React Table Lab
+        if: matrix.stack == 'react'
+        run: php artisan test tests/Feature/LavertiaFilamentTablesLabTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
