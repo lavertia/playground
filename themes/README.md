@@ -15,10 +15,15 @@ JavaScript or override host components. Native renderer extension registries,
 multi-mode palettes, typography tokens and an interactive theme preview are
 tracked in lavertia/panels#28.
 
-## Publishing
+## Theme package repository
 
-`themes/default` is a portable Composer package. It currently lives here
-because creation of the intended standalone `lavertia/theme-default`
-repository is not available via the current connected GitHub tool.
-To publish, extract it into that dedicated repo, add independent CI/semver
-and register it on Packagist. Do not claim it is hosted separately yet.
+The default theme has been transferred to
+[lavertia/theme_default](https://github.com/lavertia/theme_default)
+(Composer package name: `lavertia/theme-default`).
+
+The standalone repository now owns its Composer manifest, PHP theme class,
+license, documentation and CI. The previous `themes/default` directory in
+Playground is retired, so changes must be made in the theme repository.
+
+The repository is currently private; Packagist publication and compatibility
+with an officially tagged Panels P0-04 release are not yet complete.
