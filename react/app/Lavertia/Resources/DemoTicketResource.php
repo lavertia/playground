@@ -5,38 +5,37 @@ declare(strict_types=1);
 namespace App\Lavertia\Resources;
 
 use App\Lavertia\Models\DemoTicket;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
+use App\Lavertia\Resources\Queries\DemoTicketQuery;
 use Lavertia\Panels\Resources\Resource;
 
+/**
+ * Property-first Resource metadata; the same Page class is reused under
+ * several route names with independent, immutable configuration parameters.
+ */
 final class DemoTicketResource extends Resource
 {
-    public static function slug(): string
-    {
-        return 'demo-tickets';
-    }
+    protected static ?string $slug = 'demo-tickets';
 
-    public static function model(): string
-    {
-        return DemoTicket::class;
-    }
+    protected static ?string $model = DemoTicket::class;
 
-    public static function query(): Builder
-    {
-        // The record belongs to both the signed-in user and active team.
-        // This scope is applied BEFORE route record lookup or widget serialization.
-        return DemoTicket::query()
-            ->where('owner_id', Auth::id())
-            ->where('team_id', Auth::user()?->current_team_id);
-    }
+    protected static ?string $queryProvider = DemoTicketQuery::class;
 
     public static function pages(): array
     {
         return [
             'list' => Pages\ListDemoTickets::class,
+            'published' => Pages\ListDemoTickets::route('/published')
+                ->action('list')
+                ->parameters(['status' => 'published', 'heading' => 'Published tickets']),
+            'drafts' => Pages\ListDemoTickets::route('/drafts')
+                ->action('list')
+                ->parameters(['status' => 'draft', 'heading' => 'Draft tickets']),
             'create' => Pages\CreateDemoTicket::class,
             'view' => Pages\ViewDemoTicket::class,
             'edit' => Pages\EditDemoTicket::class,
+            'history' => Pages\ViewDemoTicket::route('/{record}/history/{period}')
+                ->action('view')
+                ->parameters(['heading' => 'Ticket history']),
         ];
     }
 }
