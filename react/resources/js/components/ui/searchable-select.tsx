@@ -56,7 +56,15 @@ export function SearchableSelect({
     required = false,
 }: SearchableSelectProps) {
     const triggerRootRef = React.useRef<HTMLDivElement>(null);
+    // Resolve the portal before opening, rather than changing its parent mid-open.
+    // A Radix Dialog traps focus; portalling into its content keeps the input usable.
     const [dialogContainer, setDialogContainer] = React.useState<HTMLElement | null>(null);
+
+    React.useLayoutEffect(() => {
+        setDialogContainer(
+            triggerRootRef.current?.closest<HTMLElement>('[data-slot="dialog-content"]') ?? null,
+        );
+    }, []);
 
     const items = React.useMemo(() => [...options], [options]);
     const current = items.find((item) => item.value === value) ?? null;
@@ -69,19 +77,16 @@ export function SearchableSelect({
             items={items}
             value={current}
             isItemEqualToValue={(item, selected) => item.value === selected.value}
+            itemToStringLabel={(item) => item.label}
+            itemToStringValue={(item) => item.value}
             onValueChange={(item) => {
                 if (item && !item.disabled) onValueChange(item.value);
-            }}
-            onOpenChange={(open) => {
-                if (open) {
-                    // Keep the popup inside the existing Radix modal focus trap.
-                    setDialogContainer(triggerRootRef.current?.closest<HTMLElement>('[data-slot="dialog-content"]') ?? null);
-                }
             }}
             autoHighlight
         >
             <div ref={triggerRootRef} className={cn('min-w-0', className)}>
                 <ComboboxTrigger
+                    type="button"
                     aria-label={label}
                     disabled={disabled}
                     size={size}
