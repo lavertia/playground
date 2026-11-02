@@ -27,8 +27,16 @@ final class DemoTablesSeeder extends Seeder
 
         $owner = User::query()->where('email', 'test@example.com')->first();
 
-        if (! $owner || ! $owner->currentTeam || ! $owner->belongsToTeam($owner->currentTeam)) {
-            throw new RuntimeException('Run php artisan db:seed first to create the local Test User and team.');
+        if ($owner === null) {
+            $owner = User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'password' => Str::random(48),
+            ]);
+        }
+
+        if (! $owner->currentTeam || ! $owner->belongsToTeam($owner->currentTeam)) {
+            throw new RuntimeException('Local Test User must belong to the selected team.');
         }
 
         $teamId = (int) $owner->currentTeam->getKey();
