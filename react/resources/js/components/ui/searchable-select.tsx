@@ -17,6 +17,8 @@ export interface SearchableOption {
     value: string;
     label: string;
     disabled?: boolean;
+    name?: string;
+    required?: boolean;
 }
 
 export interface SearchableSelectProps {
@@ -50,6 +52,8 @@ export function SearchableSelect({
     className,
     size = 'default',
     disabled = false,
+    name,
+    required = false,
 }: SearchableSelectProps) {
     const triggerRootRef = React.useRef<HTMLDivElement>(null);
     const [dialogContainer, setDialogContainer] = React.useState<HTMLElement | null>(null);
@@ -59,6 +63,9 @@ export function SearchableSelect({
 
     return (
         <Combobox
+            name={name}
+            required={required}
+            disabled={disabled}
             items={items}
             value={current}
             isItemEqualToValue={(item, selected) => item.value === selected.value}
