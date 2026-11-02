@@ -2,7 +2,7 @@
 
 ## Goal
 
-Replace the two separately coded browser-only table engines
+Replace and delete the two separately coded browser-only table engines
 (`filament-tables-lab.tsx` and `commerce-tables-lab.tsx`) with one common,
 server-owned, declarative `Lavertia\Tables\Components\Table` protocol.
 The four new PHP definitions use the same React `LavertiaTable` renderer:
