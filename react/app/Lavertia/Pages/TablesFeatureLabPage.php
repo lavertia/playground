@@ -87,25 +87,19 @@ final class TablesFeatureLabPage extends Page
 
     public function featureTable(int $feature, int $teamId, bool $usesEloquent): Table
     {
-        $table = $this->applyLabDefaults(Table::make('feature-explorer'))
+        // Only the structural columns are shared. Every optional behavior is
+        // explicitly enabled for the experiment that actually teaches it.
+        $table = $this->applyLabDefaults(Table::make('feature-explorer'), $feature)
             ->label('Blog posts')
-            ->description('One PHP-defined LavertiaTable. Changes to this scenario are read-only or browser-local.')
-            ->columns([
-                TextColumn::make('id')->label('ID')->hidden(),
-                TextColumn::make('title')->label('Title')->sortable()->searchable(),
-                TextColumn::make('slug')->label('Slug')->sortable()->searchable()->toggleable(),
-                TextColumn::make('status')->label('Status')->sortable()->badge([
-                    'draft' => 'neutral',
-                    'reviewing' => 'warning',
-                    'published' => 'success',
-                ]),
-                TextColumn::make('author')->label('Author')->toggleable(),
-                IconColumn::make('featured')->label('Featured')->boolean()->toggleable(),
-                TextColumn::make('sort_order')->label('Sort order')->sortable()->toggleable(true, true),
-            ]);
+            ->description('Focused, read-only table experiment. Only relevant controls are displayed.')
+            ->columns($this->featureColumns($feature));
 
-        // The Lab is an isolated feature explorer, not a table with every
-        // capability always enabled. Only the filtering example defines filters.
+        if ($feature === 4) {
+            $table = $table->pushColumns([
+                TextColumn::make('created_at')->label('Created at'),
+            ]);
+        }
+
         if ($feature === 5) {
             $table = $table->filters([
                 SelectFilter::make('status')->label('Status')->options([
@@ -117,12 +111,6 @@ final class TablesFeatureLabPage extends Page
                     '1' => 'Yes',
                     '0' => 'No',
                 ]),
-            ]);
-        }
-
-        if ($feature === 4) {
-            $table = $table->pushColumns([
-                TextColumn::make('created_at')->label('Created at')->toggleable()->sortable(),
             ]);
         }
 
@@ -184,8 +172,14 @@ final class TablesFeatureLabPage extends Page
                 );
             }
 
+            $query = DemoPost::query()->where('team_id', $teamId);
+
+            if ($feature === 3) {
+                $query->with('authorUser:id,name');
+            }
+
             return $table->eloquent(
-                DemoPost::query()->where('team_id', $teamId)->with('authorUser:id,name'),
+                $query,
                 fn (): bool => auth()->user()?->teamMemberships()
                     ->where('team_id', $teamId)->exists() === true,
                 10,
@@ -195,12 +189,60 @@ final class TablesFeatureLabPage extends Page
         return $table->rows(self::sampleRows());
     }
 
-    private function applyLabDefaults(Table $table): Table
+    /** @return list<\Lavertia\Support\Contracts\TableColumnComponent> */
+    private function featureColumns(int $feature): array
     {
+        $arrangeColumns = in_array($feature, [1, 28], true);
+        $columns = [
+            TextColumn::make('id')->label('ID')->hidden(),
+            $feature === 2
+                ? TextColumn::make('title')->label('Title')->sortable()->searchable()
+                : ($feature === 23 || $feature === 28
+                    ? TextColumn::make('title')->label('Title')->searchable()
+                    : TextColumn::make('title')->label('Title')),
+            $feature === 2
+                ? TextColumn::make('slug')->label('Slug')->sortable()
+                : ($arrangeColumns
+                    ? TextColumn::make('slug')->label('Slug')->toggleable()
+                    : TextColumn::make('slug')->label('Slug')),
+            in_array($feature, [25, 27], true)
+                ? TextColumn::make('status')->label('Status')->badge([
+                    'draft' => 'neutral',
+                    'reviewing' => 'warning',
+                    'published' => 'success',
+                ])
+                : TextColumn::make('status')->label('Status'),
+        ];
+
+        if ($arrangeColumns || $feature === 3) {
+            $columns[] = TextColumn::make('author')->label('Author')
+                ->toggleable($arrangeColumns);
+        }
+
+        if ($feature === 1) {
+            $columns[] = IconColumn::make('featured')->label('Featured')
+                ->boolean()->toggleable();
+        }
+
+        if (in_array($feature, [16, 17, 18], true)) {
+            $columns[] = TextColumn::make('sort_order')->label('Sort order');
+        }
+
+        return $columns;
+    }
+
+    private function applyLabDefaults(Table $table, int $feature): Table
+    {
+        $arrangeColumns = in_array($feature, [1, 28], true);
+        $paginationFeatures = in_array($feature, [7, 8, 9, 10, 11, 12, 13, 14, 24], true);
+
         return $table
-            ->searchable()
-            ->columnManager()
-            ->reorderableColumns()
+            ->searchable(in_array($feature, [2, 23, 28], true))
+            ->columnManager($arrangeColumns)
+            ->reorderableColumns($arrangeColumns)
+            ->selectable($feature === 6)
+            ->recordActions($feature === 6)
+            ->paginationControls($paginationFeatures)
             ->paginationPageOptions([5, 10, 25, 50])
             ->extremePaginationLinks(false);
     }
