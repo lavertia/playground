@@ -114,6 +114,10 @@ try {
     await page.getByRole('menuitemcheckbox', { name: 'Status' }).click();
     assert.equal(await table.getByRole('columnheader', { name: 'Status' }).count(), 0,
         'Column manager must update the shared table renderer');
+    // Radix keeps the checkbox menu open after toggling. Close the unrelated
+    // native-table menu before checking the Lab's portal-based column manager.
+    await page.keyboard.press('Escape');
+    await page.locator('[data-slot="dropdown-menu-content"]:visible').waitFor({ state: 'hidden' });
 
     const featureLab = page.getByTestId('feature-lab');
     await featureLab.getByRole('heading', { name: 'Defining table columns' }).waitFor();
