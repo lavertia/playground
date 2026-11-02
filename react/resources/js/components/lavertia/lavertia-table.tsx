@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { router } from '@inertiajs/react';
 import {
@@ -368,7 +368,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {groups.map(([label, groupRows]) => <>
+                    {groups.map(([label, groupRows]) => <Fragment key={label}>
                         {groupKey !== 'none' && <tr key={'group-' + label} className="border-b border-border bg-muted/25">
                             <td colSpan={ordered.length + 1} className="px-5 py-2">
                                 <button type="button" aria-expanded={!collapsed.includes(label)} onClick={() => setCollapsed(old =>
@@ -385,7 +385,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                     {renderCell(row, col)}
                                 </td>)}
                             </tr>)}
-                    </>)}
+                    </Fragment>)}
                     {shown.length === 0 && <tr><td colSpan={ordered.length + 1} className="px-5 py-12 text-center text-muted-foreground">
                         {tx('noResults')} {mode === 'eloquent' ? 'Try another filter or seed the demo tables.' : ''}
                     </td></tr>}
