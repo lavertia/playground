@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { CalendarDays, CheckCircle2, Copy, Filter, Hash, Plus, RotateCcw, Trash2, Type } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { ConstraintPicker } from './constraint-picker';
 import { cn } from '@/lib/utils';
 import {
     countRules, createRule, fieldOperator, MAX_GROUP_DEPTH, MAX_RULES, needsValue,
@@ -85,8 +86,7 @@ export function QueryBuilderEditor({ value, fields, onChange, onApply, onReset, 
         return <div key={rule.id} className="grid min-w-0 gap-2 rounded-lg border border-border/70 bg-background/65 p-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-end">
             <div className="min-w-0 space-y-1.5">
                 <span className="flex items-center gap-1.5 text-xs font-medium"><FieldIcon className="size-3.5 text-muted-foreground" /> Field</span>
-                <SearchableSelect label="Filter field" className="w-full" value={chosen.key}
-                    options={fields.map(x => ({ value: x.key, label: x.label }))}
+                <ConstraintPicker fields={fields} value={chosen.key}
                     onValueChange={field => {
                         const next = fields.find(x => x.key === field);
                         if (next) setRule(rule.id, { field, operator: fieldOperator(next), value: '', valueTo: '' });
