@@ -46,6 +46,12 @@ const labFeatures = [
         snippet: "->columns([TextColumn::make('title')])",
     },
     {
+        id: 5, title: 'Defining filters', group: 'Filters & actions', status: 'native',
+        description: 'The only scenario in this harness with filter controls.',
+        exercise: 'Open Filters and select a post status.',
+        snippet: "->filters([SelectFilter::make('status')])",
+    },
+    {
         id: 16, title: 'Reordering records', group: 'Rows & reordering', status: 'demo',
         description: 'Local reordering only.', exercise: 'Move a record locally.',
         snippet: '// Local only; no database writes',
@@ -57,13 +63,21 @@ const labFeatures = [
     },
 ];
 const selectedLabFeature = Number(new URLSearchParams(window.location.search).get('labFeature') ?? '1');
+// The standalone native-table test intentionally retains a filter; the
+// feature-lab preview mirrors server configuration for the selected scenario.
+const labTable: ComponentNode = {
+    ...sampleTable,
+    components: selectedLabFeature === 5
+        ? sampleTable.components
+        : sampleTable.components.filter(component => component.type !== 'select-filter'),
+};
 const labNode: ComponentNode = {
     type: 'tables-feature-lab', key: 'smoke-feature-lab',
     props: {
         active: selectedLabFeature, catalog: labFeatures,
         databaseReady: false, selectedRecord: null, demoOnly: true, locale: 'en',
     },
-    components: [sampleTable],
+    components: [labTable],
 };
 
 function Harness() {
