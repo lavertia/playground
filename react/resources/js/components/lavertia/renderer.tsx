@@ -16,6 +16,7 @@ import {
 import { runClientAction } from './client-actions';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import FilamentTablesLab from './filament-tables-lab';
+import CommerceTablesLab from './commerce-tables-lab';
 import {
     badgeClass,
     headerLinks,
@@ -630,6 +631,9 @@ case 'form':
 
         case 'filament-tables-lab':
             return <FilamentTablesLab node={node} />;
+
+        case 'commerce-tables-lab':
+            return <CommerceTablesLab node={node} />;
 
         case 'action':
             return <ActionLink node={node} />;
