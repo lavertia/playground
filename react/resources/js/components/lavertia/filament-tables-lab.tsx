@@ -6,6 +6,7 @@ import {
     Layers3, Pencil, Plus, RotateCcw, Search, Trash2, XCircle,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -38,6 +39,45 @@ const postColumns: Column[] = [
     { key: 'featured', label: 'Is featured', sortable: true, hideable: true },
 ];
 const initialFilters: FilterState = { status: 'all', role: 'all', verified: 'all', featured: 'all' };
+
+const roles = [
+    { value: 'Admin', label: 'Admin' },
+    { value: 'Editor', label: 'Editor' },
+    { value: 'Member', label: 'Member' },
+];
+const roleFilterOptions = [{ value: 'all', label: 'All roles' }, ...roles];
+const verificationFilterOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'true', label: 'Verified' },
+    { value: 'false', label: 'Not verified' },
+];
+const statuses = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'reviewing', label: 'Reviewing' },
+    { value: 'published', label: 'Published' },
+];
+const statusFilterOptions = [{ value: 'all', label: 'All statuses' }, ...statuses];
+const featuredFilterOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'true', label: 'Featured' },
+    { value: 'false', label: 'Not featured' },
+];
+const groupUserOptions = [
+    { value: 'none', label: 'None' },
+    { value: 'role', label: 'Role' },
+    { value: 'verified', label: 'Verified' },
+];
+const groupPostOptions = [
+    { value: 'none', label: 'None' },
+    { value: 'status', label: 'Status' },
+    { value: 'author', label: 'Author' },
+    { value: 'featured', label: 'Featured' },
+];
+const pageSizeOptions = [5, 10, 25, 50].map((size) => ({ value: String(size), label: String(size) }));
+const pageStyleOptions = [
+    { value: 'numbered', label: 'Numbered' },
+    { value: 'simple', label: 'Simple' },
+];
 const emptyValues: EditValues = {
     name: '', email: '', role: 'Member', verified: false,
     title: '', author: 'Dan Harrin', status: 'draft', featured: false,
@@ -374,13 +414,13 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
                             <button type="button" className={buttonClass + ' text-rose-600 dark:text-rose-400'} onClick={() => openModal('bulk-delete')}><Trash2 className="size-4" />Delete selected</button>
                             <button type="button" className="text-xs text-amber-600 hover:underline" onClick={() => setSelected(filteredIds)}>Select all {filtered.length}</button>
                             <button type="button" className="text-xs text-muted-foreground hover:underline" onClick={() => setSelected([])}>Deselect all</button>
-                        </> : <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                            <Layers3 className="size-4" /> Group by
-                            <select aria-label="Group by" value={groupBy} onChange={(event) => { setGroupBy(event.target.value); setCollapsedGroups([]); }} className={controlClass}>
-                                <option value="none">None</option>
-                                {(isUsers ? ['role', 'verified'] : ['status', 'author', 'featured']).map((key) => <option key={key} value={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</option>)}
-                            </select>
-                        </label>}
+                        </> : <div className="inline-flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+                            <Layers3 aria-hidden="true" className="size-4 shrink-0" />
+                            <span className="whitespace-nowrap">Group by</span>
+                            <SearchableSelect label="Group by" size="sm" className="w-36"
+                                value={groupBy} options={isUsers ? groupUserOptions : groupPostOptions}
+                                onValueChange={(value) => { setGroupBy(value); setCollapsedGroups([]); }} />
+                        </div>}
                 </div>
                 <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
                     <label className="relative min-w-0 flex-1 sm:w-60 sm:flex-none"><Search aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -391,11 +431,23 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
                         {filterOpen && <div className="absolute end-0 z-30 mt-2 w-[min(90vw,320px)] space-y-4 rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-xl">
                             <div className="flex items-center justify-between"><h3 className="font-semibold">Filters</h3><button type="button" className="text-xs text-rose-600 hover:underline" onClick={() => { setFilters(initialFilters); setDraftFilters(initialFilters); setPage(1); }}>Reset</button></div>
                             {isUsers ? <>
-                                <label className="block space-y-1.5 text-sm"><span>Role</span><select className={controlClass + ' w-full'} value={draftFilters.role} onChange={(event) => setDraftFilters((old) => ({ ...old, role: event.target.value }))}><option value="all">All roles</option><option>Admin</option><option>Editor</option><option>Member</option></select></label>
-                                <label className="block space-y-1.5 text-sm"><span>Verified</span><select className={controlClass + ' w-full'} value={draftFilters.verified} onChange={(event) => setDraftFilters((old) => ({ ...old, verified: event.target.value }))}><option value="all">All</option><option value="true">Verified</option><option value="false">Not verified</option></select></label>
+                                <div className="space-y-1.5 text-sm"><span className="block font-medium">Role</span>
+                                    <SearchableSelect label="Role" className="w-full" value={draftFilters.role} options={roleFilterOptions}
+                                        onValueChange={(role) => setDraftFilters((old) => ({ ...old, role }))} />
+                                </div>
+                                <div className="space-y-1.5 text-sm"><span className="block font-medium">Verified</span>
+                                    <SearchableSelect label="Verified" className="w-full" value={draftFilters.verified} options={verificationFilterOptions}
+                                        onValueChange={(verified) => setDraftFilters((old) => ({ ...old, verified }))} />
+                                </div>
                             </> : <>
-                                <label className="block space-y-1.5 text-sm"><span>Status</span><select className={controlClass + ' w-full'} value={draftFilters.status} onChange={(event) => setDraftFilters((old) => ({ ...old, status: event.target.value }))}><option value="all">All statuses</option><option value="published">Published</option><option value="reviewing">Reviewing</option><option value="draft">Draft</option></select></label>
-                                <label className="block space-y-1.5 text-sm"><span>Is featured</span><select className={controlClass + ' w-full'} value={draftFilters.featured} onChange={(event) => setDraftFilters((old) => ({ ...old, featured: event.target.value }))}><option value="all">All</option><option value="true">Featured</option><option value="false">Not featured</option></select></label>
+                                <div className="space-y-1.5 text-sm"><span className="block font-medium">Status</span>
+                                    <SearchableSelect label="Status" className="w-full" value={draftFilters.status} options={statusFilterOptions}
+                                        onValueChange={(status) => setDraftFilters((old) => ({ ...old, status }))} />
+                                </div>
+                                <div className="space-y-1.5 text-sm"><span className="block font-medium">Is featured</span>
+                                    <SearchableSelect label="Is featured" className="w-full" value={draftFilters.featured} options={featuredFilterOptions}
+                                        onValueChange={(featured) => setDraftFilters((old) => ({ ...old, featured }))} />
+                                </div>
                             </>}
                             <button type="button" onClick={() => { setFilters(draftFilters); setFilterOpen(false); setPage(1); setSelected([]); }} className="min-h-10 rounded-lg bg-amber-500 px-4 text-sm font-semibold text-black hover:bg-amber-400">Apply filters</button>
                         </div>}
@@ -437,7 +489,11 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
 
             <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border px-4 py-3 text-sm sm:px-5">
                 <p aria-live="polite" className="text-muted-foreground">Showing {from} to {to} of {filtered.length} results</p>
-                <label className="inline-flex items-center gap-2 text-muted-foreground">Per page <select className={controlClass} value={perPage} onChange={(event) => { setPerPage(Number(event.target.value)); setPage(1); }}><option value={5}>5</option><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select></label>
+                <div className="inline-flex items-center gap-2 text-muted-foreground"><span>Per page</span>
+                    <SearchableSelect label="Rows per page" size="sm" className="w-20"
+                        value={String(perPage)} options={pageSizeOptions}
+                        onValueChange={(value) => { setPerPage(Number(value)); setPage(1); }} />
+                </div>
                 <nav aria-label="Table pagination" className="flex items-center gap-0 overflow-hidden rounded-lg border border-border bg-background">
                     {pageStyle === 'numbered' && <button type="button" className={iconButton} disabled={currentPage === 1} aria-label="First page" onClick={() => setPage(1)}><ChevronsLeft className="size-4" /></button>}
                     <button type="button" className={iconButton} disabled={currentPage === 1} aria-label="Previous page" onClick={() => setPage(currentPage - 1)}><ChevronLeft className="size-4" /></button>
@@ -456,7 +512,10 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
                 <button type="button" className={buttonClass} onClick={() => setShowOptions(!showOptions)}><ChevronDown className={'size-4 ' + (showOptions ? 'rotate-180' : '')} />{showOptions ? 'Hide options' : 'All table options'}</button></div>
             {showOptions && <div className="mt-4 flex flex-wrap gap-x-6 gap-y-4 border-t border-border pt-4">
                 {([['striped', striped, setStriped, 'Striped rows'], ['tinted', tinted, setTinted, 'Status-colored rows'], ['compact', compact, setCompact, 'Compact density'], ['showHeader', showHeader, setShowHeader, 'Header'], ['skeleton', skeleton, setSkeleton, 'Skeleton loading']] as const).map(([key, value, setter, title]) => <label key={key} className="inline-flex cursor-pointer items-center gap-2 text-sm"><Checkbox checked={value} onCheckedChange={(checked) => setter(checked === true)} />{title}</label>)}
-                <label className="inline-flex items-center gap-2 text-sm">Pagination <select value={pageStyle} onChange={(event) => setPageStyle(event.target.value as PageStyle)} className={controlClass}><option value="numbered">Numbered</option><option value="simple">Simple</option></select></label>
+                <div className="inline-flex items-center gap-2 text-sm"><span>Pagination</span>
+                    <SearchableSelect label="Pagination" size="sm" className="w-36" value={pageStyle}
+                        options={pageStyleOptions} onValueChange={(value) => setPageStyle(value as PageStyle)} />
+                </div>
                 <button type="button" className={buttonClass} onClick={resetView}><RotateCcw className="size-4" />Reset search & filters</button>
             </div>}
         </div>
@@ -473,12 +532,18 @@ export default function FilamentTablesLab({ node }: { node: ComponentNode }) {
                         {isUsers ? <>
                             <label className="block space-y-1.5 text-sm">Name <input required className={controlClass + ' w-full'} value={values.name} onChange={(event) => setValues((old) => ({ ...old, name: event.target.value }))} /></label>
                             <label className="block space-y-1.5 text-sm">Email address <input required type="email" className={controlClass + ' w-full'} value={values.email} onChange={(event) => setValues((old) => ({ ...old, email: event.target.value }))} /></label>
-                            <label className="block space-y-1.5 text-sm">Role <select className={controlClass + ' w-full'} value={values.role} onChange={(event) => setValues((old) => ({ ...old, role: event.target.value }))}><option>Admin</option><option>Editor</option><option>Member</option></select></label>
+                            <div className="space-y-1.5 text-sm"><span className="block font-medium">Role</span>
+                                <SearchableSelect label="User role" className="w-full" value={values.role}
+                                    options={roles} onValueChange={(role) => setValues((old) => ({ ...old, role }))} />
+                            </div>
                             <label className="inline-flex items-center gap-2 text-sm"><Checkbox checked={values.verified} onCheckedChange={(value) => setValues((old) => ({ ...old, verified: value === true }))} />Verified</label>
                         </> : <>
                             <label className="block space-y-1.5 text-sm">Title <input required className={controlClass + ' w-full'} value={values.title} onChange={(event) => setValues((old) => ({ ...old, title: event.target.value }))} /></label>
                             <label className="block space-y-1.5 text-sm">Author <input required className={controlClass + ' w-full'} value={values.author} onChange={(event) => setValues((old) => ({ ...old, author: event.target.value }))} /></label>
-                            <label className="block space-y-1.5 text-sm">Status <select className={controlClass + ' w-full'} value={values.status} onChange={(event) => setValues((old) => ({ ...old, status: event.target.value }))}><option value="draft">Draft</option><option value="reviewing">Reviewing</option><option value="published">Published</option></select></label>
+                            <div className="space-y-1.5 text-sm"><span className="block font-medium">Status</span>
+                                <SearchableSelect label="Post status" className="w-full" value={values.status}
+                                    options={statuses} onValueChange={(status) => setValues((old) => ({ ...old, status }))} />
+                            </div>
                             <label className="inline-flex items-center gap-2 text-sm"><Checkbox checked={values.featured} onCheckedChange={(value) => setValues((old) => ({ ...old, featured: value === true }))} />Featured</label>
                         </>}
                         <DialogFooter><button type="button" className={buttonClass} onClick={() => setModal(null)}>Cancel</button><button type="submit" className="min-h-9 rounded-lg bg-amber-500 px-4 text-sm font-semibold text-black hover:bg-amber-400">Save locally</button></DialogFooter>
