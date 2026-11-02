@@ -2005,7 +2005,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../panels",
-                "reference": "4b227ac95785166a05892e919d687685eee4669b"
+                "reference": "9113e530ac578f20a69a8db02835af3ebd6a6677"
             },
             "require": {
                 "inertiajs/inertia-laravel": "^3.0",
