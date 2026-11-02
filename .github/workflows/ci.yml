@@ -161,6 +161,17 @@ jobs:
             exit 1
           fi
 
+      - name: Upload Tables Lab responsive screenshots
+        if: ${{ always() && matrix.stack == 'react' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tables-feature-lab-responsive-qa
+          path: |
+            /tmp/lavertia-table-lab-*.png
+            /tmp/lavertia-combobox-browser-failure.png
+          if-no-files-found: ignore
+          retention-days: 7
+
   required:
     name: Three-stack runtime verification
     needs: [static, integration]
