@@ -23,6 +23,12 @@ Route: /admin/tables-feature-lab (requires login and current-team authorization)
 | 27 | Partial | Safe semantic tones rather than arbitrary class closures |
 | 28 | Guide | Shared PHP presets; no framework-wide configureUsing hook |
 
+## Scenario-scoped filters (2026-11-02)
+
+The `TablesFeatureLabPage` PHP builder now includes `SelectFilter` definitions **only for experiment 5: Defining filters**. Experiment 1 (Defining table columns) and the remaining examples do not serialize unrelated filter components, so the shared React `LavertiaTable` naturally hides the Filter button. This is a PHP feature definition change, **not a CSS-only hide**. A manually supplied `lvt_feature-explorer_filter_status` query parameter is ignored by Eloquent tables without the filter configuration.
+
+The browser harness retains a separate generic native-table fixture with filters for regression coverage. Its feature-lab fixture now enables the filter only for experiment 5. The PHPUnit integration checks both the absence of filter components in unrelated experiments and actual SQL filtering in experiment 5; Chromium checks filter visibility and behavior.
+
 ## Sources
 
 - PHP Page: react/app/Lavertia/Pages/TablesFeatureLabPage.php
