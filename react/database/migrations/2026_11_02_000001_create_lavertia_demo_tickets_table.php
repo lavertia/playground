@@ -15,9 +15,10 @@ return new class extends Migration
             $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
             $table->unsignedBigInteger('team_id')->nullable()->index();
             $table->string('title', 160);
+            $table->string('status', 16)->default('draft');
             $table->timestamps();
 
-            $table->index(['owner_id', 'team_id']);
+            $table->index(['owner_id', 'team_id', 'status']);
         });
     }
 
