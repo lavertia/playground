@@ -1,0 +1,38 @@
+name: One-time Base UI lockfile refresh
+
+# Temporary, branch-scoped tool to synchronize npm's canonical lockfile.
+on:
+  push:
+    branches:
+      - feat/p0-10-filament-tables-lab
+    paths:
+      - react/package.json
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regenerate lockfile without running dependency scripts
+        working-directory: react
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify only expected lockfile is changed
+        run: |
+          git diff --exit-code -- react/package.json
+          git diff --name-only | grep -qx 'react/package-lock.json'
+      - name: Commit generated lockfile
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add react/package-lock.json
+          git commit -m 'build(react): synchronize Base UI dependency lockfile'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
