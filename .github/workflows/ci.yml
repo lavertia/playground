@@ -143,7 +143,12 @@ jobs:
           npm run dev -- --host 127.0.0.1 --port 5173 > /tmp/lavertia-vite.log 2>&1 &
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
-          node tests/browser/combobox-smoke.mjs
+          if ! node tests/browser/combobox-smoke.mjs; then
+            echo "::group::Vite browser harness diagnostics"
+            tail -n 120 /tmp/lavertia-vite.log || true
+            echo "::endgroup::"
+            exit 1
+          fi
 
   required:
     name: Three-stack runtime verification
