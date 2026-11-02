@@ -17,12 +17,12 @@ Reproduce important **Filament 5 Tables Demo** interactions inside the **Laverti
 | Orders | 1,011 fictional orders, status tabs with real sample counts, group by status/date, ascending/descending | Browser state |
 | Stats | Recompute totals/inventory/average from the currently matching sample rows | Browser state |
 | Query Builder | Match ALL (AND) or ANY (OR), nested groups (3 levels), up to 24 rules | Browser state |
-| Field chooser | Searchable shadcn Base Combobox, type-aware operators | Browser state |
+| Field chooser | Searchable two-column shadcn Base Combobox with icons and type-aware operators | Browser state |
 | Operators | Contains, Not contains, Equals, Range, Before/After, Is true/false, Is empty | Browser state |
 | Rules | Add, duplicate, remove, validation, Apply & Reset | Browser state |
 | Table controls | Search, sort, column picker, pagination, page size, bulk selection, row actions | Browser state |
 | Summaries | Orders page subtotal and all matching orders subtotal for total/shipping | Browser state |
-| CRUD demo | New, View, Duplicate, Delete with dialog confirmation | Browser state |
+| CRUD demo | New, View, Edit, Duplicate, Delete with dialog confirmation | Browser state |
 | Theming | Existing Playground light/dark and panel RTL/LTR direction | Client layout |
 
 The product image column intentionally uses distinct **local thumbnail placeholders** instead of fetching unreliable external photos. The values are deterministic fictional fixtures.
@@ -33,6 +33,7 @@ The product image column intentionally uses distinct **local thumbnail placehold
 - `react/app/Lavertia/Components/CommerceTablesLab.php` — deterministic non-production fixture arrays
 - `react/resources/js/components/lavertia/commerce-tables-lab.tsx` — Products/Orders UI
 - `react/resources/js/components/lavertia/query-builder-editor.tsx` — reusable query UI
+- `react/resources/js/components/lavertia/constraint-picker.tsx` — two-column shadcn Combobox field menu
 - `react/resources/js/components/lavertia/filter-query.ts` — typed expression evaluator
 - `react/resources/js/components/lavertia/renderer.tsx` — Lavertia component adapter
 - `react/tests/Feature/LavertiaCommerceTablesLabTest.php` — authenticated response tests
