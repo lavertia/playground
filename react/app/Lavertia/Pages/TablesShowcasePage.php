@@ -45,6 +45,10 @@ final class TablesShowcasePage extends Page
                     .'The directory is fictitious; tickets below use your real authorized Eloquent scope.',
                 )
                 ->actions([
+                    Action::make('filament-style-lab')
+                        ->label('Try Filament-style table lab')
+                        ->appearance('primary')
+                        ->url('/lavertia-tables-lab.html'),
                     Action::make('table-docs')
                         ->label('Table documentation')
                         ->appearance('outline')
