@@ -57,3 +57,15 @@ Optional local-only Eloquent data: configure LAVERTIA_DEMO_OWNER_EMAIL for an ex
 ## Checks and boundaries
 
 Run php artisan test tests/Feature/LavertiaTablesFeatureLabTest.php, npm run types:check and npm run build. CI also verifies PHP package tests/Pint and browser interactions in Chromium. Auth and membership scopes are enforced before reading records. A disabled paginator cannot send more than 100 Eloquent records. Do not treat this lab as complete Filament compatibility: persistent reorder hooks, real Scout, deferred server-loading, full CRUD, arbitrary class callbacks and global configureUsing are not implemented.
+
+## Responsive and keyboard QA (2026-11-02)
+
+The React Chromium harness no longer constrains the entire feature lab to a 576px column. It uses the real responsive two-column layout at desktop widths.
+
+The CI browser smoke now checks **390px, 768px and 1440px**, each in **LTR/light** and **RTL/dark** mode. At each width, it verifies the active preview, no document-level horizontal overflow, the expected grid column count, and keyboard activation of the PHP source tab. Six full-page screenshots are attached to the Playground CI run as the `tables-feature-lab-responsive-qa` artifact (when the browser job completes). All wider table scrolling must remain inside the table container.
+
+These automatic checks are not a substitute for manual visual sign-off. Review the six screenshots and keyboard/contrast behavior before marking PR #31 ready for review; check at least feature 1, simple pagination (12), record URL (15), reordering (16), loading (22), and striped rows (26) in the actual authenticated Playground.
+
+## Security release gate
+
+Dependency audit findings are tracked separately in [playground issue #18](https://github.com/lavertia/playground/issues/18): Vitest / vite-plus across three frontends, Vue minimatch, Svelte deepmerge, and Composer advisories for PHPUnit and Symfony MIME. **Do not merge or release while the audit is failing.** A dedicated compatible dependency update must regenerate the committed `package-lock.json` and `composer.lock` files for each affected stack and pass the same CI matrix. Avoid `npm audit fix --force`, blanket ignores, or disabling audit checks.
