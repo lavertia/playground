@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/panels
-          ref: ${{ (github.head_ref == 'feat/p0-13-unified-lavertia-tables' || github.ref_name == 'feat/p0-13-unified-lavertia-tables') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-12-declarative-tables-api' || github.ref_name == 'feat/p0-12-declarative-tables-api') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-11-commerce-tables-query-builder' || github.ref_name == 'feat/p0-11-commerce-tables-query-builder') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-10-filament-tables-lab' || github.ref_name == 'feat/p0-10-filament-tables-lab') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-09-tables-showcase' || github.ref_name == 'feat/p0-09-tables-showcase') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-08-resource-tabs-docs' || github.ref_name == 'feat/p0-08-resource-tabs-docs') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-07-parameterized-resource-pages' || github.ref_name == 'feat/p0-07-parameterized-resource-pages') && 'feat/p0-07-parameterized-resource-pages' || (github.head_ref == 'feat/p0-06-resource-auth-pages' || github.ref_name == 'feat/p0-06-resource-auth-pages') && 'feat/p0-06-resource-auth-pages' || (github.head_ref == 'feat/p0-05-composable-page-system' || github.ref_name == 'feat/p0-05-composable-page-system') && 'feat/p0-05-composable-page-system' || (github.head_ref == 'feat/p0-04-widget-shell-themes' || github.ref_name == 'feat/p0-04-widget-shell-themes') && 'feat/p0-04-widget-shell-themes' || (github.head_ref == 'feat/p0-03-locales-layouts' || github.ref_name == 'feat/p0-03-locales-layouts') && 'feat/p0-03-locales-layouts' || (github.head_ref == 'feat/p0-02-navigation-headers' || github.ref_name == 'feat/p0-02-navigation-headers') && 'feat/p0-02-navigation-headers' || (github.head_ref == 'feat/p0-navigation-metadata' || github.ref_name == 'feat/p0-navigation-metadata') && 'feat/p0-navigation-metadata' || (github.head_ref == 'feat/panel-shell-controls' || github.ref_name == 'feat/panel-shell-controls') && 'feat/panel-shell-controls' || vars.LAVERTIA_PANELS_REF || 'main' }}
+          ref: ${{ (github.head_ref == 'feat/p0-14-table-feature-lab' || github.ref_name == 'feat/p0-14-table-feature-lab') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-13-unified-lavertia-tables' || github.ref_name == 'feat/p0-13-unified-lavertia-tables') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-12-declarative-tables-api' || github.ref_name == 'feat/p0-12-declarative-tables-api') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-11-commerce-tables-query-builder' || github.ref_name == 'feat/p0-11-commerce-tables-query-builder') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-10-filament-tables-lab' || github.ref_name == 'feat/p0-10-filament-tables-lab') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-09-tables-showcase' || github.ref_name == 'feat/p0-09-tables-showcase') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-08-resource-tabs-docs' || github.ref_name == 'feat/p0-08-resource-tabs-docs') && 'feat/p0-08-resource-tabs-docs' || (github.head_ref == 'feat/p0-07-parameterized-resource-pages' || github.ref_name == 'feat/p0-07-parameterized-resource-pages') && 'feat/p0-07-parameterized-resource-pages' || (github.head_ref == 'feat/p0-06-resource-auth-pages' || github.ref_name == 'feat/p0-06-resource-auth-pages') && 'feat/p0-06-resource-auth-pages' || (github.head_ref == 'feat/p0-05-composable-page-system' || github.ref_name == 'feat/p0-05-composable-page-system') && 'feat/p0-05-composable-page-system' || (github.head_ref == 'feat/p0-04-widget-shell-themes' || github.ref_name == 'feat/p0-04-widget-shell-themes') && 'feat/p0-04-widget-shell-themes' || (github.head_ref == 'feat/p0-03-locales-layouts' || github.ref_name == 'feat/p0-03-locales-layouts') && 'feat/p0-03-locales-layouts' || (github.head_ref == 'feat/p0-02-navigation-headers' || github.ref_name == 'feat/p0-02-navigation-headers') && 'feat/p0-02-navigation-headers' || (github.head_ref == 'feat/p0-navigation-metadata' || github.ref_name == 'feat/p0-navigation-metadata') && 'feat/p0-navigation-metadata' || (github.head_ref == 'feat/panel-shell-controls' || github.ref_name == 'feat/panel-shell-controls') && 'feat/panel-shell-controls' || vars.LAVERTIA_PANELS_REF || 'main' }}
           path: panels
       - name: Checkout Forms
         uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: lavertia/tables
-          ref: ${{ (github.head_ref == 'feat/p0-13-unified-lavertia-tables' || github.ref_name == 'feat/p0-13-unified-lavertia-tables') && 'feat/p0-13-table-workspaces' || (github.head_ref == 'feat/p0-12-declarative-tables-api' || github.ref_name == 'feat/p0-12-declarative-tables-api') && 'feat/p0-12-icon-column' || 'main' }}
+          ref: ${{ (github.head_ref == 'feat/p0-14-table-feature-lab' || github.ref_name == 'feat/p0-14-table-feature-lab') && 'feat/p0-14-table-features' || (github.head_ref == 'feat/p0-13-unified-lavertia-tables' || github.ref_name == 'feat/p0-13-unified-lavertia-tables') && 'feat/p0-13-table-workspaces' || (github.head_ref == 'feat/p0-12-declarative-tables-api' || github.ref_name == 'feat/p0-12-declarative-tables-api') && 'feat/p0-12-icon-column' || 'main' }}
           path: tables
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -131,6 +131,9 @@ jobs:
       - name: Test native database-backed Labs
         if: matrix.stack == 'react'
         run: php artisan test tests/Feature/LavertiaNativeTablesLabTest.php --compact
+      - name: Test 28 Tables Feature Lab experiments
+        if: matrix.stack == 'react'
+        run: php artisan test tests/Feature/LavertiaTablesFeatureLabTest.php --compact
       - name: Test Advanced Query Builder evaluator
         if: matrix.stack == 'react'
         run: node --experimental-strip-types --test tests/js/filter-query.test.mjs
@@ -142,7 +145,13 @@ jobs:
         if: matrix.stack == 'react'
         timeout-minutes: 8
         run: |
-          npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.58.2
+          # Installing into the application directory can re-resolve the full
+          # Vite+ tree and fail on unrelated transient package metadata.
+          mkdir -p /tmp/lavertia-playwright
+          npm install --prefix /tmp/lavertia-playwright --no-package-lock --no-audit --no-fund playwright@1.58.2
+          if [ ! -e node_modules/playwright ]; then
+            ln -s /tmp/lavertia-playwright/node_modules/playwright node_modules/playwright
+          fi
           if command -v google-chrome > /dev/null 2>&1; then
             export BROWSER_EXECUTABLE="$(command -v google-chrome)"
           else
@@ -157,6 +166,17 @@ jobs:
             echo "::endgroup::"
             exit 1
           fi
+
+      - name: Upload Tables Lab responsive screenshots
+        if: ${{ always() && matrix.stack == 'react' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tables-feature-lab-responsive-qa
+          path: |
+            /tmp/lavertia-table-lab-*.png
+            /tmp/lavertia-combobox-browser-failure.png
+          if-no-files-found: ignore
+          retention-days: 7
 
   required:
     name: Three-stack runtime verification

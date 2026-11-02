@@ -4,7 +4,7 @@ import { router } from '@inertiajs/react';
 import {
     ArrowDown, ArrowUp, CheckCircle2, ChevronLeft, ChevronRight,
     ChevronsLeft, ChevronsRight, Columns3, Download, Filter,
-    ImageIcon, Layers3, MoreHorizontal, RotateCcw, Search, XCircle,
+    ImageIcon, Layers3, MoreHorizontal, RotateCcw, Search, XCircle, GripVertical,
 } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,16 +20,18 @@ import { cn } from '@/lib/utils';
 import type { ComponentNode, Scalar, TableColumn, TableRow } from './types';
 import {
     badgeClass, columnBadgeTone, defaultHiddenColumns, tableColumns,
-    tableColumnsInOrder, tableFilters, tableRows, tableStateUrl, translate,
+    tableColumnsInOrder, tableFilters, tableRows, tableStateUrl, translate, safeHref,
     visibleTableRows,
 } from './types';
 
 type SortDirection = 'asc' | 'desc';
 interface Pagination {
     page?: number;
-    lastPage?: number;
     perPage?: number;
-    total?: number;
+    total?: number | null;
+    lastPage?: number | null;
+    hasMorePages?: boolean;
+    truncated?: boolean;
 }
 
 const iconButton = 'inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-40';
@@ -104,6 +106,15 @@ function exportCurrentRows(rows: TableRow[], columns: TableColumn[], name: strin
     URL.revokeObjectURL(url);
 }
 
+function toneClass(value: Scalar, config: { field?: string; tones?: Record<string, string> } | null): string {
+    const tone = config?.tones?.[String(value ?? '')];
+    if (tone === 'success') return 'bg-emerald-500/10 hover:bg-emerald-500/15';
+    if (tone === 'warning') return 'bg-amber-500/10 hover:bg-amber-500/15';
+    if (tone === 'danger') return 'bg-rose-500/10 hover:bg-rose-500/15';
+    if (tone === 'info') return 'bg-sky-500/10 hover:bg-sky-500/15';
+    return '';
+}
+
 /**
  * Single table renderer for PHP-defined Lavertia Tables.
  * Client controls change only display state; SQL state is sent to Table::getProps.
@@ -133,11 +144,33 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     const [collapsed, setCollapsed] = useState<string[]>([]);
     const [selected, setSelected] = useState<string[]>([]);
     const [localPage, setLocalPage] = useState(1);
-    const [localPerPage, setLocalPerPage] = useState(10);
+    const configuredOptions = Array.isArray(node.props.paginationOptions)
+        ? node.props.paginationOptions.filter((size): size is number =>
+            Number.isInteger(size) && size >= 1 && size <= 100)
+        : [5, 10, 25, 50, 100];
+    const allowedOptions = configuredOptions.length ? configuredOptions : [10];
+    const configuredDefault = Number(node.props.defaultPaginationPageOption ?? 10);
+    const [localPerPage, setLocalPerPage] = useState(
+        allowedOptions.includes(configuredDefault) ? configuredDefault : allowedOptions[0],
+    );
+    const [localRows, setLocalRows] = useState<TableRow[]>(rows);
+    const [reordering, setReordering] = useState(false);
+    const [reorderEvents, setReorderEvents] = useState<string[]>([]);
     const [busy, setBusy] = useState(false);
     const [detailRow, setDetailRow] = useState<TableRow | null>(null);
 
+    const paginationEnabled = node.props.paginationEnabled !== false;
+    const simplePagination = mode === 'eloquent' && node.props.paginationMode === 'simple' && paginationEnabled;
+    const extremeLinks = node.props.extremePaginationLinks !== false;
+    const reorderDemo = node.props.demoReorder === true && mode === 'snapshot';
     const paginationSize = mode === 'eloquent' ? Number(pager.perPage ?? 10) : localPerPage;
+    const rowTones = node.props.recordTones && typeof node.props.recordTones === 'object'
+        ? node.props.recordTones as { field?: string; tones?: Record<string, string> } : null;
+    const striped = node.props.striped === true;
+    const selectable = node.props.selectable !== false;
+    const recordActions = node.props.recordActions !== false;
+    const paginationControls = node.props.paginationControls !== false;
+    const showActionsColumn = recordActions || reorderDemo;
     const appliedTab = typeof node.props.appliedTab === 'string' ? node.props.appliedTab : '';
     const tabs = node.props.tabs && typeof node.props.tabs === 'object' && !Array.isArray(node.props.tabs)
         ? node.props.tabs as Record<string, string> : {};
@@ -152,6 +185,21 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     const activeCount = Object.values(values).filter(Boolean).length + (appliedTab ? 1 : 0);
 
     useEffect(() => {
+        setLocalRows(rows);
+    }, [node.props.rows]);
+
+    useEffect(() => {
+        const interval = Number(node.props.pollIntervalMs ?? 0);
+        if (mode !== 'eloquent' || interval < 5000 || interval > 300000) return;
+        const timer = window.setInterval(() => {
+            if (document.visibilityState === 'visible' && !busy) {
+                router.reload();
+            }
+        }, interval);
+        return () => window.clearInterval(timer);
+    }, [mode, node.props.pollIntervalMs, busy]);
+
+    useEffect(() => {
         setSearch(String(node.props.appliedSearch ?? ''));
         setSortKey(typeof node.props.appliedSort === 'string' ? node.props.appliedSort : null);
         setDirection(node.props.appliedDirection === 'desc' ? 'desc' : 'asc');
@@ -162,14 +210,29 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     }, [node.props.appliedSearch, node.props.appliedSort, node.props.appliedDirection, node.props.appliedFilters, node.props.appliedTab, pager.page, pager.perPage]);
 
     const ordered = tableColumnsInOrder(columns, visibleOrder, hidden);
-    const filtered = mode === 'eloquent' ? rows : visibleTableRows(rows, columns, search, sortKey, direction, values);
+    // The manager and table header share exactly the same order. Hidden
+    // toggleable columns remain listed but cannot be moved until revealed.
+    const managerColumns = columns.filter(column => !column.hidden)
+        .sort((a, b) => visibleOrder.indexOf(a.key) - visibleOrder.indexOf(b.key));
+    const movableKeys = managerColumns
+        .filter(column => !hidden.includes(column.key))
+        .map(column => column.key);
+    const tableColSpan = ordered.length + Number(selectable) + Number(showActionsColumn);
+    const filtered = mode === 'eloquent' ? rows : visibleTableRows(
+        reorderDemo ? localRows : rows, columns, search, sortKey, direction, values,
+    );
+    const totalKnown = mode !== 'eloquent' || (pager.total !== undefined && pager.total !== null);
     const totalRows = mode === 'eloquent' ? Number(pager.total ?? 0) : filtered.length;
-    const lastPage = mode === 'eloquent'
-        ? Math.max(1, Number(pager.lastPage ?? 1))
+    const lastPage = !paginationEnabled ? 1 : mode === 'eloquent'
+        ? Math.max(1, Number(pager.lastPage ?? pager.page ?? 1))
         : Math.max(1, Math.ceil(filtered.length / paginationSize));
-    const page = mode === 'eloquent' ? Math.min(Math.max(1, Number(pager.page ?? 1)), lastPage)
+    const page = mode === 'eloquent' ? (simplePagination
+        ? Math.max(1, Number(pager.page ?? 1))
+        : Math.min(Math.max(1, Number(pager.page ?? 1)), lastPage))
         : Math.min(localPage, lastPage);
-    const shown = mode === 'eloquent' ? filtered : filtered.slice((page - 1) * paginationSize, page * paginationSize);
+    const shown = mode === 'eloquent' || !paginationEnabled
+        ? filtered : filtered.slice((page - 1) * paginationSize, page * paginationSize);
+    const hasNext = simplePagination ? pager.hasMorePages === true : page < lastPage;
 
     const groups = useMemo(() => {
         const result = new Map<string, TableRow[]>();
@@ -183,8 +246,8 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
 
     const selectedOnPage = shown.filter(row => selected.includes(String(row.id)));
     const selectedAll = shown.length > 0 && selectedOnPage.length === shown.length;
-    const first = totalRows ? (page - 1) * paginationSize + 1 : 0;
-    const last = Math.min(page * paginationSize, totalRows);
+    const first = shown.length ? (page - 1) * paginationSize + 1 : 0;
+    const last = shown.length ? first + shown.length - 1 : 0;
     const pages = [...new Set([1, lastPage, page - 2, page - 1, page, page + 1, page + 2]
         .filter(n => n > 0 && n <= lastPage))].sort((a, b) => a - b);
 
@@ -218,6 +281,11 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
         setGroupKey('none');
         setSelected([]);
         setLocalPage(1);
+        if (reorderDemo) {
+            setLocalRows(rows);
+            setReorderEvents([]);
+            setReordering(false);
+        }
         if (mode === 'eloquent') {
             const parameters: Record<string, string | null> = {
                 search: null, sort: null, direction: null, tab: null, page: null, perPage: null,
@@ -228,13 +296,40 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     }
     function moveColumn(key: string, shift: number): void {
         setVisibleOrder(previous => {
-            const from = previous.indexOf(key);
-            const to = from + shift;
-            if (from === -1 || to < 0 || to >= previous.length) return previous;
+            const visible = previous.filter(name => columns.some(column =>
+                column.key === name && !column.hidden && !hidden.includes(name)));
+            const from = visible.indexOf(key);
+            const target = visible[from + shift];
+            if (from < 0 || !target) return previous;
+            const fromIndex = previous.indexOf(key);
+            const toIndex = previous.indexOf(target);
             const next = [...previous];
-            [next[from], next[to]] = [next[to], next[from]];
+            [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
             return next;
         });
+    }
+    function moveDemoRow(id: string, offset: number) {
+        if (!reorderDemo || !reordering) return;
+        const from = localRows.findIndex(row => String(row.id) === id);
+        const to = from + offset;
+        if (from < 0 || to < 0 || to >= localRows.length) return;
+        const next = [...localRows];
+        [next[from], next[to]] = [next[to], next[from]];
+        setLocalRows(next);
+        setReorderEvents([
+            'beforeReorder: ' + localRows.map(row => String(row.id)).slice(0, 8).join(', '),
+            'afterReorder: ' + next.map(row => String(row.id)).slice(0, 8).join(', '),
+            'Demo only — no database update',
+        ]);
+    }
+    function toggleDemoReorder() {
+        if (!reorderDemo) return;
+        setReordering(old => !old);
+        setSearch('');
+        setValues({});
+        setSortKey(null);
+        setGroupKey('none');
+        setLocalPage(1);
     }
     function toggleRow(id: string, checked: boolean): void {
         setSelected(previous => checked ? [...new Set([...previous, id])] : previous.filter(item => item !== id));
@@ -255,7 +350,16 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
             <div className="space-y-1"><h3 className="text-base font-semibold">{title}</h3>
                 {typeof node.props.description === 'string' && <p className="max-w-3xl text-sm text-muted-foreground">{node.props.description}</p>}
             </div>
-            <span className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground">Read-only</span>
+            <div className="flex flex-wrap items-center gap-2">
+                {Number(node.props.pollIntervalMs ?? 0) > 0 && mode === 'eloquent' &&
+                    <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Polling every {Math.round(Number(node.props.pollIntervalMs) / 1000)}s</span>}
+                {reorderDemo && <button type="button" aria-pressed={reordering} onClick={toggleDemoReorder}
+                    className="inline-flex h-9 items-center gap-2 rounded-lg border border-input px-3 text-xs font-semibold hover:bg-muted">
+                    <GripVertical className="size-4" />
+                    {reordering ? 'Finish reordering' : String(node.props.demoReorderLabel ?? 'Enable reordering')}
+                </button>}
+                {recordActions && <span className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground">Read-only</span>}
+            </div>
         </header>
 
         {Object.keys(tabs).length > 0 && <div role="tablist" aria-label={title + ' status'} className="flex flex-wrap items-center gap-1 border-b border-border px-4 py-2">
@@ -271,7 +375,8 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                 </button>)}
         </div>}
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
+        {(groupFields.length > 0 || node.props.searchable === true || filters.length > 0
+            || node.props.columnManager === true) && <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
             {groupFields.length > 0 && <>
                 <Layers3 className="size-4 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs text-muted-foreground">Group by</span>
@@ -282,13 +387,13 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                     options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
                     onValueChange={v => setGroupDirection(v as SortDirection)} />}
             </>}
-            <div className="flex-1" />
-            {node.props.searchable === true && <form className="flex min-w-0 items-center gap-1" onSubmit={(event: FormEvent) => {
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-1">
+            {node.props.searchable === true && <form className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none" onSubmit={(event: FormEvent) => {
                 event.preventDefault();
                 if (mode === 'eloquent') navigate({ search: search.trim() || null });
                 else setLocalPage(1);
             }}>
-                <div className="relative min-w-40 sm:w-56">
+                <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
                     <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                     <input type="search" aria-label={tx('search')} placeholder={tx('search')} value={search}
                         onChange={event => setSearch(event.target.value)}
@@ -306,7 +411,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                 <DropdownMenuContent align="end" className="w-64">
                     <DropdownMenuLabel>Columns</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {columns.filter(column => !column.hidden).map(column =>
+                    {managerColumns.map(column =>
                         <div key={column.key} className="flex items-center gap-1">
                             <DropdownMenuCheckboxItem className="min-w-0 flex-1" checked={!hidden.includes(column.key)}
                                 disabled={!column.toggleable || (!hidden.includes(column.key) && ordered.length <= 1)}
@@ -316,10 +421,17 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                 {column.label}
                             </DropdownMenuCheckboxItem>
                             {node.props.reorderableColumns === true && <div className="flex gap-0.5 pe-1">
-                                <button type="button" aria-label={'Move ' + column.label + ' up'} className={iconButton}
-                                    onClick={() => moveColumn(column.key, -1)}><ArrowUp className="size-3.5" /></button>
-                                <button type="button" aria-label={'Move ' + column.label + ' down'} className={iconButton}
-                                    onClick={() => moveColumn(column.key, 1)}><ArrowDown className="size-3.5" /></button>
+                                <button type="button" aria-label={'Move ' + column.label + ' up'}
+                                    disabled={hidden.includes(column.key) || movableKeys.indexOf(column.key) <= 0}
+                                    className={iconButton} onClick={() => moveColumn(column.key, -1)}>
+                                    <ArrowUp className="size-3.5" />
+                                </button>
+                                <button type="button" aria-label={'Move ' + column.label + ' down'}
+                                    disabled={hidden.includes(column.key) || movableKeys.indexOf(column.key) === -1
+                                        || movableKeys.indexOf(column.key) === movableKeys.length - 1}
+                                    className={iconButton} onClick={() => moveColumn(column.key, 1)}>
+                                    <ArrowDown className="size-3.5" />
+                                </button>
                             </div>}
                         </div>)}
                     <DropdownMenuSeparator />
@@ -329,7 +441,8 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                     }}>Reset columns</button>
                 </DropdownMenuContent>
             </DropdownMenu>}
-        </div>
+            </div>
+        </div>}
 
         {filtersOpen && <div className="border-b border-border bg-muted/20 px-5 py-4">
             <div className="mb-3 flex items-center justify-between gap-2"><h4 className="text-sm font-semibold">Filters</h4>
@@ -346,20 +459,20 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
             </div>
         </div>}
 
-        {selectedOnPage.length > 0 && <div className="flex flex-wrap items-center gap-3 border-b border-border bg-primary/5 px-5 py-2.5 text-sm">
+        {selectable && selectedOnPage.length > 0 && <div className="flex flex-wrap items-center gap-3 border-b border-border bg-primary/5 px-5 py-2.5 text-sm">
             <strong>{selectedOnPage.length} selected on this page</strong>
             <button type="button" className="inline-flex items-center gap-1 text-primary hover:underline"
                 onClick={() => exportCurrentRows(selectedOnPage, ordered, prefix)}><Download className="size-4" />Export selected CSV</button>
             <button type="button" className="text-muted-foreground hover:underline" onClick={() => setSelected([])}>Clear</button>
         </div>}
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-primary" tabIndex={0} role="region" aria-label={title + " table, scroll to see more columns"}>
             <table className="w-full min-w-[640px] text-sm">
                 <thead className="border-b border-border bg-muted/35">
-                    <tr><th scope="col" className="w-10 px-4 py-3 text-start">
+                    <tr>{selectable && <th scope="col" className="w-10 px-4 py-3 text-start">
                         <Checkbox aria-label="Select all rows on this page" checked={selectedAll ? true : selectedOnPage.length > 0 ? 'indeterminate' : false}
                             onCheckedChange={checked => togglePage(checked === true)} />
-                    </th>
+                    </th>}
                         {ordered.map(column => <th key={column.key} scope="col" aria-sort={column.sortable
                             ? sortKey === column.key ? direction === 'asc' ? 'ascending' : 'descending' : 'none' : undefined}
                             className="whitespace-nowrap px-3 py-3 text-start font-semibold">
@@ -368,13 +481,15 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                 {sortKey === column.key ? direction === 'asc' ? <ArrowUp className="size-3.5 text-primary" /> : <ArrowDown className="size-3.5 text-primary" /> : <ArrowDown className="size-3.5 text-muted-foreground/60" />}
                             </button> : column.label}
                         </th>)}
-                        <th scope="col" className="w-12 px-2 py-3 text-end font-semibold">Actions</th>
+                        {showActionsColumn && <th scope="col" className="w-12 px-2 py-3 text-end font-semibold">
+                            {recordActions ? 'Actions' : 'Reorder'}
+                        </th>}
                     </tr>
                 </thead>
                 <tbody>
                     {groups.map(([label, groupRows]) => <Fragment key={label}>
                         {groupKey !== 'none' && <tr key={'group-' + label} className="border-b border-border bg-muted/25">
-                            <td colSpan={ordered.length + 2} className="px-5 py-2">
+                            <td colSpan={tableColSpan} className="px-5 py-2">
                                 <button type="button" aria-expanded={!collapsed.includes(label)} onClick={() => setCollapsed(old =>
                                     old.includes(label) ? old.filter(x => x !== label) : [...old, label])}
                                     className="flex w-full items-center gap-2 text-start text-sm font-semibold">
@@ -382,14 +497,42 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                 </button></td>
                         </tr>}
                         {!collapsed.includes(label) && groupRows.map((row, index) =>
-                            <tr key={String(row.id ?? index)} className="border-b border-border/70 transition-colors hover:bg-muted/30">
-                                <td className="px-4 py-3"><Checkbox aria-label={'Select record ' + String(row.id)}
-                                    checked={selected.includes(String(row.id))} onCheckedChange={checked => toggleRow(String(row.id), checked === true)} /></td>
+                            <tr key={String(row.id ?? index)}
+                                tabIndex={typeof row.__recordUrl === 'string' ? 0 : undefined}
+                                role={typeof row.__recordUrl === 'string' ? 'link' : undefined}
+                                aria-label={typeof row.__recordUrl === 'string' ? 'Open ' + String(row.title ?? row.name ?? row.id) : undefined}
+                                onClick={event => {
+                                    if (typeof row.__recordUrl !== 'string') return;
+                                    if ((event.target as Element).closest('button,input,a,[role="checkbox"]')) return;
+                                    const href = safeHref(row.__recordUrl);
+                                    if (href?.startsWith('/')) router.get(href);
+                                }}
+                                onKeyDown={event => {
+                                    if (typeof row.__recordUrl !== 'string' || (event.key !== 'Enter' && event.key !== ' ')) return;
+                                    event.preventDefault();
+                                    const href = safeHref(row.__recordUrl);
+                                    if (href?.startsWith('/')) router.get(href);
+                                }}
+                                className={cn(
+                                    'border-b border-border/70 transition-colors hover:bg-muted/30',
+                                    striped && index % 2 === 1 && 'bg-muted/45',
+                                    rowTones && toneClass(row[rowTones.field ?? 'status'], rowTones),
+                                    typeof row.__recordUrl === 'string' && 'cursor-pointer focus-visible:outline-2 focus-visible:outline-primary',
+                                )}>
+                                {selectable && <td className="px-4 py-3"><Checkbox aria-label={'Select record ' + String(row.id)}
+                                    checked={selected.includes(String(row.id))} onCheckedChange={checked => toggleRow(String(row.id), checked === true)} /></td>}
                                 {ordered.map(col => <td key={col.key} className="max-w-72 whitespace-nowrap px-3 py-3 text-start text-sm">
                                     {renderCell(row, col)}
                                 </td>)}
-                                <td className="px-2 py-2 text-end">
-                                    <DropdownMenu>
+                                {showActionsColumn && <td className="px-2 py-2 text-end">
+                                    <div className="flex items-center justify-end gap-0.5">
+                                    {reordering && <div className="flex gap-0.5">
+                                        <button type="button" className={iconButton} aria-label={'Move record ' + String(row.id) + ' up'}
+                                            onClick={() => moveDemoRow(String(row.id), -1)}><ArrowUp className="size-4" /></button>
+                                        <button type="button" className={iconButton} aria-label={'Move record ' + String(row.id) + ' down'}
+                                            onClick={() => moveDemoRow(String(row.id), 1)}><ArrowDown className="size-4" /></button>
+                                    </div>}
+                                    {recordActions && <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <button type="button" aria-label={'Actions for record ' + String(row.id)} className={iconButton}>
                                                 <MoreHorizontal className="size-4" />
@@ -399,24 +542,25 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                             <DropdownMenuItem onSelect={() => setDetailRow(row)}>View details</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => exportCurrentRows([row], ordered, prefix)}>Export row CSV</DropdownMenuItem>
                                         </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </td>
+                                    </DropdownMenu>}
+                                    </div>
+                                </td>}
                             </tr>)}
                     </Fragment>)}
-                    {shown.length === 0 && <tr><td colSpan={ordered.length + 2} className="px-5 py-12 text-center text-muted-foreground">
+                    {shown.length === 0 && <tr><td colSpan={tableColSpan} className="px-5 py-12 text-center text-muted-foreground">
                         {tx('noResults')} {mode === 'eloquent' ? 'Try another filter or seed the demo tables.' : ''}
                     </td></tr>}
                 </tbody>
                 {sums.length > 0 && shown.length > 0 && <tfoot className="border-t border-border bg-muted/20 text-sm">
-                    <tr><th colSpan={ordered.length + 2} className="px-5 py-2 text-start">Summary · this page</th></tr>
-                    <tr><td colSpan={ordered.length + 2} className="px-5 pb-2">
+                    <tr><th colSpan={tableColSpan} className="px-5 py-2 text-start">Summary · this page</th></tr>
+                    <tr><td colSpan={tableColSpan} className="px-5 pb-2">
                         <div className="flex flex-wrap gap-5">
                             {sums.map(key => <span key={key} className="inline-flex gap-2"><span className="text-muted-foreground">{getColumn(key)?.label ?? key}</span>
                                 <strong className="tabular-nums">{currency(shown.reduce((total, row) => total + Number(row[key] ?? 0), 0), getColumn(key)?.currency)}</strong></span>)}
                         </div>
                     </td></tr>
-                    <tr><th colSpan={ordered.length + 2} className="px-5 py-2 text-start">All matching records</th></tr>
-                    <tr><td colSpan={ordered.length + 2} className="px-5 pb-3">
+                    <tr><th colSpan={tableColSpan} className="px-5 py-2 text-start">All matching records</th></tr>
+                    <tr><td colSpan={tableColSpan} className="px-5 pb-3">
                         <div className="flex flex-wrap gap-5">
                             {sums.map(key => <span key={key} className="inline-flex gap-2"><span className="text-muted-foreground">{getColumn(key)?.label ?? key}</span>
                                 <strong className="tabular-nums">{currency(summaryTotals[key] ?? 0, getColumn(key)?.currency)}</strong></span>)}
@@ -424,31 +568,48 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                 </tfoot>}
             </table>
         </div>
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs">
-            <p aria-live="polite" className="text-muted-foreground">Showing {first} to {last} of {totalRows.toLocaleString('en-US')} results</p>
-            <div className="flex items-center gap-2 text-muted-foreground">
-                <span>Per page</span>
-                <TableSelect label="Rows per page" size="sm" className="w-20"
-                    value={String(paginationSize)} options={[5, 10, 25, 50, 100].map(n => ({ value: String(n), label: String(n) }))}
-                    onValueChange={value => {
-                        if (mode === 'eloquent') navigate({ perPage: value, page: null });
-                        else { setLocalPerPage(Number(value)); setLocalPage(1); }
-                    }} />
-            </div>
-            <nav aria-label="Table pagination" className="flex items-center overflow-hidden rounded-lg border border-border">
-                <button aria-label="First page" type="button" disabled={page <= 1 || busy} className={iconButton} onClick={() => setPage(1)}><ChevronsLeft className="size-4 rtl:rotate-180" /></button>
-                <button aria-label="Previous page" type="button" disabled={page <= 1 || busy} className={iconButton} onClick={() => setPage(page - 1)}><ChevronLeft className="size-4 rtl:rotate-180" /></button>
-                {pages.map((pageNumber, index) => <span key={pageNumber} className="inline-flex items-center">
-                    {index > 0 && pageNumber > pages[index - 1] + 1 && <span className="px-2 text-muted-foreground">…</span>}
-                    <button type="button" aria-label={'Page ' + pageNumber} aria-current={page === pageNumber ? 'page' : undefined}
-                        className={cn('size-9 text-sm hover:bg-muted', page === pageNumber && 'bg-muted font-semibold text-primary')} onClick={() => setPage(pageNumber)}>
-                        {pageNumber}</button>
-                </span>)}
-                <button aria-label="Next page" type="button" disabled={page >= lastPage || busy} className={iconButton} onClick={() => setPage(page + 1)}><ChevronRight className="size-4 rtl:rotate-180" /></button>
-                <button aria-label="Last page" type="button" disabled={page >= lastPage || busy} className={iconButton} onClick={() => setPage(lastPage)}><ChevronsRight className="size-4 rtl:rotate-180" /></button>
-            </nav>
-        </footer>
-        <Dialog open={detailRow !== null} onOpenChange={open => { if (!open) setDetailRow(null); }}>
+        {paginationControls && <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs">
+            <p aria-live="polite" className="text-muted-foreground">
+                {totalKnown ? 'Showing ' + first + ' to ' + last + ' of ' + totalRows.toLocaleString('en-US') + ' results'
+                    : 'Showing ' + first + ' to ' + last + ' · total not calculated'}
+                {pager.truncated === true && ' · limited to 100 records'}
+            </p>
+            {paginationEnabled && <>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <span>Per page</span>
+                    <TableSelect label="Rows per page" size="sm" className="w-20"
+                        value={String(paginationSize)}
+                        options={allowedOptions.map(size => ({ value: String(size), label: String(size) }))}
+                        onValueChange={value => {
+                            if (mode === 'eloquent') navigate({ perPage: value, page: null });
+                            else { setLocalPerPage(Number(value)); setLocalPage(1); }
+                        }} />
+                </div>
+                <nav aria-label="Table pagination" className="flex items-center overflow-hidden rounded-lg border border-border">
+                    {!simplePagination && extremeLinks &&
+                        <button aria-label="First page" type="button" disabled={page <= 1 || busy} className={iconButton}
+                            onClick={() => setPage(1)}><ChevronsLeft className="size-4 rtl:rotate-180" /></button>}
+                    <button aria-label="Previous page" type="button" disabled={page <= 1 || busy} className={iconButton}
+                        onClick={() => setPage(page - 1)}><ChevronLeft className="size-4 rtl:rotate-180" /></button>
+                    {!simplePagination && pages.map((pageNumber, index) => <span key={pageNumber} className="inline-flex items-center">
+                        {index > 0 && pageNumber > pages[index - 1] + 1 && <span className="px-2 text-muted-foreground">…</span>}
+                        <button type="button" aria-label={'Page ' + pageNumber} aria-current={page === pageNumber ? 'page' : undefined}
+                            className={cn('size-9 text-sm hover:bg-muted', page === pageNumber && 'bg-muted font-semibold text-primary')}
+                            onClick={() => setPage(pageNumber)}>{pageNumber}</button>
+                    </span>)}
+                    <button aria-label="Next page" type="button" disabled={!hasNext || busy} className={iconButton}
+                        onClick={() => setPage(page + 1)}><ChevronRight className="size-4 rtl:rotate-180" /></button>
+                    {!simplePagination && extremeLinks &&
+                        <button aria-label="Last page" type="button" disabled={page >= lastPage || busy} className={iconButton}
+                            onClick={() => setPage(lastPage)}><ChevronsRight className="size-4 rtl:rotate-180" /></button>}
+                </nav>
+            </>}
+        </footer>}
+        {reorderDemo && reorderEvents.length > 0 && <div role="status" className="border-t border-border bg-muted/20 px-5 py-3 text-xs">
+            <p className="mb-2 font-semibold">Reordering event log (local only)</p>
+            {reorderEvents.map((event, index) => <p key={index} className="font-mono text-muted-foreground">{event}</p>)}
+        </div>}
+        {recordActions && <Dialog open={detailRow !== null} onOpenChange={open => { if (!open) setDetailRow(null); }}>
             <DialogContent className="max-w-xl">
                 <DialogHeader>
                     <DialogTitle>{title} · Record details</DialogTitle>
@@ -461,6 +622,6 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                     </div>)}
                 </dl>
             </DialogContent>
-        </Dialog>
+        </Dialog>}
     </section>;
 }

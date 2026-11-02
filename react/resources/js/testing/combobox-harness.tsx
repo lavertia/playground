@@ -8,6 +8,8 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { TableSelect } from '@/components/ui/table-select';
 import { ConstraintPicker } from '@/components/lavertia/constraint-picker';
 import { LavertiaTable } from '@/components/lavertia/lavertia-table';
+import LavertiaRenderer, { NavigationDisplayContext } from '@/components/lavertia/renderer';
+import TablesFeatureLab from '@/components/lavertia/tables-feature-lab';
 import type { ComponentNode } from '@/components/lavertia/types';
 
 const ROLES = [
@@ -38,6 +40,119 @@ const sampleTable: ComponentNode = {
     ],
 };
 
+const labFeatures = [
+    {
+        id: 1, title: 'Defining table columns', group: 'Columns', status: 'native',
+        description: 'Table definition comes from PHP.', exercise: 'Inspect the table and code.',
+        snippet: "->columns([TextColumn::make('title')])",
+    },
+    {
+        id: 2, title: 'Sortable and searchable columns', group: 'Columns', status: 'native',
+        description: 'Only sort and search controls are enabled.',
+        exercise: 'Sort and search the titles.',
+        snippet: "TextColumn::make('title')->sortable()->searchable()",
+    },
+    {
+        id: 5, title: 'Defining filters', group: 'Filters & actions', status: 'native',
+        description: 'The only scenario in this harness with filter controls.',
+        exercise: 'Open Filters and select a post status.',
+        snippet: "->filters([SelectFilter::make('status')])",
+    },
+    {
+        id: 6, title: 'Table actions', group: 'Filters & actions', status: 'partial',
+        description: 'Read-only actions with selection and export.',
+        exercise: 'Select records or inspect row actions.',
+        snippet: '// Only read-only view and CSV export are enabled.',
+    },
+    {
+        id: 16, title: 'Reordering records', group: 'Rows & reordering', status: 'demo',
+        description: 'Local reordering only.', exercise: 'Move a record locally.',
+        snippet: '// Local only; no database writes',
+    },
+    {
+        id: 22, title: 'Displaying a loading skeleton', group: 'Data loading', status: 'demo',
+        description: 'Skeleton preview, not deferred SQL.', exercise: 'Replay the skeleton.',
+        snippet: '// Visual skeleton preview',
+    },
+];
+const selectedLabFeature = Number(new URLSearchParams(window.location.search).get('labFeature') ?? '1');
+// The standalone native-table test intentionally retains a filter; the
+// feature-lab preview mirrors server configuration for the selected scenario.
+const labTable: ComponentNode = {
+    ...sampleTable,
+    props: {
+        ...sampleTable.props,
+        searchable: selectedLabFeature === 2,
+        columnManager: selectedLabFeature === 1,
+        reorderableColumns: selectedLabFeature === 1,
+        selectable: selectedLabFeature === 6,
+        recordActions: selectedLabFeature === 6,
+        paginationControls: false,
+        groupOptions: {},
+    },
+    // Keep visual regression fixtures representative of each PHP scenario.
+    // The separate native-table fixture above intentionally exercises all controls.
+    components: sampleTable.components
+        .filter(component => component.type !== 'select-filter' || selectedLabFeature === 5)
+        .filter(component => component.type !== 'icon-column' || selectedLabFeature === 1)
+        .map(component => component.type === 'text-column' ? {
+            ...component,
+            props: {
+                ...component.props,
+                sortable: selectedLabFeature === 2 && component.props.sortable === true,
+                searchable: selectedLabFeature === 2 && component.props.searchable === true,
+                toggleable: selectedLabFeature === 1 && component.props.toggleable === true,
+                badge: false,
+            },
+        } : component),
+};
+const labNode: ComponentNode = {
+    type: 'tables-feature-lab', key: 'smoke-feature-lab',
+    props: {
+        active: selectedLabFeature, catalog: labFeatures,
+        databaseReady: false, selectedRecord: null, demoOnly: true, locale: 'en',
+    },
+    components: [labTable],
+};
+
+const shellSlot: ComponentNode = {
+    type: 'navigation-slot',
+    key: 'test-icon-rail',
+    props: { name: 'Workspace navigation', position: 'icon-rail' },
+    components: [
+        {
+            type: 'navigation-item', key: 'workspace-link',
+            props: { visible: true, url: '/admin/workspace-demo', label: 'Workspace', icon: 'layout-dashboard' },
+            components: [],
+        },
+        {
+            type: 'navigation-group', key: 'tools-group',
+            props: { label: 'Workspace tools', collapsedByDefault: true, collapsible: true },
+            components: [
+                {
+                    type: 'navigation-item', key: 'fullscreen-link',
+                    props: { visible: true, url: '/admin/fullscreen-demo', label: 'Fullscreen', icon: 'house' },
+                    components: [],
+                },
+            ],
+        },
+    ],
+};
+
+function ShellSlotHarness() {
+    const [collapsed, setCollapsed] = useState(false);
+
+    return <section data-testid="shell-slot-test">
+        <button type="button" onClick={() => setCollapsed(value => !value)}>Toggle rail</button>
+        <NavigationDisplayContext.Provider value={{ position: 'icon-rail', collapsed }}>
+            <div data-testid="shell-slot-content" data-collapsed={collapsed}
+                className={collapsed ? 'flex w-12 flex-col items-center gap-1' : 'flex w-56 flex-col gap-2'}>
+                <LavertiaRenderer node={shellSlot} />
+            </div>
+        </NavigationDisplayContext.Provider>
+    </section>;
+}
+
 function Harness() {
     const [role, setRole] = useState('all');
     const [group, setGroup] = useState('none');
@@ -49,7 +164,7 @@ function Harness() {
     const [submitted, setSubmitted] = useState('');
 
     return (
-        <main className="mx-auto flex max-w-xl flex-col gap-8 p-10">
+        <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 sm:p-6 lg:p-10">
             <section data-testid="group-control">
                 <h2>Group by</h2>
                 <SearchableSelect
@@ -135,6 +250,10 @@ function Harness() {
             <section data-testid="native-table">
                 <LavertiaTable node={sampleTable} />
             </section>
+            <section data-testid="feature-lab">
+                <TablesFeatureLab node={labNode} />
+            </section>
+            <ShellSlotHarness />
         </main>
     );
 }

@@ -90,6 +90,7 @@ final class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('tickets-drafts', 'Draft tickets')->icon('file-text')->group('Management')->resource('demo-tickets', 'drafts'),
                 NavigationItem::make('tables-showcase', 'Tables Showcase')->icon('list')->group('Management'),
                 NavigationItem::make('declarative-tables', 'Declarative PHP Tables')->icon('list')->group('Management'),
+                NavigationItem::make('tables-feature-lab', 'Tables Feature Lab')->icon('list')->badge('28')->group('Management'),
                 NavigationItem::make('filament-tables-lab', 'Filament Tables Lab')->icon('list')->group('Management'),
                 NavigationItem::make('commerce-tables-lab', 'Commerce Tables Lab')->icon('receipt')->group('Management'),
             ]);
