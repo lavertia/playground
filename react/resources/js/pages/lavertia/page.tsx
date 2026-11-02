@@ -14,9 +14,55 @@ export default function LavertiaPage({ lavertia }: { lavertia: LavertiaPayload }
     // lavertiaSidebar. Keep embedded navigation for existing integrations.
     const hostSidebar = Object.prototype.hasOwnProperty.call(page.props, 'lavertiaSidebar');
 
+    const maxWidths: Record<string, string> = {
+        sm: '24rem', md: '32rem', lg: '48rem', xl: '64rem', '2xl': '80rem', full: '100%',
+    };
+    const presentation = lavertia.presentation;
+    const variant = presentation?.variant ?? 'default';
+    const maxWidth = maxWidths[presentation?.maxWidth ?? 'full'] ?? '100%';
+    const content = (() => {
+        if (variant === 'split' && lavertia.regions?.left && lavertia.regions?.right) {
+            const ratio = presentation?.ratio ?? 'balanced';
+            const columns = ratio === 'start-wide'
+                ? 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]'
+                : ratio === 'end-wide'
+                    ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]'
+                    : 'lg:grid-cols-2';
+
+            return (
+                <div className={`grid w-full min-w-0 gap-6 ${columns}`}>
+                    <section aria-label="Primary section" className="min-w-0">
+                        <LavertiaRenderer node={lavertia.regions.left} />
+                    </section>
+                    <section aria-label="Secondary section" className="min-w-0">
+                        <LavertiaRenderer node={lavertia.regions.right} />
+                    </section>
+                </div>
+            );
+        }
+
+        const tree = <LavertiaRenderer node={lavertia.tree} />;
+
+        if (variant === 'card') {
+            const padding = presentation?.padding === 'compact' ? 'p-4 sm:p-5'
+                : presentation?.padding === 'spacious' ? 'p-8 sm:p-10' : 'p-6 sm:p-8';
+            return <div className={`mx-auto w-full rounded-xl border border-border bg-card text-card-foreground shadow-sm ${padding}`} style={{ maxWidth }}>{tree}</div>;
+        }
+
+        if (variant === 'flat') {
+            return <div className="mx-auto w-full min-w-0" style={{ maxWidth }}>{tree}</div>;
+        }
+
+        return tree;
+    })();
+
     return (
         <>
-            <Head title={lavertia.title ?? 'Lavertia'} />
+            <Head title={lavertia.seo?.title ?? lavertia.title ?? 'Lavertia'}>
+                {lavertia.seo?.description && <meta head-key="description" name="description" content={lavertia.seo.description} />}
+                {lavertia.seo?.robots && <meta head-key="robots" name="robots" content={lavertia.seo.robots} />}
+                {lavertia.seo?.canonical && <link head-key="canonical" rel="canonical" href={lavertia.seo.canonical} />}
+            </Head>
             <main lang={lavertia.locale ?? 'en'} dir={lavertia.direction ?? 'ltr'} className="min-h-[calc(100vh-8rem)] bg-gray-50/70 px-4 py-6 sm:px-6 lg:px-8 dark:bg-gray-950/40">
                 <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 lg:flex-row">
                     {!hostSidebar && navigation.length > 0 && (
@@ -44,7 +90,7 @@ export default function LavertiaPage({ lavertia }: { lavertia: LavertiaPayload }
                         </aside>
                     )}
                     <div className="min-w-0 flex-1">
-                        <LavertiaRenderer node={lavertia.tree} />
+                        {content}
                     </div>
                 </div>
             </main>

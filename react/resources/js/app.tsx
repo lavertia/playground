@@ -12,6 +12,8 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
+            case name === 'lavertia/standalone':
+                return null;
             case name === 'welcome':
                 return null;
             case name.startsWith('auth/'):
