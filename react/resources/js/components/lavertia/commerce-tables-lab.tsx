@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { TableSelect } from '@/components/ui/table-select';
 import { QueryBuilderEditor } from './query-builder-editor';
 import { countRules, evaluateQuery, validateQuery } from './filter-query';
 import type { FilterField, FilterGroup } from './filter-query';
@@ -401,9 +402,9 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
                         <button type="button" className="text-xs text-muted-foreground hover:underline" onClick={() => setSelected([])}>Clear</button>
                     </> : <>
                         <span className="text-xs text-muted-foreground">Group by</span>
-                        <SearchableSelect label="Group by" value={groupBy} options={groupChoices} className="w-40" size="sm"
+                        <TableSelect label="Group by" value={groupBy} options={groupChoices} className="w-40" size="sm"
                             onValueChange={next => { setGroupBy(next); setCollapsedGroups([]); setPage(1); }} />
-                        {groupBy !== 'none' && <SearchableSelect label="Group direction" size="sm" className="w-32" value={groupDirection}
+                        {groupBy !== 'none' && <TableSelect label="Group direction" size="sm" className="w-32" value={groupDirection}
                             options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
                             onValueChange={value => setGroupDirection(value as 'asc' | 'desc')} />}
                     </>}
@@ -488,7 +489,7 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
             </div>}
             <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs sm:text-sm">
                 <p className="text-muted-foreground">Showing {first} to {last} of {sorted.length} results</p>
-                <div className="flex items-center gap-2 text-muted-foreground"><span>Per page</span><SearchableSelect label="Rows per page" size="sm" className="w-20"
+                <div className="flex items-center gap-2 text-muted-foreground"><span>Per page</span><TableSelect label="Rows per page" size="sm" className="w-20"
                     options={[5, 10, 25, 50].map(n => ({ value: String(n), label: String(n) }))} value={String(perPage)}
                     onValueChange={value => { setPerPage(Number(value)); setPage(1); }} /></div>
                 <nav aria-label="Table pagination" className="flex items-center overflow-hidden rounded-lg border border-border">
