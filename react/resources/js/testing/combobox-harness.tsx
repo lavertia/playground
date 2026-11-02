@@ -8,6 +8,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { TableSelect } from '@/components/ui/table-select';
 import { ConstraintPicker } from '@/components/lavertia/constraint-picker';
 import { LavertiaTable } from '@/components/lavertia/lavertia-table';
+import TablesFeatureLab from '@/components/lavertia/tables-feature-lab';
 import type { ComponentNode } from '@/components/lavertia/types';
 
 const ROLES = [
@@ -36,6 +37,33 @@ const sampleTable: ComponentNode = {
         { type: 'icon-column', key: 'featured', props: { name: 'is_featured', label: 'Featured', boolean: true, toggleable: true }, components: [] },
         { type: 'select-filter', key: 'status-filter', props: { name: 'status', label: 'Status', options: { published: 'Published', draft: 'Draft' } }, components: [] },
     ],
+};
+
+const labFeatures = [
+    {
+        id: 1, title: 'Defining table columns', group: 'Columns', status: 'native',
+        description: 'Table definition comes from PHP.', exercise: 'Inspect the table and code.',
+        snippet: "->columns([TextColumn::make('title')])",
+    },
+    {
+        id: 16, title: 'Reordering records', group: 'Rows & reordering', status: 'demo',
+        description: 'Local reordering only.', exercise: 'Move a record locally.',
+        snippet: '// Local only; no database writes',
+    },
+    {
+        id: 22, title: 'Displaying a loading skeleton', group: 'Data loading', status: 'demo',
+        description: 'Skeleton preview, not deferred SQL.', exercise: 'Replay the skeleton.',
+        snippet: '// Visual skeleton preview',
+    },
+];
+const selectedLabFeature = Number(new URLSearchParams(window.location.search).get('labFeature') ?? '1');
+const labNode: ComponentNode = {
+    type: 'tables-feature-lab', key: 'smoke-feature-lab',
+    props: {
+        active: selectedLabFeature, catalog: labFeatures,
+        databaseReady: false, selectedRecord: null, demoOnly: true, locale: 'en',
+    },
+    components: [sampleTable],
 };
 
 function Harness() {
@@ -134,6 +162,9 @@ function Harness() {
             </section>
             <section data-testid="native-table">
                 <LavertiaTable node={sampleTable} />
+            </section>
+            <section data-testid="feature-lab">
+                <TablesFeatureLab node={labNode} />
             </section>
         </main>
     );
