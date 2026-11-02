@@ -294,21 +294,17 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     }
     function moveDemoRow(id: string, offset: number) {
         if (!reorderDemo || !reordering) return;
-        setLocalRows(previous => {
-            const from = previous.findIndex(row => String(row.id) === id);
-            const to = from + offset;
-            if (from < 0 || to < 0 || to >= previous.length) return previous;
-            const orderBefore = previous.map(row => String(row.id));
-            const next = [...previous];
-            [next[from], next[to]] = [next[to], next[from]];
-            const orderAfter = next.map(row => String(row.id));
-            setReorderEvents([
-                'beforeReorder: ' + orderBefore.slice(0, 8).join(', '),
-                'afterReorder: ' + orderAfter.slice(0, 8).join(', '),
-                'Demo only — no database update',
-            ]);
-            return next;
-        });
+        const from = localRows.findIndex(row => String(row.id) === id);
+        const to = from + offset;
+        if (from < 0 || to < 0 || to >= localRows.length) return;
+        const next = [...localRows];
+        [next[from], next[to]] = [next[to], next[from]];
+        setLocalRows(next);
+        setReorderEvents([
+            'beforeReorder: ' + localRows.map(row => String(row.id)).slice(0, 8).join(', '),
+            'afterReorder: ' + next.map(row => String(row.id)).slice(0, 8).join(', '),
+            'Demo only — no database update',
+        ]);
     }
     function toggleDemoReorder() {
         if (!reorderDemo) return;
