@@ -25,12 +25,13 @@ final class DemoTablesSeeder extends Seeder
             throw new RuntimeException('Demo table fixtures can only be seeded in local/testing.');
         }
 
-        $owner = User::query()->where('email', 'test@example.com')->first();
+        $ownerEmail = (string) env('LAVERTIA_DEMO_OWNER_EMAIL', 'test@example.com');
+        $owner = User::query()->where('email', $ownerEmail)->first();
 
         if ($owner === null) {
             $owner = User::factory()->create([
                 'name' => 'Test User',
-                'email' => 'test@example.com',
+                'email' => $ownerEmail,
                 'password' => Str::random(48),
             ]);
         }
