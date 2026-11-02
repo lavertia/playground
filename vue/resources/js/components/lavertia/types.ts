@@ -136,10 +136,29 @@ export interface PanelAppearance {
     mobileNavigation: boolean;
 }
 
+export type PagePresentation = {
+    variant: 'default' | 'card' | 'flat' | 'split';
+    maxWidth: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+    padding?: 'compact' | 'normal' | 'spacious';
+    ratio?: 'balanced' | 'start-wide' | 'end-wide';
+};
+
+export interface PageSeo {
+    title: string;
+    description: string | null;
+    robots: 'index,follow' | 'noindex,follow' | 'noindex,nofollow';
+    canonical: string | null;
+}
+
 export interface LavertiaPayload {
     version: number;
     title?: string;
     tree: ComponentNode;
+    locale?: string;
+    direction?: 'ltr' | 'rtl';
+    presentation?: PagePresentation;
+    regions?: Record<string, ComponentNode>;
+    seo?: PageSeo;
 }
 
 export type TableRow = Record<string, Scalar>;
