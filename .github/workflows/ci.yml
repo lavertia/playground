@@ -145,7 +145,13 @@ jobs:
         if: matrix.stack == 'react'
         timeout-minutes: 8
         run: |
-          npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.58.2
+          # Installing into the application directory can re-resolve the full
+          # Vite+ tree and fail on unrelated transient package metadata.
+          mkdir -p /tmp/lavertia-playwright
+          npm install --prefix /tmp/lavertia-playwright --no-package-lock --no-audit --no-fund playwright@1.58.2
+          if [ ! -e node_modules/playwright ]; then
+            ln -s /tmp/lavertia-playwright/node_modules/playwright node_modules/playwright
+          fi
           if command -v google-chrome > /dev/null 2>&1; then
             export BROWSER_EXECUTABLE="$(command -v google-chrome)"
           else
