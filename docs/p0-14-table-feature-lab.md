@@ -101,3 +101,24 @@ These automatic checks are not a substitute for manual visual sign-off. Review t
 ## Security release gate
 
 Dependency audit findings are tracked separately in [playground issue #18](https://github.com/lavertia/playground/issues/18): Vitest / vite-plus across three frontends, Vue minimatch, Svelte deepmerge, and Composer advisories for PHPUnit and Symfony MIME. **Do not merge or release while the audit is failing.** A dedicated compatible dependency update must regenerate the committed `package-lock.json` and `composer.lock` files for each affected stack and pass the same CI matrix. Avoid `npm audit fix --force`, blanket ignores, or disabling audit checks.
+
+## P0-16 — one production React Table renderer
+
+The dedicated `lavertia-table.tsx` engine has been replaced by a
+compatibility re-export. `table.tsx` and `table-ui.tsx` are exact copies
+of `lavertia/panels/resources/stubs/react` and **must not be edited in
+Playground independently**; changes start in the Panels package, then are
+synced together. CI compares source byte-for-byte against the checked-out
+`panels` branch.
+
+The renderer now respects explicit Table features: no Column Manager if
+there are no toggleable columns; no search without a searchable column;
+no undeclared selection/action controls; no disabled pagination for tiny
+snapshot previews; server-side Eloquent paging still follows the PHP
+query contract. The table itself is not a substitute for tenant/row
+authorization: server-side policies and scoped queries remain mandatory.
+
+The browser harness retains Base UI tests for other form controls but
+uses the Table's portable native select for table-only filters. This is
+a first **vertical slice** toward Filament-quality parity, not a claim
+that all 28 concepts are production-complete.
