@@ -14,6 +14,7 @@ import {
     repeaterFieldNode,
 } from './form-state';
 import { runClientAction } from './client-actions';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import FilamentTablesLab from './filament-tables-lab';
 import {
     badgeClass,
@@ -233,7 +234,7 @@ function TablePreview({ node }: { node: ComponentNode }) {
     }
 
     return (
-        <section aria-label={title} className="min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900/70">
+        <section aria-label={title} className="min-w-0 overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900/70">
             <header className="flex flex-col gap-3 border-b border-gray-200 px-5 py-4 dark:border-white/10">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -283,14 +284,18 @@ function TablePreview({ node }: { node: ComponentNode }) {
                 {filters.length > 0 && (
                     <div className="flex flex-wrap items-end gap-2">
                         {filters.map((filter) => (
-                            <label key={filter.key} className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                {filter.label}
-                                <select value={selectedFilters[filter.key] ?? ''} onChange={(event) => applyFilter(filter.key, event.target.value)}
-                                    className="min-w-32 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-900 dark:border-white/20 dark:bg-gray-950 dark:text-white">
-                                    <option value="">{tx('filters')}: {filter.label}</option>
-                                    {Object.entries(filter.options).map(([value, text]) => <option key={value} value={value}>{text}</option>)}
-                                </select>
-                            </label>
+                            <div key={filter.key} className="flex min-w-40 flex-col gap-1 text-xs text-muted-foreground">
+                                <span className="font-medium">{filter.label}</span>
+                                <SearchableSelect
+                                    label={filter.label}
+                                    value={selectedFilters[filter.key] ?? ''}
+                                    onValueChange={(value) => applyFilter(filter.key, value)}
+                                    options={[
+                                        { value: '', label: tx('filters') + ': ' + filter.label },
+                                        ...Object.entries(filter.options).map(([value, label]) => ({ value, label })),
+                                    ]}
+                                />
+                            </div>
                         ))}
                         <button type="button" onClick={reset} className="rounded-md border border-gray-300 px-3 py-2 text-xs hover:bg-gray-50 dark:border-white/20 dark:hover:bg-white/5">{tx('reset')}</button>
                     </div>
