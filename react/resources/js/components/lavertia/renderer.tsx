@@ -16,6 +16,7 @@ import {
 import { runClientAction } from './client-actions';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LavertiaTable } from './lavertia-table';
+import TablesFeatureLab from './tables-feature-lab';
 import {
     badgeClass,
     headerLinks,
@@ -420,6 +421,9 @@ case 'form':
 
         case 'table':
             return <LavertiaTable node={node} />;
+
+        case 'tables-feature-lab':
+            return <TablesFeatureLab node={node} />;
 
         case 'action':
             return <ActionLink node={node} />;
