@@ -370,13 +370,13 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                     options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
                     onValueChange={v => setGroupDirection(v as SortDirection)} />}
             </>}
-            <div className="flex-1" />
-            {node.props.searchable === true && <form className="flex min-w-0 items-center gap-1" onSubmit={(event: FormEvent) => {
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-1">
+            {node.props.searchable === true && <form className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none" onSubmit={(event: FormEvent) => {
                 event.preventDefault();
                 if (mode === 'eloquent') navigate({ search: search.trim() || null });
                 else setLocalPage(1);
             }}>
-                <div className="relative min-w-40 sm:w-56">
+                <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
                     <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                     <input type="search" aria-label={tx('search')} placeholder={tx('search')} value={search}
                         onChange={event => setSearch(event.target.value)}
@@ -417,6 +417,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                     }}>Reset columns</button>
                 </DropdownMenuContent>
             </DropdownMenu>}
+            </div>
         </div>
 
         {filtersOpen && <div className="border-b border-border bg-muted/20 px-5 py-4">
@@ -441,7 +442,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
             <button type="button" className="text-muted-foreground hover:underline" onClick={() => setSelected([])}>Clear</button>
         </div>}
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-primary" tabIndex={0} role="region" aria-label={title + " table, scroll to see more columns"}>
             <table className="w-full min-w-[640px] text-sm">
                 <thead className="border-b border-border bg-muted/35">
                     <tr><th scope="col" className="w-10 px-4 py-3 text-start">
