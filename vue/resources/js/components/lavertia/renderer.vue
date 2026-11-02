@@ -102,10 +102,17 @@ watch(() => props.node.props.value, (next) => {
             </div>
         </header>
         <nav v-if="headerLinks(node.props.tabs).length" aria-label="Page tabs" class="flex gap-4 overflow-x-auto border-b border-border">
-            <Link v-for="tab in headerLinks(node.props.tabs).filter(tab => tab.url !== null)" :key="tab.url!" :href="tab.url!"
+            <Link v-for="tab in headerLinks(node.props.tabs).filter(tab => tab.url !== null)" :key="tab.url!" :href="tab.url!" preserve-scroll
                 :aria-current="tab.active ? 'page' : undefined"
                 :class="tab.active ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
-                class="shrink-0 border-b-2 px-1 pb-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">{{ tab.label }}</Link>
+                class="shrink-0 border-b-2 px-1 pb-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                <span class="inline-flex items-center gap-1.5">
+                    <span v-if="tab.icon && tab.iconPosition !== 'after'" aria-hidden="true">◆</span>
+                    <span>{{ tab.label }}</span>
+                    <span v-if="tab.icon && tab.iconPosition === 'after'" aria-hidden="true">◆</span>
+                    <span v-if="tab.badge != null" :class="badgeClass(tab.badgeColor)" class="rounded-full px-1.5 py-0.5 text-xs">{{ tab.badge }}</span>
+                </span>
+            </Link>
         </nav>
     </div>
 
