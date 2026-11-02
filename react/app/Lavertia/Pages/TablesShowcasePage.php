@@ -60,7 +60,7 @@ final class TablesShowcasePage extends Page
                     ->tone('success'),
                 Stat::make('Table filters', '02')
                     ->description('Status and department')
-                    ->tone('info'),
+                    ->tone('warning'),
                 Stat::make('Frontend adapters', '03')
                     ->description('React, Vue and Svelte')
                     ->tone('neutral'),
