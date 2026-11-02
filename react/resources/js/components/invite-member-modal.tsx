@@ -76,6 +76,8 @@ export default function InviteMemberModal({
                                     <Label>Role</Label>
                                     <SearchableSelect
                                         label="Role"
+                                        name="role"
+                                        required
                                         value={inviteRole}
                                         options={availableRoles}
                                         onValueChange={(value) =>
@@ -83,7 +85,6 @@ export default function InviteMemberModal({
                                         }
                                         className="w-full"
                                     />
-                                    <input type="hidden" name="role" value={inviteRole} data-test="invite-role" />
                                     <InputError message={errors.role} />
                                 </div>
                             </div>
