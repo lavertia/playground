@@ -68,6 +68,24 @@ it('never resolves a cross-user ticket even if the record ID is guessed', functi
         ->assertNotFound();
 });
 
+it('keeps another team record hidden even when owned by the current user', function (): void {
+    $owner = User::factory()->create();
+    $differentTeamId = (int) ($owner->current_team_id ?? 0) + 999;
+
+    $ticket = DemoTicket::query()->create([
+        'owner_id' => $owner->getKey(),
+        'team_id' => $differentTeamId,
+        'title' => 'Ticket from another team',
+    ]);
+
+    $this->actingAs($owner)
+        ->get('/admin/demo-tickets/'.$ticket->getKey())
+        ->assertNotFound();
+
+    $this->get('/admin/demo-tickets/'.$ticket->getKey().'/edit')
+        ->assertNotFound();
+});
+
 it('renders central and Panel-linked Auth Pages as guest-only standalone components', function (): void {
     $this->get('/identity-demo/sign-in-preview')
         ->assertOk()
