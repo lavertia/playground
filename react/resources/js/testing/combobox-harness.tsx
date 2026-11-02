@@ -8,6 +8,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { TableSelect } from '@/components/ui/table-select';
 import { ConstraintPicker } from '@/components/lavertia/constraint-picker';
 import { LavertiaTable } from '@/components/lavertia/lavertia-table';
+import LavertiaRenderer, { NavigationDisplayContext } from '@/components/lavertia/renderer';
 import TablesFeatureLab from '@/components/lavertia/tables-feature-lab';
 import type { ComponentNode } from '@/components/lavertia/types';
 
@@ -46,10 +47,22 @@ const labFeatures = [
         snippet: "->columns([TextColumn::make('title')])",
     },
     {
+        id: 2, title: 'Sortable and searchable columns', group: 'Columns', status: 'native',
+        description: 'Only sort and search controls are enabled.',
+        exercise: 'Sort and search the titles.',
+        snippet: "TextColumn::make('title')->sortable()->searchable()",
+    },
+    {
         id: 5, title: 'Defining filters', group: 'Filters & actions', status: 'native',
         description: 'The only scenario in this harness with filter controls.',
         exercise: 'Open Filters and select a post status.',
         snippet: "->filters([SelectFilter::make('status')])",
+    },
+    {
+        id: 6, title: 'Table actions', group: 'Filters & actions', status: 'partial',
+        description: 'Read-only actions with selection and export.',
+        exercise: 'Select records or inspect row actions.',
+        snippet: '// Only read-only view and CSV export are enabled.',
     },
     {
         id: 16, title: 'Reordering records', group: 'Rows & reordering', status: 'demo',
@@ -67,6 +80,16 @@ const selectedLabFeature = Number(new URLSearchParams(window.location.search).ge
 // feature-lab preview mirrors server configuration for the selected scenario.
 const labTable: ComponentNode = {
     ...sampleTable,
+    props: {
+        ...sampleTable.props,
+        searchable: selectedLabFeature === 2,
+        columnManager: selectedLabFeature === 1,
+        reorderableColumns: selectedLabFeature === 1,
+        selectable: selectedLabFeature === 6,
+        recordActions: selectedLabFeature === 6,
+        paginationControls: false,
+        groupOptions: {},
+    },
     components: selectedLabFeature === 5
         ? sampleTable.components
         : sampleTable.components.filter(component => component.type !== 'select-filter'),
@@ -79,6 +102,44 @@ const labNode: ComponentNode = {
     },
     components: [labTable],
 };
+
+const shellSlot: ComponentNode = {
+    type: 'navigation-slot',
+    key: 'test-icon-rail',
+    props: { name: 'Workspace navigation', position: 'icon-rail' },
+    components: [
+        {
+            type: 'navigation-item', key: 'workspace-link',
+            props: { visible: true, url: '/admin/workspace-demo', label: 'Workspace', icon: 'layout-dashboard' },
+            components: [],
+        },
+        {
+            type: 'navigation-group', key: 'tools-group',
+            props: { label: 'Workspace tools', collapsedByDefault: true, collapsible: true },
+            components: [
+                {
+                    type: 'navigation-item', key: 'fullscreen-link',
+                    props: { visible: true, url: '/admin/fullscreen-demo', label: 'Fullscreen', icon: 'house' },
+                    components: [],
+                },
+            ],
+        },
+    ],
+};
+
+function ShellSlotHarness() {
+    const [collapsed, setCollapsed] = useState(false);
+
+    return <section data-testid="shell-slot-test">
+        <button type="button" onClick={() => setCollapsed(value => !value)}>Toggle rail</button>
+        <NavigationDisplayContext.Provider value={{ position: 'icon-rail', collapsed }}>
+            <div data-testid="shell-slot-content" data-collapsed={collapsed}
+                className={collapsed ? 'flex w-12 flex-col items-center gap-1' : 'flex w-56 flex-col gap-2'}>
+                <LavertiaRenderer node={shellSlot} />
+            </div>
+        </NavigationDisplayContext.Provider>
+    </section>;
+}
 
 function Harness() {
     const [role, setRole] = useState('all');
@@ -180,6 +241,7 @@ function Harness() {
             <section data-testid="feature-lab">
                 <TablesFeatureLab node={labNode} />
             </section>
+            <ShellSlotHarness />
         </main>
     );
 }
