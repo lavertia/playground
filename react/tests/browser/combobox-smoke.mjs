@@ -115,8 +115,30 @@ try {
     assert.equal(await table.getByRole('columnheader', { name: 'Status' }).count(), 0,
         'Column manager must update the shared table renderer');
 
+    const featureLab = page.getByTestId('feature-lab');
+    await featureLab.getByRole('heading', { name: 'Defining table columns' }).waitFor();
+    await featureLab.getByRole('tab', { name: 'PHP source' }).click();
+    await featureLab.locator('pre code').getByText("->columns([TextColumn::make('title')])").waitFor();
+    await featureLab.getByRole('tab', { name: 'Live preview' }).click();
+    await featureLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
+
+    await page.goto(url + '?labFeature=16');
+    const reorderLab = page.getByTestId('feature-lab');
+    await reorderLab.getByRole('heading', { name: 'Reordering records' }).waitFor();
+    await reorderLab.getByRole('button', { name: 'Enable reordering' }).click();
+    await reorderLab.getByRole('button', { name: 'Move record 2 up' }).click();
+    await reorderLab.getByText(/beforeReorder:/).waitFor();
+    await reorderLab.getByText(/afterReorder:/).waitFor();
+    await reorderLab.getByText('Demo only — no database update').waitFor();
+
+    await page.goto(url + '?labFeature=22');
+    const skeletonLab = page.getByTestId('feature-lab');
+    await skeletonLab.getByRole('heading', { name: 'Displaying a loading skeleton' }).waitFor();
+    await skeletonLab.getByRole('status', { name: 'Loading table preview' }).waitFor();
+    await skeletonLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor({ timeout: 6000 });
+
     assert.deepEqual(errors, [], 'No client-side React exceptions should occur');
-    console.log('PASS Base UI Combobox/Select opens, aligns options without gaps, filters, submits, and works in Dialog/RTL');
+    console.log('PASS Base UI controls, native tables and 28-feature Lab preview/code, reorder logs and skeleton');
 } catch (error) {
     await page.screenshot({ path: '/tmp/lavertia-combobox-browser-failure.png', fullPage: true });
     console.error('Browser console errors:', errors);
