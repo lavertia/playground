@@ -108,6 +108,9 @@ jobs:
           php artisan wayfinder:generate --with-form
       - name: Test authenticated component protocol
         run: php artisan test tests/Feature/LavertiaDashboardTest.php tests/Feature/LavertiaSidebarNavigationTest.php tests/Feature/LavertiaPanelNotificationsTest.php --compact
+      - name: Test composable Page variants
+        if: matrix.stack == 'react'
+        run: php artisan test tests/Feature/LavertiaPageVariantsTest.php --compact
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
