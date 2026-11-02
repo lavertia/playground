@@ -37,6 +37,7 @@ export function SearchableSelect({
     const rootRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [active, setActive] = useState(0);
@@ -77,6 +78,12 @@ export function SearchableSelect({
             window.removeEventListener('scroll', place, true);
         };
     }, [open]);
+
+    useEffect(() => {
+        if (!open) return;
+        listRef.current?.querySelector<HTMLElement>('[data-active="true"]')
+            ?.scrollIntoView({ block: 'nearest' });
+    }, [active, open, query]);
 
     const openSelect = () => {
         if (disabled) return;
@@ -164,13 +171,14 @@ export function SearchableSelect({
                     onKeyDown={keyDown}
                     className="h-9 w-full rounded-md bg-transparent ps-9 pe-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none" />
             </div>
-            <div id={listId} role="listbox" aria-label={label}
+            <div ref={listRef} id={listId} role="listbox" aria-label={label}
                 className="min-h-0 max-h-56 overflow-y-auto overscroll-contain p-1">
                 {filtered.length === 0
                     ? <p role="status" className="px-3 py-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>
                     : filtered.map((option, index) => <button key={option.value}
                         id={id + '-option-' + index} type="button" role="option" tabIndex={-1}
-                        aria-selected={option.value === value} disabled={option.disabled}
+                        aria-selected={option.value === value} data-active={active === index ? 'true' : undefined}
+                        disabled={option.disabled}
                         onMouseMove={() => { if (!option.disabled) setActive(index); }}
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => choose(option)}
