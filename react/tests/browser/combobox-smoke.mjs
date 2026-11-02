@@ -134,6 +134,7 @@ try {
     await page.goto(url + '?labFeature=22');
     const skeletonLab = page.getByTestId('feature-lab');
     await skeletonLab.getByRole('heading', { name: 'Displaying a loading skeleton' }).waitFor();
+    await skeletonLab.getByRole('button', { name: 'Replay loading' }).click();
     await skeletonLab.getByRole('status', { name: 'Loading table preview' }).waitFor();
     await skeletonLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor({ timeout: 6000 });
 
