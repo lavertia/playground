@@ -5,6 +5,7 @@ import '../../css/app.css';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { TableSelect } from '@/components/ui/table-select';
 import { ConstraintPicker } from '@/components/lavertia/constraint-picker';
 
 const ROLES = [
@@ -17,6 +18,7 @@ const ROLES = [
 function Harness() {
     const [role, setRole] = useState('all');
     const [group, setGroup] = useState('none');
+    const [direction, setDirection] = useState('asc');
     const [field, setField] = useState('name');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -39,6 +41,19 @@ function Harness() {
                     size="sm"
                 />
                 <output data-testid="group-value">{group}</output>
+            </section>
+            <section data-testid="compact-control">
+                <h2>Compact shadcn Select</h2>
+                <TableSelect
+                    label="Group direction"
+                    value={direction}
+                    options={[
+                        { value: 'asc', label: 'Ascending' },
+                        { value: 'desc', label: 'Descending' },
+                    ]}
+                    onValueChange={setDirection}
+                />
+                <output data-testid="direction-value">{direction}</output>
             </section>
             <section data-testid="filter-control">
                 <button type="button" onClick={() => setFilterOpen(!filterOpen)}>Toggle Filters</button>
