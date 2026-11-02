@@ -61,6 +61,12 @@ async function choose(scope, label, search) {
     await popup.waitFor({ state: 'hidden' });
 }
 
+async function chooseTableFilter(scope, label) {
+    const control = scope.getByRole('combobox', { name: 'Status' });
+    await control.waitFor({ state: 'visible' });
+    await control.selectOption({ label });
+}
+
 try {
     await page.goto(url);
     await page.getByTestId('group-control').getByText('Group by', { exact: true }).waitFor();
@@ -107,7 +113,7 @@ try {
     assert.equal(await table.getByRole('row').count(), 4, 'Native table should render header and 3 records');
 
     await table.getByRole('button', { name: 'Filters', exact: true }).click();
-    await choose(table, 'Published', 'pub');
+    await chooseTableFilter(table, 'Published');
     assert.equal(await table.getByRole('row').count(), 3, 'The native snapshot table must filter to 2 rows');
 
     await table.getByRole('button', { name: 'Manage columns' }).click();
@@ -177,7 +183,7 @@ try {
     const filteringLab = page.getByTestId('feature-lab');
     await filteringLab.getByRole('heading', { name: 'Defining filters' }).waitFor();
     await filteringLab.getByRole('button', { name: 'Filters', exact: true }).click();
-    await choose(filteringLab, 'Published', 'pub');
+    await chooseTableFilter(filteringLab, 'Published');
     assert.equal(await filteringLab.getByRole('row').count(), 3,
         'The filtering experiment must filter snapshot records');
 
