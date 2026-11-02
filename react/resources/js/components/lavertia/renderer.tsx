@@ -572,6 +572,8 @@ case 'form':
                     <span className="font-semibold">{String(node.props.label ?? node.props.name ?? '')}</span>
                     <SearchableSelect
                         label={String(node.props.label ?? node.props.name ?? '')}
+                        name={String(node.props.name ?? '')}
+                        required={node.props.required === true}
                         value={input}
                         options={[
                             { value: '', label: '—' },
@@ -587,7 +589,6 @@ case 'form':
                         }}
                         className="w-full"
                     />
-                    <input type="hidden" name={String(node.props.name ?? '')} value={input} />
                 </div>
             );;
 
