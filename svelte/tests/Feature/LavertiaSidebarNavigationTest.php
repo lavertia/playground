@@ -26,6 +26,7 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaSidebar.0.badge', 'Demo')
             ->where('lavertiaSidebarDirection', 'ltr')
             ->where('lavertiaPanel.id', 'admin')
+            ->where('lavertiaPanel.theme.id', 'playground')
             ->where('lavertiaPanel.layout', 'sidebar')
             ->where('lavertiaPanel.languageSwitcher', true)
             ->where('lavertiaPanel.locale', 'en')

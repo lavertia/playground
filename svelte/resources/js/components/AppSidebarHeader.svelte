@@ -4,6 +4,7 @@
     import AppLogo from '@/components/AppLogo.svelte';
     import TeamSwitcher from '@/components/TeamSwitcher.svelte';
     import PanelSearch from '@/components/PanelSearch.svelte';
+    import ShellNavigationSlots from '@/components/ShellNavigationSlots.svelte';
     import PanelNotifications from '@/components/PanelNotifications.svelte';
     import PanelLocaleSwitcher from '@/components/PanelLocaleSwitcher.svelte';
     import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -48,6 +49,7 @@
             {#if panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar'}
                 <TeamSwitcher inHeader />
             {/if}
+            <ShellNavigationSlots position="topbar" />
             <PanelLocaleSwitcher />
             {#if panel?.globalSearch}
                 <PanelSearch />

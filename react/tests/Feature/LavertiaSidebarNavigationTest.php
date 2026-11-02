@@ -25,6 +25,7 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaSidebar.0.badge', null)
             ->where('lavertiaSidebarDirection', 'ltr')
             ->where('lavertiaPanel.id', 'admin')
+            ->where('lavertiaPanel.theme.id', 'playground')
             ->where('lavertiaPanel.layout', 'sidebar')
             ->where('lavertiaPanel.languageSwitcher', true)
             ->where('lavertiaPanel.locale', 'en')
@@ -77,6 +78,21 @@ it('allows a Page to override navigation into top or full shell layouts', functi
             ->where('lavertiaPanel.languageSwitcher', true)
             ->where('lavertia.locale', 'ar')
             ->where('lavertia.direction', 'rtl')
+            ->etc());
+});
+
+it('uses authorized portable navigation components in several shell locations', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get('/admin/workspace-demo')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertiaPanel.layout', 'workspace')
+            ->where('lavertiaPanel.shellSlots.0.type', 'navigation-slot')
+            ->where('lavertiaPanel.shellSlots.0.props.position', 'topbar')
+            ->where('lavertiaPanel.shellSlots.0.components.0.props.url', '/admin/workspace-demo')
+            ->where('lavertiaPanel.shellSlots.2.props.position', 'context')
+            ->where('lavertiaPanel.shellSlots.2.components.0.type', 'navigation-group')
+            ->where('lavertiaPanel.shellSlots.2.components.0.components.0.props.url', '/admin/fullscreen-demo')
             ->etc());
 });
 

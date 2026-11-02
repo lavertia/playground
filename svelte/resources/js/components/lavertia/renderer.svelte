@@ -52,7 +52,31 @@
     });
 </script>
 
-{#if node.type === 'column' || node.type === 'container'}
+{#if node.type === 'navigation-item'}
+    {#if node.props.visible === true && safeHref(node.props.url)?.startsWith('/')}
+        <Link href={safeHref(node.props.url)!} aria-current={node.props.active === true ? 'page' : undefined}
+            class={"inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"}>
+            <span>{String(node.props.label ?? '')}</span>
+            {#if typeof node.props.badge === 'string'}<span class="ms-auto rounded bg-muted px-1.5 text-xs text-muted-foreground">{node.props.badge}</span>{/if}
+        </Link>
+    {/if}
+{:else if node.type === 'navigation-group'}
+    {#if node.components.some(child => child.props.visible === true)}
+        <details open={node.components.some(child => child.props.active === true || child.props.descendantActive === true) || node.props.collapsible === false || node.props.collapsedByDefault !== true}
+            class="min-w-0 rounded-md">
+            <summary class="cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring">{String(node.props.label ?? '')}</summary>
+            <div class="flex min-w-0 flex-col ps-2">{#each node.components as child (child.key)}<Self node={child} />{/each}</div>
+        </details>
+    {/if}
+{:else if node.type === 'navigation-slot'}
+    <nav aria-label={String(node.props.name ?? 'Navigation')}
+        class={node.props.position === 'topbar' ? 'flex min-w-0 flex-row flex-wrap gap-1' : 'flex min-w-0 flex-col gap-1'}>
+        {#each node.components as child (child.key)}
+            <Self node={child} />
+        {/each}
+    </nav>
+{:else if node.type === 'column' || node.type === 'container'}
+
     <div class="flex min-w-0 flex-col gap-6">
         {#each node.components as child (child.key)}
             <Self node={child} />

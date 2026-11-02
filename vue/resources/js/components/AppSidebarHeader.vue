@@ -5,6 +5,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import AppLogo from '@/components/AppLogo.vue';
 import TeamSwitcher from '@/components/TeamSwitcher.vue';
 import PanelSearch from '@/components/PanelSearch.vue';
+import ShellNavigationSlots from '@/components/ShellNavigationSlots.vue';
 import PanelNotifications from '@/components/PanelNotifications.vue';
 import PanelLocaleSwitcher from '@/components/PanelLocaleSwitcher.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -58,6 +59,7 @@ const resolvedBreadcrumbs = computed(() => {
         </nav>
         <div v-if="panel?.topbar !== false" class="ms-auto flex shrink-0 items-center gap-1">
             <TeamSwitcher v-if="panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement === 'topbar'" :in-header="true" />
+            <ShellNavigationSlots position="topbar" />
             <PanelLocaleSwitcher />
             <PanelSearch v-if="panel?.globalSearch === true" />
             <PanelNotifications v-if="panel?.notifications === true" />

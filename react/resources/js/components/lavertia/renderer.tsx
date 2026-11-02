@@ -428,6 +428,34 @@ export default function LavertiaRenderer({ node }: { node: ComponentNode }) {
     const children = node.components.map((child) => <LavertiaRenderer key={child.key} node={child} />);
 
     switch (node.type) {
+        case 'navigation-item': {
+            const url = safeHref(node.props.url);
+            if (node.props.visible !== true || !url || !url.startsWith('/')) return null;
+            return <Link href={url} aria-current={node.props.active === true ? 'page' : undefined}
+                className={`inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${node.props.active === true ? 'bg-accent font-semibold text-accent-foreground' : 'text-foreground hover:bg-accent'}`}>
+                <span>{String(node.props.label ?? '')}</span>
+                {typeof node.props.badge === 'string' && <span className="ms-auto rounded bg-muted px-1.5 text-xs text-muted-foreground">{node.props.badge}</span>}
+            </Link>;
+        }
+
+        case 'navigation-group': {
+            const visible = node.components.some(item => item.props.visible === true);
+            if (!visible) return null;
+            const expanded = node.components.some(item => item.props.active === true || item.props.descendantActive === true)
+                || node.props.collapsible === false || node.props.collapsedByDefault !== true;
+            return <details open={expanded ? true : undefined}
+                className="min-w-0 rounded-md group/nav">
+                <summary className="cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring">
+                    {String(node.props.label ?? '')}
+                </summary>
+                <div className="flex min-w-0 flex-col ps-2">{children}</div>
+            </details>;
+        }
+
+        case 'navigation-slot':
+            return <nav aria-label={String(node.props.name ?? 'Navigation')}
+                className={`flex min-w-0 gap-1 ${node.props.position === 'topbar' ? 'flex-row flex-wrap' : 'flex-col'}`}>{children}</nav>;
+
         case 'container':
         case 'column':
             return <div className="flex min-w-0 flex-col gap-6">{children}</div>;

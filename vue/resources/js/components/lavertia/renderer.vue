@@ -55,6 +55,24 @@ watch(() => props.node.props.value, (next) => {
 </script>
 
 <template>
+    <Link v-if="node.type === 'navigation-item' && node.props.visible === true && safeHref(node.props.url)?.startsWith('/')"
+        :href="safeHref(node.props.url)!"
+        :aria-current="node.props.active === true ? 'page' : undefined"
+        class="inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+        :class="{ 'bg-accent font-semibold text-accent-foreground': node.props.active === true }">
+        <span>{{ String(node.props.label ?? '') }}</span>
+        <span v-if="typeof node.props.badge === 'string'" class="ms-auto rounded bg-muted px-1.5 text-xs text-muted-foreground">{{ node.props.badge }}</span>
+    </Link>
+    <details v-else-if="node.type === 'navigation-group' && node.components.some(child => child.props.visible === true)"
+        :open="node.components.some(child => child.props.active === true || child.props.descendantActive === true) || node.props.collapsible === false || node.props.collapsedByDefault !== true"
+        class="min-w-0 rounded-md">
+        <summary class="cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring">{{ String(node.props.label ?? '') }}</summary>
+        <div class="flex min-w-0 flex-col ps-2"><LavertiaRenderer v-for="child in node.components" :key="child.key" :node="child" /></div>
+    </details>
+    <nav v-else-if="node.type === 'navigation-slot'" :aria-label="String(node.props.name ?? 'Navigation')"
+        class="flex min-w-0 gap-1" :class="node.props.position === 'topbar' ? 'flex-row flex-wrap' : 'flex-col'">
+        <LavertiaRenderer v-for="child in node.components" :key="child.key" :node="child" />
+    </nav>
     <div v-if="node.type === 'column' || node.type === 'container'" class="flex min-w-0 flex-col gap-6">
         <LavertiaRenderer v-for="child in node.components" :key="child.key" :node="child" />
     </div>

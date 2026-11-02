@@ -10,6 +10,7 @@ import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { ShellNavigationSlots } from '@/components/shell-navigation-slots';
 import { TeamSwitcher } from '@/components/team-switcher';
 import {
     Sidebar,
@@ -128,7 +129,7 @@ export function AppSidebar() {
             collapsible={panel?.sidebarCollapsible === false ? 'none' : 'icon'}
             variant={panel?.sidebarVariant ?? 'inset'}
             side={page.props.lavertiaSidebarDirection === 'rtl' ? 'right' : 'left'}
-            style={{ '--sidebar-primary': panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' } as React.CSSProperties}
+            style={{ '--sidebar-primary': panel?.theme?.tokens['sidebar-primary'] ?? panel?.primaryColor ?? '#f59e0b', '--sidebar-width': panel?.sidebarWidth ?? '18rem' } as React.CSSProperties}
         >
             <SidebarHeader>
                 {logoInSidebar && (
@@ -142,6 +143,8 @@ export function AppSidebar() {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 )}
+                <ShellNavigationSlots position="tenant" />
+                <ShellNavigationSlots position="icon-rail" />
                 {panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement !== 'topbar' && (
                     <SidebarMenu>
                         <SidebarMenuItem>
@@ -156,9 +159,11 @@ export function AppSidebar() {
                 {(panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) && panelGroups.map(group => (
                     <PanelNavGroup key={group.label} group={group} />
                 ))}
+                <ShellNavigationSlots position="sidebar" />
             </SidebarContent>
 
             <SidebarFooter>
+                <ShellNavigationSlots position="footer" />
                 {footerNavItems.length > 0 && <NavFooter items={footerNavItems} className="mt-auto" />}
                 <NavUser />
             </SidebarFooter>
