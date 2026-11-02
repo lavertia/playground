@@ -56,7 +56,7 @@ it('shows filter controls only in the dedicated filtering experiment', function 
         ->get('/admin/tables-feature-lab?feature=1')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('lavertia.tree.components.1.components.0.components', 7)
+            ->has('lavertia.tree.components.1.components.0.components', 6)
             ->where('lavertia.tree.components.1.components.0.props.mode', 'snapshot')
             ->etc());
 
@@ -65,7 +65,7 @@ it('shows filter controls only in the dedicated filtering experiment', function 
     $this->get('/admin/tables-feature-lab?feature=2&lvt_feature-explorer_filter_status=published')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('lavertia.tree.components.1.components.0.components', 7)
+            ->has('lavertia.tree.components.1.components.0.components', 4)
             ->where('lavertia.tree.components.1.components.0.props.pagination.total', 6)
             ->where('lavertia.tree.components.1.components.0.props.appliedFilters', [])
             ->etc());
@@ -73,9 +73,9 @@ it('shows filter controls only in the dedicated filtering experiment', function 
     $this->get('/admin/tables-feature-lab?feature=5&lvt_feature-explorer_filter_status=published')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('lavertia.tree.components.1.components.0.components', 9)
-            ->where('lavertia.tree.components.1.components.0.components.7.type', 'select-filter')
-            ->where('lavertia.tree.components.1.components.0.components.8.type', 'select-filter')
+            ->has('lavertia.tree.components.1.components.0.components', 6)
+            ->where('lavertia.tree.components.1.components.0.components.4.type', 'select-filter')
+            ->where('lavertia.tree.components.1.components.0.components.5.type', 'select-filter')
             ->where('lavertia.tree.components.1.components.0.props.appliedFilters.status', 'published')
             ->where('lavertia.tree.components.1.components.0.props.pagination.total', 2)
             ->etc());
@@ -83,7 +83,57 @@ it('shows filter controls only in the dedicated filtering experiment', function 
     $this->get('/admin/tables-feature-lab?feature=6')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('lavertia.tree.components.1.components.0.components', 7)
+            ->has('lavertia.tree.components.1.components.0.components', 4)
+            ->etc());
+});
+
+it('isolates feature-specific controls without weakening data bounds', function (): void {
+    $owner = User::factory()->create();
+    featureLabPosts($owner, 18);
+
+    $this->actingAs($owner)
+        ->get('/admin/tables-feature-lab?feature=1')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.1.components.0.props.searchable', false)
+            ->where('lavertia.tree.components.1.components.0.props.columnManager', true)
+            ->where('lavertia.tree.components.1.components.0.props.reorderableColumns', true)
+            ->where('lavertia.tree.components.1.components.0.props.selectable', false)
+            ->where('lavertia.tree.components.1.components.0.props.recordActions', false)
+            ->where('lavertia.tree.components.1.components.0.props.paginationControls', false)
+            ->has('lavertia.tree.components.1.components.0.components', 6)
+            ->etc());
+
+    $this->get('/admin/tables-feature-lab?feature=2')
+        ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.1.components.0.props.searchable', true)
+            ->where('lavertia.tree.components.1.components.0.props.columnManager', false)
+            ->where('lavertia.tree.components.1.components.0.components.1.props.sortable', true)
+            ->where('lavertia.tree.components.1.components.0.components.1.props.searchable', true)
+            ->where('lavertia.tree.components.1.components.0.props.selectable', false)
+            ->etc());
+
+    $this->get('/admin/tables-feature-lab?feature=6')
+        ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.1.components.0.props.searchable', false)
+            ->where('lavertia.tree.components.1.components.0.props.selectable', true)
+            ->where('lavertia.tree.components.1.components.0.props.recordActions', true)
+            ->where('lavertia.tree.components.1.components.0.props.paginationControls', false)
+            ->etc());
+
+    $this->get('/admin/tables-feature-lab?feature=7')
+        ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.1.components.0.props.paginationControls', true)
+            ->where('lavertia.tree.components.1.components.0.props.recordActions', false)
+            ->where('lavertia.tree.components.1.components.0.props.pagination.total', 18)
+            ->has('lavertia.tree.components.1.components.0.props.rows', 10)
+            ->etc());
+
+    $this->get('/admin/tables-feature-lab?feature=16')
+        ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.1.components.0.props.recordActions', false)
+            ->where('lavertia.tree.components.1.components.0.props.paginationControls', false)
+            ->where('lavertia.tree.components.1.components.0.props.columnManager', false)
             ->etc());
 });
 
@@ -93,8 +143,8 @@ it('demonstrates native pushColumns instead of replacing existing columns', func
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('lavertia.tree.components.1.props.active', 4)
-            ->where('lavertia.tree.components.1.components.0.components.7.props.name', 'created_at')
-            ->where('lavertia.tree.components.1.components.0.components.7.type', 'text-column')
+            ->where('lavertia.tree.components.1.components.0.components.4.props.name', 'created_at')
+            ->where('lavertia.tree.components.1.components.0.components.4.type', 'text-column')
             ->etc());
 });
 
