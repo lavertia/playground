@@ -30,8 +30,11 @@ final class ViewDemoTicket extends CardPage implements ResourcePageContract
     {
         $record = $this->record();
 
+        $period = $this->routeParameter('period');
+        $heading = (string) $this->pageParameter('heading', 'View ticket');
+
         return [
-            PageHeader::make('View ticket'),
+            PageHeader::make($period === null ? $heading : $heading.' ('.$period.')'),
             Infolist::make('ticket')->components([
                 TextEntry::make('title')->label('Title')->value((string) $record->title),
                 TextEntry::make('id')->label('Record')->value((string) $record->getKey()),

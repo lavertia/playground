@@ -28,23 +28,29 @@ final class ListDemoTickets extends ResourcePage
 
     protected function components(): array
     {
+        $status = $this->pageParameter('status');
+        $heading = (string) $this->pageParameter('heading', 'Demo Tickets');
+
         return [
-            PageHeader::make('Demo Tickets')
+            PageHeader::make($heading)
                 ->description('Eloquent records scoped to the signed-in user and active team.')
                 ->actions([
                     Action::make('create-ticket')
                         ->label('Create preview')
                         ->url('/admin/demo-tickets/create'),
                 ]),
-            Section::make('My Tickets')->components([
+            Section::make($heading)->components([
                 Table::make('demo-tickets')
                     ->label('Owner-scoped tickets')
                     ->columns([
                         TextColumn::make('id')->label('ID'),
                         TextColumn::make('title')->label('Title'),
+                        TextColumn::make('status')->label('Status'),
                     ])
                     ->eloquent(
-                        DemoTicketResource::query()->select(['id', 'title']),
+                        DemoTicketResource::query()
+                            ->when($status !== null, static fn ($query) => $query->where('status', $status))
+                            ->select(['id', 'title', 'status']),
                         static fn (): bool => Gate::allows('viewAny', DemoTicket::class),
                     ),
             ]),

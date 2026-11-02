@@ -86,6 +86,67 @@ it('keeps another team record hidden even when owned by the current user', funct
         ->assertNotFound();
 });
 
+it('reuses the same Page for published/draft routes with isolated server parameters', function (): void {
+    $owner = User::factory()->create();
+
+    DemoTicket::query()->create([
+        'owner_id' => $owner->getKey(),
+        'team_id' => $owner->current_team_id,
+        'status' => 'published',
+        'title' => 'Public release note',
+    ]);
+
+    DemoTicket::query()->create([
+        'owner_id' => $owner->getKey(),
+        'team_id' => $owner->current_team_id,
+        'status' => 'draft',
+        'title' => 'Private draft',
+    ]);
+
+    $this->actingAs($owner)
+        ->get('/admin/demo-tickets/published?status=draft&heading=Injected')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.0.props.title', 'Published tickets')
+            ->where('lavertia.tree.components.1.components.0.props.pagination.total', 1)
+            ->where('lavertia.tree.components.1.components.0.props.rows.0.title', 'Public release note')
+            ->etc());
+
+    $this->get('/admin/demo-tickets/drafts')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.0.props.title', 'Draft tickets')
+            ->where('lavertia.tree.components.1.components.0.props.rows.0.title', 'Private draft')
+            ->etc());
+
+    expect(\App\Lavertia\Resources\DemoTicketResource::getUrl(
+        'published',
+        panelId: 'admin',
+    ))->toBe('/admin/demo-tickets/published');
+});
+
+it('provides named URL placeholders independently of fixed Page parameters', function (): void {
+    $owner = User::factory()->create();
+    $ticket = DemoTicket::query()->create([
+        'owner_id' => $owner->getKey(),
+        'team_id' => $owner->current_team_id,
+        'status' => 'draft',
+        'title' => 'Authorized history',
+    ]);
+
+    $this->actingAs($owner)
+        ->get(\App\Lavertia\Resources\DemoTicketResource::getUrl(
+            'history',
+            ['record' => $ticket->getKey(), 'period' => '2026'],
+            'admin',
+        ))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.0.props.title', 'Ticket history (2026)')
+            ->where('lavertia.seo.robots', 'noindex,nofollow')
+            ->etc());
+});
+
 it('renders central and Panel-linked Auth Pages as guest-only standalone components', function (): void {
     $this->get('/identity-demo/sign-in-preview')
         ->assertOk()
