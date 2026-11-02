@@ -128,7 +128,7 @@
             <nav aria-label="Page tabs" class="flex gap-4 overflow-x-auto border-b border-border">
                 {#each headerLinks(node.props.tabs).filter(tab => tab.url !== null) as tab (tab.url)}
                     {#if tab.url}
-                        <Link href={tab.url} preserveScroll aria-current={tab.active ? 'page' : undefined}
+                        <Link href={tab.url} only={['lavertia']} preserveState preserveScroll aria-current={tab.active ? 'page' : undefined}
                             class={`shrink-0 border-b-2 px-1 pb-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${tab.active ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                             <span class="inline-flex items-center gap-1.5">
                                 {#if tab.icon && tab.iconPosition !== 'after'}<span aria-hidden="true">◆</span>{/if}
