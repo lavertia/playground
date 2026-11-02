@@ -125,6 +125,44 @@ it('reuses the same Page for published/draft routes with isolated server paramet
     ))->toBe('/admin/demo-tickets/published');
 });
 
+it('renders getTabs with scoped Eloquent counts, label badges and Inertia URLs', function (): void {
+    $owner = User::factory()->create();
+
+    DemoTicket::query()->create([
+        'owner_id' => $owner->getKey(),
+        'team_id' => $owner->current_team_id,
+        'status' => 'draft',
+        'title' => 'Draft from same tenant',
+    ]);
+
+    DemoTicket::query()->create([
+        'owner_id' => $owner->getKey(),
+        'team_id' => $owner->current_team_id,
+        'status' => 'published',
+        'title' => 'Published from same tenant',
+    ]);
+
+    $this->actingAs($owner)
+        ->get('/admin/demo-tickets?activeTab=published&tenant_id=other')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.0.props.tabs.0.label', 'All tickets')
+            ->where('lavertia.tree.components.0.props.tabs.1.label', 'Published')
+            ->where('lavertia.tree.components.0.props.tabs.1.badge', '1')
+            ->where('lavertia.tree.components.0.props.tabs.1.badgeColor', 'success')
+            ->where('lavertia.tree.components.0.props.tabs.1.active', true)
+            ->where('lavertia.tree.components.1.components.0.props.pagination.total', 1)
+            ->where('lavertia.tree.components.1.components.0.props.rows.0.title', 'Published from same tenant')
+            ->etc());
+
+    $this->get('/admin/demo-tickets?activeTab=drafts')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('lavertia.tree.components.0.props.tabs.2.active', true)
+            ->where('lavertia.tree.components.1.components.0.props.rows.0.title', 'Draft from same tenant')
+            ->etc());
+});
+
 it('provides named URL placeholders independently of fixed Page parameters', function (): void {
     $owner = User::factory()->create();
     $ticket = DemoTicket::query()->create([
