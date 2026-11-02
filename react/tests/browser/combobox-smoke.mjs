@@ -30,7 +30,19 @@ async function openSelect(scope) {
     const trigger = scope.locator('[data-slot="combobox-trigger"]');
     await trigger.click();
     const popup = page.locator('[data-slot="combobox-content"]:visible');
-    await popup.waitFor({ state: 'visible', timeout: 6000 });
+    try {
+        await popup.waitFor({ state: 'visible', timeout: 2500 });
+    } catch (error) {
+        console.error('Combobox trigger debug:', {
+            label: await trigger.getAttribute('aria-label'),
+            expanded: await trigger.getAttribute('aria-expanded'),
+            outerHTML: (await trigger.evaluate(element => element.outerHTML)).slice(0, 1200),
+            portalCount: await page.locator('[data-slot="combobox-content"]').count(),
+            popupState: await page.locator('[data-slot="combobox-content"]').first().getAttribute('data-open').catch(() => null),
+            pageText: (await page.locator('body').innerText()).slice(0, 1000),
+        });
+        throw error;
+    }
     return popup;
 }
 
