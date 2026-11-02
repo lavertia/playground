@@ -89,7 +89,7 @@ final class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('tickets-published', 'Published tickets')->icon('file-text')->group('Management')->resource('demo-tickets', 'published'),
                 NavigationItem::make('tickets-drafts', 'Draft tickets')->icon('file-text')->group('Management')->resource('demo-tickets', 'drafts'),
                 NavigationItem::make('tables-showcase', 'Tables Showcase')->icon('list')->group('Management'),
-                NavigationItem::make('filament-tables-lab', 'Filament Tables Lab')->icon('columns-3')->group('Management'),
+                NavigationItem::make('filament-tables-lab', 'Filament Tables Lab')->icon('list')->group('Management'),
             ]);
     }
 }
