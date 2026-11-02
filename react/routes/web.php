@@ -30,3 +30,16 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+
+// Auth Page presentations are intentionally NOT credential handlers.
+// Keep the host's real Fortify routes untouched.
+\Lavertia\Panels\Auth\AuthPages::central([
+    \Lavertia\Panels\Auth\AuthRoute::make('sign-in-preview', \App\Lavertia\PublicPages\IdentityPreviewPage::class)
+        ->middleware(['web', 'guest']),
+], prefix: 'identity-demo');
+
+\Lavertia\Panels\Auth\AuthPages::forPanel('admin', [
+    \Lavertia\Panels\Auth\AuthRoute::make('sign-in-preview', \App\Lavertia\PublicPages\IdentityPreviewPage::class)
+        ->middleware(['web', 'guest']),
+]);
+
