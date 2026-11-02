@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { CalendarDays, CheckCircle2, Copy, Filter, Hash, Plus, RotateCcw, Trash2, Type } from 'lucide-react';
-import { SearchableSelect } from '@/components/ui/searchable-select';
+import { TableSelect } from '@/components/ui/table-select';
 import { ConstraintPicker } from './constraint-picker';
 import { cn } from '@/lib/utils';
 import {
@@ -83,7 +83,7 @@ export function QueryBuilderEditor({ value, fields, onChange, onApply, onReset, 
         const candidates = operators[chosen.kind].map(x => ({ value: x.value, label: x.label }));
         const type = chosen.kind === 'number' ? 'number' : chosen.kind === 'date' ? 'date' : 'text';
         const needsInput = needsValue(rule.operator);
-        return <div key={rule.id} className="grid min-w-0 gap-2 rounded-lg border border-border/70 bg-background/65 p-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-end">
+        return <div key={rule.id} className="grid min-w-0 gap-x-3 gap-y-2 rounded-lg border border-border/70 bg-background/65 px-3 py-2.5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-end">
             <div className="min-w-0 space-y-1.5">
                 <span className="flex items-center gap-1.5 text-xs font-medium"><FieldIcon className="size-3.5 text-muted-foreground" /> Field</span>
                 <ConstraintPicker fields={fields} value={chosen.key}
@@ -94,7 +94,7 @@ export function QueryBuilderEditor({ value, fields, onChange, onApply, onReset, 
             </div>
             <div className="min-w-0 space-y-1.5">
                 <span className="block text-xs font-medium">Comparison</span>
-                <SearchableSelect label={'Comparison for ' + chosen.label} value={rule.operator} className="w-full"
+                <TableSelect label={'Comparison for ' + chosen.label} value={rule.operator} className="w-full"
                     options={candidates} onValueChange={operator => setRule(rule.id, { operator: operator as FilterOperator, value: '', valueTo: '' })} />
             </div>
             <div className="min-w-0 space-y-1.5">
@@ -123,7 +123,7 @@ export function QueryBuilderEditor({ value, fields, onChange, onApply, onReset, 
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                     <span>{depth === 1 ? 'Match rules' : 'Nested group'}</span>
-                    <SearchableSelect label="Group operator" size="sm" className="w-40" value={group.junction}
+                    <TableSelect label="Group operator" size="sm" className="w-40" value={group.junction}
                         options={[{ value: 'and', label: 'All (AND)' }, { value: 'or', label: 'Any (OR)' }]}
                         onValueChange={junction => onChange(replaceNode(value, group.id, node => ({ ...node, junction: junction as Junction }) as FilterGroup))} />
                 </div>
@@ -148,7 +148,7 @@ export function QueryBuilderEditor({ value, fields, onChange, onApply, onReset, 
             </div>
         </div>;
     }
-    return <section aria-label="Advanced Query Builder" className="space-y-4 border-b border-border bg-card px-4 py-5 sm:px-6">
+    return <section aria-label="Advanced Query Builder" className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
         <div className="flex items-start justify-between gap-3">
             <div className="space-y-0.5"><h3 className="flex items-center gap-2 text-sm font-semibold"><Filter className="size-4" />Advanced filters</h3><p className="text-xs text-muted-foreground">Combine rules and nested AND/OR groups. Changes apply only after you confirm.</p></div>
             <button type="button" className="text-sm font-medium text-rose-500 hover:underline" onClick={onReset}><RotateCcw className="me-1 inline size-3.5" />Reset</button>
