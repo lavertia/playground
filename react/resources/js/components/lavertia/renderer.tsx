@@ -492,8 +492,15 @@ export default function LavertiaRenderer({ node }: { node: ComponentNode }) {
                     </header>
                     {tabs.length > 0 && (
                         <nav aria-label="Page tabs" className="flex gap-4 overflow-x-auto border-b border-border">
-                            {tabs.map(tab => <Link key={tab.url} href={tab.url!} aria-current={tab.active ? 'page' : undefined}
-                                className={`shrink-0 border-b-2 px-1 pb-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${tab.active ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>{tab.label}</Link>)}
+                            {tabs.map(tab => <Link key={tab.url} href={tab.url!} only={['lavertia']} preserveState preserveScroll aria-current={tab.active ? 'page' : undefined}
+                                className={`shrink-0 border-b-2 px-1 pb-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${tab.active ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                                <span className="inline-flex items-center gap-1.5">
+                                    {tab.icon && tab.iconPosition !== 'after' && <span aria-hidden="true">◆</span>}
+                                    <span>{tab.label}</span>
+                                    {tab.icon && tab.iconPosition === 'after' && <span aria-hidden="true">◆</span>}
+                                    {tab.badge !== null && tab.badge !== undefined && <span className={`rounded-full px-1.5 py-0.5 text-xs ${badgeClass(tab.badgeColor)}`}>{tab.badge}</span>}
+                                </span>
+                            </Link>)}
                         </nav>
                     )}
                 </div>

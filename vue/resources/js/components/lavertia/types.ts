@@ -61,6 +61,10 @@ export interface HeaderLink {
     label: string;
     url: string | null;
     active: boolean;
+    icon?: string | null;
+    iconPosition?: 'before' | 'after';
+    badge?: string | null;
+    badgeColor?: 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 }
 
 export interface PanelMenuLink {
@@ -259,7 +263,18 @@ export function headerLinks(value: unknown): HeaderLink[] {
         const url = item.url === null ? null : safeHref(item.url);
         if (url !== null && !url.startsWith('/')) return [];
         if (item.url !== null && url === null) return [];
-        return [{ label: item.label, url, active: item.active === true }];
+        const colors = ['neutral', 'primary', 'success', 'warning', 'danger', 'info'];
+        const badgeColor = typeof item.badgeColor === 'string' && colors.includes(item.badgeColor)
+            ? item.badgeColor as HeaderLink['badgeColor'] : 'neutral';
+        const icon = typeof item.icon === 'string' && /^[a-z][a-z0-9-]{0,59}$/.test(item.icon)
+            ? item.icon : null;
+        const badge = typeof item.badge === 'string' && item.badge.length <= 30 ? item.badge : null;
+
+        return [{
+            label: item.label, url, active: item.active === true,
+            icon, iconPosition: item.iconPosition === 'after' ? 'after' : 'before',
+            badge, badgeColor,
+        }];
     });
 }
 
