@@ -117,10 +117,20 @@ try {
 
     const featureLab = page.getByTestId('feature-lab');
     await featureLab.getByRole('heading', { name: 'Defining table columns' }).waitFor();
+    assert.equal(await featureLab.getByRole('button', { name: 'Filters', exact: true }).count(), 0,
+        'Defining columns must not show filters from other experiments');
     await featureLab.getByRole('tab', { name: 'PHP source' }).click();
     await featureLab.locator('pre code').getByText("->columns([TextColumn::make('title')])").waitFor();
     await featureLab.getByRole('tab', { name: 'Live preview' }).click();
     await featureLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
+
+    await page.goto(url + '?labFeature=5');
+    const filteringLab = page.getByTestId('feature-lab');
+    await filteringLab.getByRole('heading', { name: 'Defining filters' }).waitFor();
+    await filteringLab.getByRole('button', { name: 'Filters', exact: true }).click();
+    await choose(filteringLab, 'Published', 'pub');
+    assert.equal(await filteringLab.getByRole('row').count(), 3,
+        'The filtering experiment must filter snapshot records');
 
     await page.goto(url + '?labFeature=16');
     const reorderLab = page.getByTestId('feature-lab');
@@ -153,6 +163,9 @@ try {
             await responsiveLab.getByRole('heading', { name: 'Defining table columns' }).waitFor();
             await responsiveLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
 
+            assert.equal(await responsiveLab.getByRole('button', { name: 'Filters', exact: true }).count(), 0,
+                'Column preview must not expose filters at any viewport');
+
             const dimensions = await page.evaluate(() => ({
                 page: document.documentElement.scrollWidth,
                 viewport: document.documentElement.clientWidth,
@@ -167,9 +180,9 @@ try {
 
             if (width === 390) {
                 const liveTable = responsiveLab.locator('[data-lavertia-table]').first();
-                const filterBox = await liveTable.getByRole('button', { name: 'Filters', exact: true }).boundingBox();
+                const searchBox = await liveTable.getByRole('button', { name: 'Search table' }).boundingBox();
                 const columnsBox = await liveTable.getByRole('button', { name: 'Manage columns' }).boundingBox();
-                assert.ok(filterBox && columnsBox && Math.abs(filterBox.y - columnsBox.y) <= 2,
+                assert.ok(searchBox && columnsBox && Math.abs(searchBox.y - columnsBox.y) <= 2,
                     `Mobile table toolbar controls must share one row at ${width}px, ${direction}`);
             }
 
