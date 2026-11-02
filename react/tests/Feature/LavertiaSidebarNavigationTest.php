@@ -10,9 +10,13 @@ beforeEach(function (): void {
 });
 
 it('shows the registered admin panel links in the existing host sidebar', function (): void {
+    $this->actingAs(User::factory()->create());
+
+    // Resource navigation is Policy-aware: compute expected links as
+    // the same authenticated user who will render the sidebar.
     $expected = count(app(\Lavertia\Panels\PanelRegistry::class)->navigation('admin', 'lavertia.admin.dashboard'));
-    $this->actingAs(User::factory()->create())
-        ->get('/admin/dashboard')
+
+    $this->get('/admin/dashboard')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('lavertia/page')
