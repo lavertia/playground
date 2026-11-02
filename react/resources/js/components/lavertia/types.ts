@@ -171,7 +171,8 @@ export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 export interface TableColumn {
     key: string;
-    type: 'text' | 'icon';
+    type: 'text' | 'icon' | 'image';
+    currency?: string;
     boolean: boolean;
     label: string;
     sortable: boolean;
@@ -211,10 +212,11 @@ export function statAccentClass(tone: unknown): string {
 
 export function tableColumns(node: ComponentNode): TableColumn[] {
     return node.components
-        .filter((component) => component.type === 'text-column' || component.type === 'icon-column')
+        .filter((component) => ['text-column', 'icon-column', 'image-column'].includes(component.type))
         .map((component): TableColumn => ({
             key: String(component.props.name ?? ''),
-            type: component.type === 'icon-column' ? 'icon' : 'text',
+            type: component.type === 'icon-column' ? 'icon' : component.type === 'image-column' ? 'image' : 'text',
+            currency: typeof component.props.currency === 'string' ? component.props.currency : undefined,
             boolean: component.type === 'icon-column' && component.props.boolean === true,
             label: String(component.props.label ?? component.props.name ?? ''),
             sortable: component.props.sortable === true,
