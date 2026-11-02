@@ -38,6 +38,10 @@ final class CommerceTablesLabPage extends Page
                         ->label('Real Eloquent Table')
                         ->appearance('outline')
                         ->url('/admin/tables-showcase'),
+                    Action::make('tables-php')
+                        ->label('PHP Table API')
+                        ->appearance('outline')
+                        ->url('/admin/declarative-tables'),
                 ]),
             CommerceTablesLab::make(),
         ];
