@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import {
-    BarChart3, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
+    BarChart3, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
     ChevronsLeft, ChevronsRight, Columns3, Filter, MoreVertical, Package, Plus, Search,
-    ShoppingBag, Trash2, Truck, XCircle,
+    Trash2, Truck, XCircle,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -500,7 +500,7 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
 
 function FragmentRows({ groupLabel, grouped, collapsed, onToggle, colspan, children }: {
     groupLabel: string; grouped: boolean; collapsed: boolean;
-    onToggle: () => void; colspan: number; children: React.ReactNode;
+    onToggle: () => void; colspan: number; children: ReactNode;
 }) {
     return <>
         {grouped && <tr className="border-b border-border bg-muted/40"><td colSpan={colspan} className="px-4 py-2">
