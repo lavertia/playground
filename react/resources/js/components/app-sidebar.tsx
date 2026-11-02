@@ -95,7 +95,8 @@ function PanelNavGroup({ group }: { group: NavigationGroupView }) {
 export function AppSidebar() {
     const page = usePage();
     const panel = page.props.lavertiaPanel as PanelAppearance | null | undefined;
-    const { isMobile, setOpenMobile } = useSidebar();
+    const { isMobile, setOpenMobile, state } = useSidebar();
+    const compactSlots = state === 'collapsed' && !isMobile;
     const starterDashboard = page.props.currentTeam
         ? dashboard(page.props.currentTeam.slug)
         : '/';
@@ -143,8 +144,8 @@ export function AppSidebar() {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 )}
-                <ShellNavigationSlots position="tenant" />
-                <ShellNavigationSlots position="icon-rail" />
+                <ShellNavigationSlots position="tenant" collapsed={compactSlots} />
+                <ShellNavigationSlots position="icon-rail" collapsed={compactSlots} />
                 {panel?.tenantSwitcher !== false && panel?.tenantSwitcherPlacement !== 'topbar' && (
                     <SidebarMenu>
                         <SidebarMenuItem>
@@ -159,11 +160,11 @@ export function AppSidebar() {
                 {(panel?.navigationPosition !== 'top' || isMobile) && (panel?.mobileNavigation !== false || !isMobile) && panelGroups.map(group => (
                     <PanelNavGroup key={group.label} group={group} />
                 ))}
-                <ShellNavigationSlots position="sidebar" />
+                <ShellNavigationSlots position="sidebar" collapsed={compactSlots} />
             </SidebarContent>
 
             <SidebarFooter>
-                <ShellNavigationSlots position="footer" />
+                <ShellNavigationSlots position="footer" collapsed={compactSlots} />
                 {footerNavItems.length > 0 && <NavFooter items={footerNavItems} className="mt-auto" />}
                 <NavUser />
             </SidebarFooter>
