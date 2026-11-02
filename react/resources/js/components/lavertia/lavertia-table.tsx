@@ -27,9 +27,11 @@ import {
 type SortDirection = 'asc' | 'desc';
 interface Pagination {
     page?: number;
-    lastPage?: number;
     perPage?: number;
-    total?: number;
+    total?: number | null;
+    lastPage?: number | null;
+    hasMorePages?: boolean;
+    truncated?: boolean;
 }
 
 const iconButton = 'inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-40';
@@ -133,11 +135,29 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     const [collapsed, setCollapsed] = useState<string[]>([]);
     const [selected, setSelected] = useState<string[]>([]);
     const [localPage, setLocalPage] = useState(1);
-    const [localPerPage, setLocalPerPage] = useState(10);
+    const configuredOptions = Array.isArray(node.props.paginationOptions)
+        ? node.props.paginationOptions.filter((size): size is number =>
+            Number.isInteger(size) && size >= 1 && size <= 100)
+        : [5, 10, 25, 50, 100];
+    const allowedOptions = configuredOptions.length ? configuredOptions : [10];
+    const configuredDefault = Number(node.props.defaultPaginationPageOption ?? 10);
+    const [localPerPage, setLocalPerPage] = useState(
+        allowedOptions.includes(configuredDefault) ? configuredDefault : allowedOptions[0],
+    );
+    const [localRows, setLocalRows] = useState<TableRow[]>(rows);
+    const [reordering, setReordering] = useState(false);
+    const [reorderEvents, setReorderEvents] = useState<string[]>([]);
     const [busy, setBusy] = useState(false);
     const [detailRow, setDetailRow] = useState<TableRow | null>(null);
 
+    const paginationEnabled = node.props.paginationEnabled !== false;
+    const simplePagination = mode === 'eloquent' && node.props.paginationMode === 'simple' && paginationEnabled;
+    const extremeLinks = node.props.extremePaginationLinks !== false;
+    const reorderDemo = node.props.demoReorder === true && mode === 'snapshot';
     const paginationSize = mode === 'eloquent' ? Number(pager.perPage ?? 10) : localPerPage;
+    const rowTones = node.props.recordTones && typeof node.props.recordTones === 'object'
+        ? node.props.recordTones as { field?: string; tones?: Record<string, string> } : null;
+    const striped = node.props.striped === true;
     const appliedTab = typeof node.props.appliedTab === 'string' ? node.props.appliedTab : '';
     const tabs = node.props.tabs && typeof node.props.tabs === 'object' && !Array.isArray(node.props.tabs)
         ? node.props.tabs as Record<string, string> : {};
@@ -152,6 +172,21 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     const activeCount = Object.values(values).filter(Boolean).length + (appliedTab ? 1 : 0);
 
     useEffect(() => {
+        setLocalRows(rows);
+    }, [node.props.rows]);
+
+    useEffect(() => {
+        const interval = Number(node.props.pollIntervalMs ?? 0);
+        if (mode !== 'eloquent' || interval < 5000 || interval > 300000) return;
+        const timer = window.setInterval(() => {
+            if (document.visibilityState === 'visible' && !busy) {
+                router.reload({ preserveScroll: true, preserveState: true });
+            }
+        }, interval);
+        return () => window.clearInterval(timer);
+    }, [mode, node.props.pollIntervalMs, busy]);
+
+    useEffect(() => {
         setSearch(String(node.props.appliedSearch ?? ''));
         setSortKey(typeof node.props.appliedSort === 'string' ? node.props.appliedSort : null);
         setDirection(node.props.appliedDirection === 'desc' ? 'desc' : 'asc');
@@ -162,14 +197,21 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     }, [node.props.appliedSearch, node.props.appliedSort, node.props.appliedDirection, node.props.appliedFilters, node.props.appliedTab, pager.page, pager.perPage]);
 
     const ordered = tableColumnsInOrder(columns, visibleOrder, hidden);
-    const filtered = mode === 'eloquent' ? rows : visibleTableRows(rows, columns, search, sortKey, direction, values);
+    const filtered = mode === 'eloquent' ? rows : visibleTableRows(
+        reorderDemo ? localRows : rows, columns, search, sortKey, direction, values,
+    );
+    const totalKnown = mode !== 'eloquent' || (pager.total !== undefined && pager.total !== null);
     const totalRows = mode === 'eloquent' ? Number(pager.total ?? 0) : filtered.length;
-    const lastPage = mode === 'eloquent'
-        ? Math.max(1, Number(pager.lastPage ?? 1))
+    const lastPage = !paginationEnabled ? 1 : mode === 'eloquent'
+        ? Math.max(1, Number(pager.lastPage ?? pager.page ?? 1))
         : Math.max(1, Math.ceil(filtered.length / paginationSize));
-    const page = mode === 'eloquent' ? Math.min(Math.max(1, Number(pager.page ?? 1)), lastPage)
+    const page = mode === 'eloquent' ? (simplePagination
+        ? Math.max(1, Number(pager.page ?? 1))
+        : Math.min(Math.max(1, Number(pager.page ?? 1)), lastPage))
         : Math.min(localPage, lastPage);
-    const shown = mode === 'eloquent' ? filtered : filtered.slice((page - 1) * paginationSize, page * paginationSize);
+    const shown = mode === 'eloquent' || !paginationEnabled
+        ? filtered : filtered.slice((page - 1) * paginationSize, page * paginationSize);
+    const hasNext = simplePagination ? pager.hasMorePages === true : page < lastPage;
 
     const groups = useMemo(() => {
         const result = new Map<string, TableRow[]>();
@@ -183,8 +225,8 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
 
     const selectedOnPage = shown.filter(row => selected.includes(String(row.id)));
     const selectedAll = shown.length > 0 && selectedOnPage.length === shown.length;
-    const first = totalRows ? (page - 1) * paginationSize + 1 : 0;
-    const last = Math.min(page * paginationSize, totalRows);
+    const first = shown.length ? (page - 1) * paginationSize + 1 : 0;
+    const last = shown.length ? first + shown.length - 1 : 0;
     const pages = [...new Set([1, lastPage, page - 2, page - 1, page, page + 1, page + 2]
         .filter(n => n > 0 && n <= lastPage))].sort((a, b) => a - b);
 
@@ -218,6 +260,11 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
         setGroupKey('none');
         setSelected([]);
         setLocalPage(1);
+        if (reorderDemo) {
+            setLocalRows(rows);
+            setReorderEvents([]);
+            setReordering(false);
+        }
         if (mode === 'eloquent') {
             const parameters: Record<string, string | null> = {
                 search: null, sort: null, direction: null, tab: null, page: null, perPage: null,
@@ -235,6 +282,33 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
             [next[from], next[to]] = [next[to], next[from]];
             return next;
         });
+    }
+    function moveDemoRow(id: string, offset: number) {
+        if (!reorderDemo || !reordering) return;
+        setLocalRows(previous => {
+            const from = previous.findIndex(row => String(row.id) === id);
+            const to = from + offset;
+            if (from < 0 || to < 0 || to >= previous.length) return previous;
+            const orderBefore = previous.map(row => String(row.id));
+            const next = [...previous];
+            [next[from], next[to]] = [next[to], next[from]];
+            const orderAfter = next.map(row => String(row.id));
+            setReorderEvents([
+                'beforeReorder: ' + orderBefore.slice(0, 8).join(', '),
+                'afterReorder: ' + orderAfter.slice(0, 8).join(', '),
+                'Demo only — no database update',
+            ]);
+            return next;
+        });
+    }
+    function toggleDemoReorder() {
+        if (!reorderDemo) return;
+        setReordering(old => !old);
+        setSearch('');
+        setValues({});
+        setSortKey(null);
+        setGroupKey('none');
+        setLocalPage(1);
     }
     function toggleRow(id: string, checked: boolean): void {
         setSelected(previous => checked ? [...new Set([...previous, id])] : previous.filter(item => item !== id));
