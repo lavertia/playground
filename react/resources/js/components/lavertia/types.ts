@@ -246,7 +246,7 @@ export function visibleTableRows(
     const term = query.trim().toLocaleLowerCase();
     const filtered = rows.filter((row) => {
         const matched = term === '' || columns.some((column) =>
-            String(row[column.key] ?? '').toLocaleLowerCase().includes(term),
+            column.searchable && String(row[column.key] ?? '').toLocaleLowerCase().includes(term),
         );
         const filtered = Object.entries(filters).every(([field, value]) =>
             value === '' || String(row[field] ?? '') === value,
