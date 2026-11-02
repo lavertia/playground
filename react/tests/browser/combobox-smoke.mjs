@@ -161,7 +161,7 @@ try {
                 `Unexpected horizontal page overflow at ${width}px, ${direction}: ${JSON.stringify(dimensions)}`);
 
             const layoutColumns = await responsiveLab.locator('[data-table-feature-lab] > .grid').last()
-                .evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\\s+/).length);
+                .evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length);
             assert.equal(layoutColumns, width >= 1024 ? 2 : 1,
                 `Incorrect feature lab layout at ${width}px, ${direction}`);
 
