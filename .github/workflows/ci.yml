@@ -130,6 +130,16 @@ jobs:
         run: npm run types:check
       - name: Build frontend
         run: npm run build
+      - name: Browser smoke test Base UI Combobox (React)
+        if: matrix.stack == 'react'
+        timeout-minutes: 8
+        run: |
+          npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.58.2
+          npx playwright install chromium --with-deps
+          npm run dev -- --host 127.0.0.1 --port 5173 > /tmp/lavertia-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          node tests/browser/combobox-smoke.mjs
 
   required:
     name: Three-stack runtime verification
