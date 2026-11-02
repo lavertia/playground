@@ -55,6 +55,7 @@ final class CommerceTablesLabPage extends Page
             ->reorderableColumns()
             ->groupable(['brand' => 'Brand', 'visibility' => 'Visibility'])
             ->columns([
+                TextColumn::make('id')->label('ID')->hidden(),
                 ImageColumn::make('thumbnail')->label('Image')->toggleable(),
                 TextColumn::make('name')->label('Name')->sortable()->searchable(),
                 TextColumn::make('brand')->label('Brand')->sortable(),
@@ -96,6 +97,7 @@ final class CommerceTablesLabPage extends Page
                 'cancelled' => 'Cancelled',
             ])
             ->columns([
+                TextColumn::make('id')->label('ID')->hidden(),
                 TextColumn::make('number')->label('Number')->sortable()->searchable(),
                 TextColumn::make('customer')->label('Customer')->sortable()->searchable(),
                 TextColumn::make('status')->label('Status')->sortable()->badge([
