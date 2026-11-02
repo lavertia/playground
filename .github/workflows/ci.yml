@@ -135,7 +135,11 @@ jobs:
         timeout-minutes: 8
         run: |
           npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.58.2
-          npx playwright install chromium --with-deps
+          if command -v google-chrome > /dev/null 2>&1; then
+            export BROWSER_EXECUTABLE="$(command -v google-chrome)"
+          else
+            npx playwright install chromium --with-deps
+          fi
           npm run dev -- --host 127.0.0.1 --port 5173 > /tmp/lavertia-vite.log 2>&1 &
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
