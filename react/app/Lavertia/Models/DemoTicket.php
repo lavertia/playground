@@ -10,7 +10,7 @@ final class DemoTicket extends Model
 {
     protected $table = 'lavertia_demo_tickets';
 
-    protected $fillable = ['owner_id', 'team_id', 'title'];
+    protected $fillable = ['owner_id', 'team_id', 'title', 'status'];
 
     /** @return array<string, string> */
     protected function casts(): array
