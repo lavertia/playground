@@ -13,13 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { store as storeInvitation } from '@/routes/teams/invitations';
 import type { RoleOption, Team } from '@/types';
 
@@ -79,31 +73,17 @@ export default function InviteMemberModal({
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="role">Role</Label>
-                                    <Select
-                                        name="role"
-                                        data-test="invite-role"
+                                    <Label>Role</Label>
+                                    <SearchableSelect
+                                        label="Role"
                                         value={inviteRole}
+                                        options={availableRoles}
                                         onValueChange={(value) =>
-                                            setInviteRole(
-                                                value as RoleOption['value'],
-                                            )
+                                            setInviteRole(value as RoleOption['value'])
                                         }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select a role" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availableRoles.map((role) => (
-                                                <SelectItem
-                                                    key={role.value}
-                                                    value={role.value}
-                                                >
-                                                    {role.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        className="w-full"
+                                    />
+                                    <input type="hidden" name="role" value={inviteRole} data-test="invite-role" />
                                     <InputError message={errors.role} />
                                 </div>
                             </div>
