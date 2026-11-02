@@ -585,7 +585,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
         {reorderDemo && reorderEvents.length > 0 && <div role="status" className="border-t border-border bg-muted/20 px-5 py-3 text-xs">
             <p className="mb-2 font-semibold">Reordering event log (local only)</p>
             {reorderEvents.map((event, index) => <p key={index} className="font-mono text-muted-foreground">{event}</p>)}
-        </div>
+        </div>}
         <Dialog open={detailRow !== null} onOpenChange={open => { if (!open) setDetailRow(null); }}>
             <DialogContent className="max-w-xl">
                 <DialogHeader>
