@@ -120,6 +120,12 @@ jobs:
       - name: Test Filament-style React Table Lab
         if: matrix.stack == 'react'
         run: php artisan test tests/Feature/LavertiaFilamentTablesLabTest.php --compact
+      - name: Test Commerce Tables Lab
+        if: matrix.stack == 'react'
+        run: php artisan test tests/Feature/LavertiaCommerceTablesLabTest.php --compact
+      - name: Test Advanced Query Builder evaluator
+        if: matrix.stack == 'react'
+        run: node --experimental-strip-types --test tests/js/filter-query.test.mjs
       - name: Type-check frontend
         run: npm run types:check
       - name: Build frontend
