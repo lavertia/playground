@@ -64,6 +64,32 @@ Optional local-only Eloquent data: configure LAVERTIA_DEMO_OWNER_EMAIL for an ex
 
 Run php artisan test tests/Feature/LavertiaTablesFeatureLabTest.php, npm run types:check and npm run build. CI also verifies PHP package tests/Pint and browser interactions in Chromium. Auth and membership scopes are enforced before reading records. A disabled paginator cannot send more than 100 Eloquent records. Do not treat this lab as complete Filament compatibility: persistent reorder hooks, real Scout, deferred server-loading, full CRUD, arbitrary class callbacks and global configureUsing are not implemented.
 
+## Feature-focused preview (2026-11-02)
+
+The explorer no longer attaches every optional table capability to every example. The PHP page builds **per-experiment columns and controls**, so the Inertia payload itself omits irrelevant features. The shared React table only renders controls present in the PHP component configuration.
+
+| Scenario | Explicit preview controls |
+| --- | --- |
+| 1 | Column manager, toggleable columns, column ordering (with synced menu/header positions) |
+| 2 | Scoped search and sortable title/slug |
+| 3 | Relation-backed author column (eager loaded) |
+| 4 | Appended date column |
+| 5 | Allowlisted Status / Featured filters |
+| 6 | Read-only row actions, selection and selected-row CSV export |
+| 7–14, 24 | Pagination / per-page state controls; disabled pagination remains bounded |
+| 15 | Tenant-scoped record URLs |
+| 16–18 | Browser-local record reordering and event log |
+| 19 | PHP-defined heading and description |
+| 20 | Visible-tab polling |
+| 21–22 | Explicit loading/skeleton demonstration |
+| 23 | SQL search with a separately labeled optional Scout integration |
+| 25–27 | Row tones, striping and safe presentation classes |
+| 28 | Shared table preset example |
+
+For other scenarios the table still fetches a **bounded server-side page** where Eloquent is used, but hides pagination actions in the preview. This is **not** `paginated(false)`: only experiment 14 disables pagination and is capped at 100 records. Existing Tables APIs remain backward-compatible; the package adds opt-in `selectable(false)`, `recordActions(false)` and `paginationControls(false)` presentation methods. A row reorder preview is not a database mutation.
+
+The column manager menu reads the same live ordering state as the rendered table; move buttons cannot traverse hidden columns or move past the first/last visible column. The collapsed desktop sidebar now renders authorized shell-slot navigation as **icon-only, named links** with no visible labels or group headings. Expanded, mobile and non-sidebar slots retain normal text.
+
 ## Responsive and keyboard QA (2026-11-02)
 
 The React Chromium harness no longer constrains the entire feature lab to a 576px column. It uses the real responsive two-column layout at desktop widths.
