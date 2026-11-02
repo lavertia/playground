@@ -38,8 +38,11 @@ it('shows the registered admin panel links in the existing host sidebar', functi
             ->where('lavertiaPanel.brandSubtitle', 'Playground')
             ->where('lavertiaPanel.primaryColor', '#f59e0b')
             ->where('lavertiaPanel.sidebarVariant', 'inset')
-            ->where('lavertiaSidebar.3.badge', 'New')
-            ->where('lavertiaSidebar.3.parentSlug', 'reports')
+            ->where('lavertiaSidebar', static fn ($links): bool => collect($links)->contains(
+                static fn ($link): bool => ($link['slug'] ?? null) === 'billing/reports'
+                    && ($link['badge'] ?? null) === 'New'
+                    && ($link['parentSlug'] ?? null) === 'reports',
+            ))
             ->where('lavertiaPanel.navigationGroups.1.collapsible', true)
             ->where('lavertiaPanel.navigationGroups.1.collapsedByDefault', true)
             ->where('lavertiaPanel.globalSearch', true)

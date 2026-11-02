@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { localeLabel, localeUrl } from '@/components/lavertia/types';
 import type { PanelAppearance } from '@/components/lavertia/types';
 
@@ -11,18 +12,24 @@ export function PanelLocaleSwitcher() {
     }
 
     return (
-        <label className="inline-flex items-center gap-2">
-            <span className="sr-only">Language</span>
-            <select
-                aria-label="Language"
-                className="h-9 min-w-24 max-w-44 rounded-md border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                value={panel.locale}
-                onChange={event => router.visit(localeUrl(page.url, event.target.value), { preserveScroll: true })}
-            >
-                {(panel.supportedLocales ?? []).map(code => (
-                    <option key={code} value={code}>{localeLabel(code, panel.locale ?? 'en')}</option>
-                ))}
-            </select>
-        </label>
+        <SearchableSelect
+            label="Language"
+            value={panel.locale ?? 'en'}
+            options={(panel.supportedLocales ?? []).map((code) => ({
+                value: code,
+                label: localeLabel(code, panel.locale ?? 'en'),
+            }))}
+            onValueChange={(locale) => {
+                if (locale !== panel.locale) {
+                    router.visit(localeUrl(page.url, locale), {
+                        preserveScroll: true,
+                        preserveState: false,
+                    });
+                }
+            }}
+            className="w-36 max-w-44"
+            size="sm"
+            searchPlaceholder="Search languages..."
+        />
     );
 }
