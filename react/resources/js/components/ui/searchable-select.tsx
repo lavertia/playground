@@ -17,8 +17,6 @@ export interface SearchableOption {
     value: string;
     label: string;
     disabled?: boolean;
-    name?: string;
-    required?: boolean;
 }
 
 export interface SearchableSelectProps {
@@ -32,6 +30,8 @@ export interface SearchableSelectProps {
     className?: string;
     size?: 'sm' | 'default';
     disabled?: boolean;
+    name?: string;
+    required?: boolean;
 }
 
 /**
@@ -75,7 +75,7 @@ export function SearchableSelect({
             onOpenChange={(open) => {
                 if (open) {
                     // Keep the popup inside the existing Radix modal focus trap.
-                    setDialogContainer(triggerRootRef.current?.closest('[data-slot="dialog-content"]') ?? null);
+                    setDialogContainer(triggerRootRef.current?.closest<HTMLElement>('[data-slot="dialog-content"]') ?? null);
                 }
             }}
             autoHighlight
