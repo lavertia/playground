@@ -102,8 +102,12 @@ final class TablesFeatureLabPage extends Page
                 TextColumn::make('author')->label('Author')->toggleable(),
                 IconColumn::make('featured')->label('Featured')->boolean()->toggleable(),
                 TextColumn::make('sort_order')->label('Sort order')->sortable()->toggleable(true, true),
-            ])
-            ->filters([
+            ]);
+
+        // The Lab is an isolated feature explorer, not a table with every
+        // capability always enabled. Only the filtering example defines filters.
+        if ($feature === 5) {
+            $table = $table->filters([
                 SelectFilter::make('status')->label('Status')->options([
                     'draft' => 'Draft',
                     'reviewing' => 'Reviewing',
@@ -114,6 +118,7 @@ final class TablesFeatureLabPage extends Page
                     '0' => 'No',
                 ]),
             ]);
+        }
 
         if ($feature === 4) {
             $table = $table->pushColumns([
