@@ -27,7 +27,7 @@ type Order = {
 };
 type RecordRow = Product | Order;
 type Mode = 'products' | 'orders';
-type RowAction = { kind: 'view' | 'delete' | 'create'; id?: number } | null;
+type RowAction = { kind: 'view' | 'edit' | 'delete' | 'create'; id?: number } | null;
 type Column = { key: string; label: string; sortable?: boolean; defaultVisible?: boolean };
 type FormValues = {
     name: string; brand: string; price: string; quantity: string;
@@ -271,33 +271,69 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
         }
         setNotice('Fictional record duplicated locally.');
     }
-    function createRecord(event: FormEvent<HTMLFormElement>) {
+    function saveRecord(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        const editing = dialog?.kind === 'edit' ? dialog.id : undefined;
         if (isProducts) {
-            const id = Math.max(0, ...products.map(x => x.id)) + 1;
+            const original = products.find(row => row.id === editing);
+            const id = original?.id ?? Math.max(0, ...products.map(row => row.id)) + 1;
             const price = Number(form.price);
             const quantity = Number(form.quantity);
             if (!form.name.trim() || !Number.isFinite(price) || price < 0 || !Number.isInteger(quantity) || quantity < 0) return;
-            setProducts(prev => [{
-                id, name: form.name.trim(), slug: 'demo-product-' + id, brand: form.brand.trim() || 'Demo brand',
-                price, compare_at_price: price * 1.2, cost_per_item: price * 0.6, quantity,
-                security_stock: 5, sku: String(id).padStart(8, '0'), barcode: 'DEMO' + id,
-                description: 'New fictitious demo product', visibility: true, featured: false,
-                backorder: false, requires_shipping: true, published_at: '2026-11-02', thumbnail: id % 8,
-            }, ...prev]);
+            const next: Product = {
+                id, name: form.name.trim(), slug: original?.slug ?? 'demo-product-' + id,
+                brand: form.brand.trim() || 'Demo brand', price, quantity,
+                compare_at_price: original?.compare_at_price ?? price * 1.2,
+                cost_per_item: original?.cost_per_item ?? price * 0.6,
+                security_stock: original?.security_stock ?? 5,
+                sku: original?.sku ?? String(id).padStart(8, '0'),
+                barcode: original?.barcode ?? 'DEMO' + id,
+                description: original?.description ?? 'New fictitious demo product',
+                visibility: original?.visibility ?? true,
+                featured: original?.featured ?? false,
+                backorder: original?.backorder ?? false,
+                requires_shipping: original?.requires_shipping ?? true,
+                published_at: original?.published_at ?? '2026-11-02',
+                thumbnail: original?.thumbnail ?? id % 8,
+            };
+            setProducts(prev => original
+                ? prev.map(row => row.id === id ? next : row)
+                : [next, ...prev]);
         } else {
-            const id = Math.max(0, ...orders.map(x => x.id)) + 1;
+            const original = orders.find(row => row.id === editing);
+            const id = original?.id ?? Math.max(0, ...orders.map(row => row.id)) + 1;
             const total = Number(form.total_price);
             const shipping = Number(form.shipping_cost);
             if (!form.customer.trim() || !Number.isFinite(total) || total < 0 || !Number.isFinite(shipping) || shipping < 0) return;
-            setOrders(prev => [{
-                id, number: 'OR' + String(600000 + id), customer: form.customer.trim(),
-                status: form.status, total_price: total, shipping_cost: shipping, order_date: '2026-11-02',
-            }, ...prev]);
+            const next: Order = {
+                id, number: original?.number ?? 'OR' + String(600000 + id),
+                customer: form.customer.trim(), status: form.status,
+                total_price: total, shipping_cost: shipping,
+                order_date: original?.order_date ?? '2026-11-02',
+            };
+            setOrders(prev => original
+                ? prev.map(row => row.id === id ? next : row)
+                : [next, ...prev]);
         }
         setDialog(null);
         setPage(1);
-        setNotice('New fictional record created locally.');
+        setNotice(editing ? 'Fictional record updated locally.' : 'New fictional record created locally.');
+    }
+    function openEdit(row: RecordRow) {
+        if (isProducts) {
+            const product = row as Product;
+            setForm({
+                ...emptyForm, name: product.name, brand: product.brand,
+                price: String(product.price), quantity: String(product.quantity),
+            });
+        } else {
+            const order = row as Order;
+            setForm({
+                ...emptyForm, customer: order.customer, status: order.status,
+                total_price: String(order.total_price), shipping_cost: String(order.shipping_cost),
+            });
+        }
+        setDialog({ kind: 'edit', id: row.id });
     }
     function openCreate() {
         setForm({ ...emptyForm });
@@ -434,6 +470,7 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
                                         <DropdownMenuTrigger asChild><button type="button" className={iconButton} aria-label={'Actions for record ' + row.id}><MoreVertical className="size-4 text-blue-500" /></button></DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onSelect={() => setDialog({ kind: 'view', id: row.id })}>View details</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => openEdit(row)}>Edit (demo)</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => duplicateRow(row)}>Duplicate (demo)</DropdownMenuItem>
                                             <DropdownMenuItem variant="destructive" onSelect={() => setDialog({ kind: 'delete', id: row.id })}>Delete (demo)</DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -472,12 +509,12 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
         <Dialog open={dialog !== null} onOpenChange={open => { if (!open) setDialog(null); }}>
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{dialog?.kind === 'create' ? (isProducts ? 'New product' : 'New order') : dialog?.kind === 'delete' ? 'Delete fictional records?' : 'Record details'}</DialogTitle>
+                    <DialogTitle>{dialog?.kind === 'create' ? (isProducts ? 'New product' : 'New order') : dialog?.kind === 'edit' ? (isProducts ? 'Edit product' : 'Edit order') : dialog?.kind === 'delete' ? 'Delete fictional records?' : 'Record details'}</DialogTitle>
                     <DialogDescription>Preview only: no Laravel database changes occur.</DialogDescription>
                 </DialogHeader>
                 {dialog?.kind === 'view' && currentDialogRow && <dl className="grid gap-2 text-sm">{Object.entries(currentDialogRow).map(([key, value]) => <div className="grid grid-cols-2 gap-2 border-b border-border py-1" key={key}><dt className="font-semibold">{key.replaceAll('_', ' ')}</dt><dd className="break-all text-muted-foreground">{String(value)}</dd></div>)}<button type="button" className={button} onClick={() => setDialog(null)}>Close</button></dl>}
                 {dialog?.kind === 'delete' && <DialogFooter><button type="button" className={button} onClick={() => setDialog(null)}>Cancel</button><button type="button" className="h-9 rounded-lg bg-rose-600 px-4 text-sm font-semibold text-white" onClick={deleteSelected}>Delete locally</button></DialogFooter>}
-                {dialog?.kind === 'create' && <form onSubmit={createRecord} className="space-y-3">
+                {(dialog?.kind === 'create' || dialog?.kind === 'edit') && <form onSubmit={saveRecord} className="space-y-3">
                     {isProducts ? <>
                         <label className="block space-y-1 text-sm">Name <input required className={input} value={form.name} onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))} /></label>
                         <label className="block space-y-1 text-sm">Brand <input className={input} value={form.brand} onChange={e => setForm(prev => ({ ...prev, brand: e.target.value }))} /></label>
@@ -491,7 +528,7 @@ export default function CommerceTablesLab({ node }: { node: ComponentNode }) {
                         <label className="block space-y-1 text-sm">Total price <input required type="number" min="0" step="0.01" className={input} value={form.total_price} onChange={e => setForm(prev => ({ ...prev, total_price: e.target.value }))} /></label>
                         <label className="block space-y-1 text-sm">Shipping cost <input required type="number" min="0" step="0.01" className={input} value={form.shipping_cost} onChange={e => setForm(prev => ({ ...prev, shipping_cost: e.target.value }))} /></label>
                     </>}
-                    <DialogFooter><button type="button" className={button} onClick={() => setDialog(null)}>Cancel</button><button type="submit" className="h-9 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white">Create locally</button></DialogFooter>
+                    <DialogFooter><button type="button" className={button} onClick={() => setDialog(null)}>Cancel</button><button type="submit" className="h-9 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white">{dialog?.kind === 'edit' ? 'Save changes locally' : 'Create locally'}</button></DialogFooter>
                 </form>}
             </DialogContent>
         </Dialog>
