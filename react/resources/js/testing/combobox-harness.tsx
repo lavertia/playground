@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { TableSelect } from '@/components/ui/table-select';
 import { ConstraintPicker } from '@/components/lavertia/constraint-picker';
+import { LavertiaTable } from '@/components/lavertia/lavertia-table';
+import type { ComponentNode } from '@/components/lavertia/types';
 
 const ROLES = [
     { value: 'all', label: 'All roles' },
@@ -14,6 +16,27 @@ const ROLES = [
     { value: 'Editor', label: 'Editor' },
     { value: 'Member', label: 'Member' },
 ];
+
+const sampleTable: ComponentNode = {
+    type: 'table', key: 'table-smoke',
+    props: {
+        name: 'smoke-table', label: 'Native Table Preview', mode: 'snapshot',
+        searchable: true, columnManager: true, reorderableColumns: true,
+        groupOptions: { status: 'Status' },
+        rows: [
+            { id: 1, name: 'Alpha Product', status: 'published', is_featured: true },
+            { id: 2, name: 'Beta Product', status: 'draft', is_featured: false },
+            { id: 3, name: 'Gamma Product', status: 'published', is_featured: true },
+        ],
+    },
+    components: [
+        { type: 'text-column', key: 'id', props: { name: 'id', hidden: true }, components: [] },
+        { type: 'text-column', key: 'name', props: { name: 'name', label: 'Name', sortable: true, searchable: true, toggleable: true }, components: [] },
+        { type: 'text-column', key: 'status', props: { name: 'status', label: 'Status', badge: true, badgeTones: { published: 'success', draft: 'neutral' }, toggleable: true }, components: [] },
+        { type: 'icon-column', key: 'featured', props: { name: 'is_featured', label: 'Featured', boolean: true, toggleable: true }, components: [] },
+        { type: 'select-filter', key: 'status-filter', props: { name: 'status', label: 'Status', options: { published: 'Published', draft: 'Draft' } }, components: [] },
+    ],
+};
 
 function Harness() {
     const [role, setRole] = useState('all');
@@ -108,6 +131,9 @@ function Harness() {
                         </div>
                     </DialogContent>
                 </Dialog>
+            </section>
+            <section data-testid="native-table">
+                <LavertiaTable node={sampleTable} />
             </section>
         </main>
     );
