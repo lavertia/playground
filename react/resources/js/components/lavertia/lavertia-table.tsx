@@ -4,13 +4,14 @@ import { router } from '@inertiajs/react';
 import {
     ArrowDown, ArrowUp, CheckCircle2, ChevronLeft, ChevronRight,
     ChevronsLeft, ChevronsRight, Columns3, Download, Filter,
-    ImageIcon, Layers3, RotateCcw, Search, XCircle,
+    ImageIcon, Layers3, MoreHorizontal, RotateCcw, Search, XCircle,
 } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent,
-    DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+    DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { TableSelect } from '@/components/ui/table-select';
@@ -134,6 +135,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
     const [localPage, setLocalPage] = useState(1);
     const [localPerPage, setLocalPerPage] = useState(10);
     const [busy, setBusy] = useState(false);
+    const [detailRow, setDetailRow] = useState<TableRow | null>(null);
 
     const paginationSize = mode === 'eloquent' ? Number(pager.perPage ?? 10) : localPerPage;
     const appliedTab = typeof node.props.appliedTab === 'string' ? node.props.appliedTab : '';
@@ -155,6 +157,7 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
         setDirection(node.props.appliedDirection === 'desc' ? 'desc' : 'asc');
         setValues((node.props.appliedFilters as Record<string, string> | undefined) ?? {});
         setSelected([]);
+        setDetailRow(null);
         setBusy(false);
     }, [node.props.appliedSearch, node.props.appliedSort, node.props.appliedDirection, node.props.appliedFilters, node.props.appliedTab, pager.page, pager.perPage]);
 
@@ -365,12 +368,13 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                 {sortKey === column.key ? direction === 'asc' ? <ArrowUp className="size-3.5 text-primary" /> : <ArrowDown className="size-3.5 text-primary" /> : <ArrowDown className="size-3.5 text-muted-foreground/60" />}
                             </button> : column.label}
                         </th>)}
+                        <th scope="col" className="w-12 px-2 py-3 text-end font-semibold">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {groups.map(([label, groupRows]) => <Fragment key={label}>
                         {groupKey !== 'none' && <tr key={'group-' + label} className="border-b border-border bg-muted/25">
-                            <td colSpan={ordered.length + 1} className="px-5 py-2">
+                            <td colSpan={ordered.length + 2} className="px-5 py-2">
                                 <button type="button" aria-expanded={!collapsed.includes(label)} onClick={() => setCollapsed(old =>
                                     old.includes(label) ? old.filter(x => x !== label) : [...old, label])}
                                     className="flex w-full items-center gap-2 text-start text-sm font-semibold">
@@ -384,22 +388,35 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                                 {ordered.map(col => <td key={col.key} className="max-w-72 whitespace-nowrap px-3 py-3 text-start text-sm">
                                     {renderCell(row, col)}
                                 </td>)}
+                                <td className="px-2 py-2 text-end">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button type="button" aria-label={'Actions for record ' + String(row.id)} className={iconButton}>
+                                                <MoreHorizontal className="size-4" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => setDetailRow(row)}>View details</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => exportCurrentRows([row], ordered, prefix)}>Export row CSV</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </td>
                             </tr>)}
                     </Fragment>)}
-                    {shown.length === 0 && <tr><td colSpan={ordered.length + 1} className="px-5 py-12 text-center text-muted-foreground">
+                    {shown.length === 0 && <tr><td colSpan={ordered.length + 2} className="px-5 py-12 text-center text-muted-foreground">
                         {tx('noResults')} {mode === 'eloquent' ? 'Try another filter or seed the demo tables.' : ''}
                     </td></tr>}
                 </tbody>
                 {sums.length > 0 && shown.length > 0 && <tfoot className="border-t border-border bg-muted/20 text-sm">
-                    <tr><th colSpan={ordered.length + 1} className="px-5 py-2 text-start">Summary · this page</th></tr>
-                    <tr><td colSpan={ordered.length + 1} className="px-5 pb-2">
+                    <tr><th colSpan={ordered.length + 2} className="px-5 py-2 text-start">Summary · this page</th></tr>
+                    <tr><td colSpan={ordered.length + 2} className="px-5 pb-2">
                         <div className="flex flex-wrap gap-5">
                             {sums.map(key => <span key={key} className="inline-flex gap-2"><span className="text-muted-foreground">{getColumn(key)?.label ?? key}</span>
                                 <strong className="tabular-nums">{currency(shown.reduce((total, row) => total + Number(row[key] ?? 0), 0), getColumn(key)?.currency)}</strong></span>)}
                         </div>
                     </td></tr>
-                    <tr><th colSpan={ordered.length + 1} className="px-5 py-2 text-start">All matching records</th></tr>
-                    <tr><td colSpan={ordered.length + 1} className="px-5 pb-3">
+                    <tr><th colSpan={ordered.length + 2} className="px-5 py-2 text-start">All matching records</th></tr>
+                    <tr><td colSpan={ordered.length + 2} className="px-5 pb-3">
                         <div className="flex flex-wrap gap-5">
                             {sums.map(key => <span key={key} className="inline-flex gap-2"><span className="text-muted-foreground">{getColumn(key)?.label ?? key}</span>
                                 <strong className="tabular-nums">{currency(summaryTotals[key] ?? 0, getColumn(key)?.currency)}</strong></span>)}
@@ -431,5 +448,19 @@ export function LavertiaTable({ node }: { node: ComponentNode }) {
                 <button aria-label="Last page" type="button" disabled={page >= lastPage || busy} className={iconButton} onClick={() => setPage(lastPage)}><ChevronsRight className="size-4 rtl:rotate-180" /></button>
             </nav>
         </footer>
+        <Dialog open={detailRow !== null} onOpenChange={open => { if (!open) setDetailRow(null); }}>
+            <DialogContent className="max-w-xl">
+                <DialogHeader>
+                    <DialogTitle>{title} · Record details</DialogTitle>
+                    <DialogDescription>Read-only data from the active page. No changes are saved.</DialogDescription>
+                </DialogHeader>
+                <dl className="max-h-[60vh] space-y-2 overflow-y-auto text-sm">
+                    {detailRow && columns.filter(column => !column.hidden).map(column => <div key={column.key} className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-3 border-b border-border/50 py-1.5">
+                        <dt className="font-medium text-muted-foreground">{column.label}</dt>
+                        <dd className="min-w-0 break-words">{renderCell(detailRow, column)}</dd>
+                    </div>)}
+                </dl>
+            </DialogContent>
+        </Dialog>
     </section>;
 }
