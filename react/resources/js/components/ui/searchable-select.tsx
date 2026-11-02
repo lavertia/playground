@@ -97,7 +97,7 @@ export function SearchableSelect({
 
             <ComboboxContent
                 aria-label={label}
-                container={dialogContainer}
+                container={dialogContainer ?? undefined}
             >
                 <div className="relative border-b border-border p-1.5">
                     <SearchIcon
