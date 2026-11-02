@@ -138,6 +138,48 @@ try {
     await skeletonLab.getByRole('status', { name: 'Loading table preview' }).waitFor();
     await skeletonLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor({ timeout: 6000 });
 
+    // Check the actual two-column desktop layout, narrow mobile behavior,
+    // both writing directions and dark mode, rather than a fixed-width demo.
+    for (const width of [390, 768, 1440]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        for (const direction of ['ltr', 'rtl']) {
+            await page.goto(url);
+            await page.evaluate(dir => {
+                document.documentElement.dir = dir;
+                document.documentElement.classList.toggle('dark', dir === 'rtl');
+            }, direction);
+
+            const responsiveLab = page.getByTestId('feature-lab');
+            await responsiveLab.getByRole('heading', { name: 'Defining table columns' }).waitFor();
+            await responsiveLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
+
+            const dimensions = await page.evaluate(() => ({
+                page: document.documentElement.scrollWidth,
+                viewport: document.documentElement.clientWidth,
+            }));
+            assert.ok(dimensions.page <= dimensions.viewport + 2,
+                `Unexpected horizontal page overflow at ${width}px, ${direction}: ${JSON.stringify(dimensions)}`);
+
+            const layoutColumns = await responsiveLab.locator('[data-table-feature-lab] > .grid').last()
+                .evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\\s+/).length);
+            assert.equal(layoutColumns, width >= 1024 ? 2 : 1,
+                `Incorrect feature lab layout at ${width}px, ${direction}`);
+
+            const codeTab = responsiveLab.getByRole('tab', { name: 'PHP source' });
+            await codeTab.focus();
+            await page.keyboard.press('Enter');
+            await responsiveLab.locator('pre code').waitFor({ state: 'visible' });
+            await responsiveLab.getByRole('tab', { name: 'Live preview' }).click();
+            await responsiveLab.getByRole('heading', { name: 'Native Table Preview' }).waitFor();
+
+            await page.screenshot({
+                path: `/tmp/lavertia-table-lab-${width}-${direction}.png`,
+                fullPage: true,
+                animations: 'disabled',
+            });
+        }
+    }
+
     assert.deepEqual(errors, [], 'No client-side React exceptions should occur');
     console.log('PASS Base UI controls, native tables and 28-feature Lab preview/code, reorder logs and skeleton');
 } catch (error) {
