@@ -567,14 +567,29 @@ case 'form':
             return <RepeaterRenderer node={node} />;
 
         case 'select':
-            return <label className="flex flex-col gap-1.5 text-sm font-semibold">
-                {String(node.props.label ?? node.props.name ?? '')}
-                <select name={String(node.props.name ?? '')} value={input} required={node.props.required === true} onChange={(event) => { inputDirty.current = true; setInput(event.target.value); }}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 font-normal dark:border-white/20 dark:bg-gray-950">
-                    <option value="">—</option>
-                    {Object.entries(node.props.options && typeof node.props.options === 'object' ? node.props.options as Record<string, string> : {}).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
-            </label>;
+            return (
+                <div className="flex min-w-0 flex-col gap-1.5 text-sm">
+                    <span className="font-semibold">{String(node.props.label ?? node.props.name ?? '')}</span>
+                    <SearchableSelect
+                        label={String(node.props.label ?? node.props.name ?? '')}
+                        value={input}
+                        options={[
+                            { value: '', label: '—' },
+                            ...Object.entries(
+                                node.props.options && typeof node.props.options === 'object'
+                                    ? node.props.options as Record<string, string>
+                                    : {},
+                            ).map(([value, label]) => ({ value, label })),
+                        ]}
+                        onValueChange={(value) => {
+                            inputDirty.current = true;
+                            setInput(value);
+                        }}
+                        className="w-full"
+                    />
+                    <input type="hidden" name={String(node.props.name ?? '')} value={input} />
+                </div>
+            );;
 
         case 'textarea':
             return <label className="flex flex-col gap-1.5 text-sm font-semibold">
