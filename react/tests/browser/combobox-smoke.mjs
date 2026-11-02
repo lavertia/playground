@@ -165,6 +165,14 @@ try {
             assert.equal(layoutColumns, width >= 1024 ? 2 : 1,
                 `Incorrect feature lab layout at ${width}px, ${direction}`);
 
+            if (width === 390) {
+                const liveTable = responsiveLab.locator('[data-lavertia-table]').first();
+                const filterBox = await liveTable.getByRole('button', { name: 'Filters', exact: true }).boundingBox();
+                const columnsBox = await liveTable.getByRole('button', { name: 'Manage columns' }).boundingBox();
+                assert.ok(filterBox && columnsBox && Math.abs(filterBox.y - columnsBox.y) <= 2,
+                    `Mobile table toolbar controls must share one row at ${width}px, ${direction}`);
+            }
+
             const codeTab = responsiveLab.getByRole('tab', { name: 'PHP source' });
             await codeTab.focus();
             await page.keyboard.press('Enter');
