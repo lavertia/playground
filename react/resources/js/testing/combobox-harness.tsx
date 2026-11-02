@@ -90,9 +90,21 @@ const labTable: ComponentNode = {
         paginationControls: false,
         groupOptions: {},
     },
-    components: selectedLabFeature === 5
-        ? sampleTable.components
-        : sampleTable.components.filter(component => component.type !== 'select-filter'),
+    // Keep visual regression fixtures representative of each PHP scenario.
+    // The separate native-table fixture above intentionally exercises all controls.
+    components: sampleTable.components
+        .filter(component => component.type !== 'select-filter' || selectedLabFeature === 5)
+        .filter(component => component.type !== 'icon-column' || selectedLabFeature === 1)
+        .map(component => component.type === 'text-column' ? {
+            ...component,
+            props: {
+                ...component.props,
+                sortable: selectedLabFeature === 2 && component.props.sortable === true,
+                searchable: selectedLabFeature === 2 && component.props.searchable === true,
+                toggleable: selectedLabFeature === 1 && component.props.toggleable === true,
+                badge: false,
+            },
+        } : component),
 };
 const labNode: ComponentNode = {
     type: 'tables-feature-lab', key: 'smoke-feature-lab',
