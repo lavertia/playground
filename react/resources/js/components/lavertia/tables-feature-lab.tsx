@@ -129,7 +129,7 @@ export default function TablesFeatureLab({ node }: { node: ComponentNode }) {
     }
     function replayLoading() {
         setLoadingDemo(true);
-        const task = window.setTimeout(() => setLoadingDemo(false), 1000);
+        const task = window.setTimeout(() => setLoadingDemo(false), 1500);
         setNavigationCount(old => old + 1);
         return () => window.clearTimeout(task);
     }
